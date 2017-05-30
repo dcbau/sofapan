@@ -21,10 +21,9 @@
 #include "HeadTopHexData.h"
 #include "HeadSideHexData.h"
 #include "SpeakerHexData.h"
-#include "SofaMetaDataView.h"
+#include "SofaMetadataView.h"
 #include "PlotHRTFComponent.h"
 #include "PlotHRIRComponent.h"
-
 
 //==============================================================================
 /**
@@ -80,8 +79,8 @@ private:
     float getParameterValue (const String& paramId);
     void setParameterValue (const String& paramId, float value);
     
-    void sliderDragStarted(Slider* slider);
-    void sliderDragEnded(Slider* slider);
+    void sliderDragStarted(Slider* slider) override;
+    void sliderDragEnded(Slider* slider) override;
 
     Image speakerImage;
     Image headTopImage;
@@ -95,6 +94,8 @@ private:
     float lastElevationValue;
     float lastAzimuthValue;
     float lastDistanceValue;
+    
+    const float deg2rad = 2.0 * M_PI / 360.0;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SofaPanAudioProcessorEditor)
 };

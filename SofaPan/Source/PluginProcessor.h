@@ -75,7 +75,7 @@ public:
     void setSOFAFilePath(String sofaString);
     
     //Parameters
-    AudioParameterFloat* panParam;
+    AudioParameterFloat* azimuthParam;
     AudioParameterFloat* elevationParam;
     AudioParameterFloat* distanceParam;
     AudioParameterFloat* bypassParam;

@@ -44,8 +44,6 @@ SOFAData::SOFAData(const char* filePath, int sampleRate){
         }
     }
     
-    printf("\nMax Sample Value: %f \nNormalizing with scalefactor %f", maxValue, normalisation);
-    
     //Allocate and init FFTW
     float* fftInputBuffer = fftwf_alloc_real(lengthOfFFT);
     fftwf_complex* fftOutputBuffer = fftwf_alloc_complex(lengthOfHRTF);
@@ -89,11 +87,6 @@ SOFAData::SOFAData(const char* filePath, int sampleRate){
     fftwf_free(fftOutputBuffer);
     fftwf_destroy_plan(FFT);
     
-//    printf("\n SOFAData: Sofa File Successfully loaded!! \n");
-//    printf("\n SOFAData: SourcePositions: %d", sofaMetadata.numMeasurements);
-//    printf("\n SOFAData: HRIRLength: %d", lengthOfHRIR);
-//    printf("\n SOFAData: HRTFLength: %d", lengthOfHRTF);
-    
 }
 
 SOFAData::~SOFAData(){
@@ -115,7 +108,6 @@ int SOFAData::getLengthOfHRIR(){
 
 fftwf_complex* SOFAData::getHRTFforAngle(float elevation, float azimuth, float radius){
  
-    //printf("getHRTF");
     int best_id = 0;
     
     float delta;
@@ -173,8 +165,6 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
     int numberOfAttributes;
     nc_inq(ncid, NULL, NULL, &numberOfAttributes, NULL);
     
-    printf("\nNumber Of Global Attributes: %d", numberOfAttributes);
-    
     char name_of_att[NC_MAX_NAME + 1][numberOfAttributes];
     char* attributes[numberOfAttributes];
     
@@ -192,7 +182,6 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
         att[attlength] = '\0';
         attributes[i] = att;
         
-        //printf("\nAttribute %d: %s: %s", i, name_of_att[i], attributes[i]);
         sofaMetadata.globalAttributeNames.add(String(CharPointer_UTF8 (name_of_att[i])));
         sofaMetadata.globalAttributeValues.add(String(CharPointer_UTF8 (attributes[i])));
         
@@ -356,8 +345,7 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
         
         
         float wrappedSourceposition = fmodf((SourcePosition[l] + 360.0), 360.0);
-        //printf("\n%d OrigAz: %.2f, NewAz: %.2f, Elev: %.2f, Dist: %.2f", i, SourcePosition[l], wrappedSourceposition, SourcePosition[l+1], SourcePosition[l+2]);
-        
+
         measurement_object->setValues(wrappedSourceposition, SourcePosition[l + 1], SourcePosition[l + 2]);
         measurement_object->index = i;
         loadedHRIRs[i] = measurement_object;

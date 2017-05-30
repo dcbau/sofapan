@@ -165,12 +165,7 @@ public:
             mag_l[i] = scale * (sqrtf(hrtf[i][0] * hrtf[i][0] + hrtf[i][1] * hrtf[i][1]));
             mag_r[i] = scale * (sqrtf(hrtf[i+size][0] * hrtf[i+size][0] + hrtf[i+size][1] * hrtf[i+size][1]));
         }
-        
-        
         sampleRate = _sampleRate;
-        
-//        printf("\ndrawHRTF");
-//        repaint();
     }
 
 private:

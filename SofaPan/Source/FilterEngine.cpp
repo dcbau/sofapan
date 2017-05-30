@@ -141,7 +141,6 @@ void FilterEngine::process(const float* inBuffer, float* outBuffer_L, float* out
             fftwf_execute(inverse_R);
             
             for(int i = 0; i < firLength; i++){
-                if(weightingCurve[i] > 1.0) printf("  %d Exceeds 1: %.3f", i, weightingCurve[i]);
                 outputBuffer_L[i] = fftOutputBuffer_L[i + firLength] * (1.0 - weightingCurve[i]);
                 outputBuffer_R[i] = fftOutputBuffer_R[i + firLength] * (1.0 - weightingCurve[i]);
             }

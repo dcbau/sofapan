@@ -267,7 +267,6 @@ public:
         for(int i = 0; i< size; i++){
             IR_Left[i] = _HRIR[i];
             IR_Right[i] = _HRIR[i + size];
-            //printf("Draw: \n%d: %f", i, IR_Left[i]);
         }
         
         //Remove zero-tail
