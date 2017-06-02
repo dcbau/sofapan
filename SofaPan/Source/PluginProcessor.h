@@ -17,6 +17,7 @@
 #include "SOFAData.h"
 #include "FilterEngine.h"
 #include "FilterEngineB.h"
+#include "SofaPathSharedUpdater.h"
 
 
 //Interface für SOFA File:
@@ -33,7 +34,11 @@ extern "C" {
 #endif
 
 
-class SofaPanAudioProcessor  : public AudioProcessor
+
+
+
+
+class SofaPanAudioProcessor  : public AudioProcessor, public InterprocessConnection
 {
 public:
     //==============================================================================
@@ -89,7 +94,8 @@ public:
     float* getCurrentHRIR();
     int getSampleRate();
     int getComplexLength();
-    
+    void setUsingGlobalSofaFile(bool useGlobal);
+    bool getUsingGlobalSofaFile();
     
 private:
     //==============================================================================
@@ -104,10 +110,16 @@ private:
     FilterEngine* Filter;
     FilterEngineB* FilterB;
     
-
+    SofaPathSharedUpdater* updater;
     
+    void connectionMade() override{}
+    void connectionLost() override{}
+    void messageReceived (const MemoryBlock &message) override;
+    
+    bool usingGlobalSofaFile = true;
     
 };
+
 
 
 #endif  // PLUGINPROCESSOR_H_INCLUDED

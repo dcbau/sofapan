@@ -16,6 +16,7 @@
 SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor& p)
     : AudioProcessorEditor (&p), processor (p)
 {
+    
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize (400, 400);
@@ -70,6 +71,11 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     testSwitchButton.addListener(this);
     addAndMakeVisible(&testSwitchButton);
  
+    useGlobalSofaFileButton.setButtonText("Global SOFA File");
+    useGlobalSofaFileButton.setColour(ToggleButton::textColourId, Colours::white);
+    useGlobalSofaFileButton.addListener(this);
+    addAndMakeVisible(&useGlobalSofaFileButton);
+    
     headTopImage = ImageCache::getFromMemory(headTopPicto, headTopPicto_Size);
     headSideImage = ImageCache::getFromMemory(headSidePicto, headSidePicto_Size);
     speakerImage = ImageCache::getFromMemory(speaker, speaker_Size);
@@ -89,10 +95,17 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     lastElevationValue = 0.0;
     lastDistanceValue = 0.0;
 
+    
+    //When the Editor is reloaded, the sofaMetadata is automtically omitted and has to be reloaded
+    processor.updateSofaMetadataFlag = true;
+    
+    
+ 
 }
 
 SofaPanAudioProcessorEditor::~SofaPanAudioProcessorEditor()
 {
+    
 }
 
 
@@ -178,6 +191,7 @@ void SofaPanAudioProcessorEditor::resized()
     
     bypassButton.setBounds(10., 50., 150., 30.);
     testSwitchButton.setBounds(10., 80., 150., 30.);
+    useGlobalSofaFileButton.setBounds(135, 10., 80, 30);
     
     plotHRTFView.setBounds(25.0, 300.0, 350.0, 130.0);
     plotHRIRView.setBounds(425.0, 300.0, 350.0, 130.0);
@@ -188,6 +202,7 @@ void SofaPanAudioProcessorEditor::timerCallback() {
     
     bypassButton.setToggleState((bool)getParameterValue("bypass"), NotificationType::dontSendNotification);
     testSwitchButton.setToggleState((bool)getParameterValue("test"), NotificationType::dontSendNotification);
+    useGlobalSofaFileButton.setToggleState(processor.getUsingGlobalSofaFile(), NotificationType::dontSendNotification);
     
     // update panning sliders if needed
     float azimuthValue = getParameterValue("azimuth") * 360.;
@@ -219,7 +234,6 @@ void SofaPanAudioProcessorEditor::timerCallback() {
     
     // update metadata when new sofa file is loaded
     if(processor.updateSofaMetadataFlag){
-        
         metadataView.setMetadata(processor.metadata_sofafile.globalAttributeNames, processor.metadata_sofafile.globalAttributeValues);
         
         String numMeasurement_Note = static_cast <String> (processor.metadata_sofafile.numMeasurements);
@@ -238,6 +252,7 @@ void SofaPanAudioProcessorEditor::timerCallback() {
             panner_el.setRange(eleMin, eleMax);
             panner_el.setRotaryParameters((270. + eleMin) * deg2rad , (270. + eleMax) * deg2rad, true);
         }else{
+            panner_el.setRotaryParameters((270. + eleMin) * deg2rad , (270. + eleMax) * deg2rad, true);
             elevationRange_Note = "none";
             panner_el.setValue(0.0);
             panner_el.setEnabled(false);
@@ -269,8 +284,6 @@ void SofaPanAudioProcessorEditor::timerCallback() {
         processor.updateSofaMetadataFlag = false;
         repaint();
     }
-    
-    
     
 }
 
@@ -364,7 +377,8 @@ void SofaPanAudioProcessorEditor::buttonClicked(Button *button)
         if (fc.browseForFileToOpen()){
             String chosen = fc.getResult().getFullPathName();
             processor.setSOFAFilePath(chosen);
-            processor.initData(chosen);
+            
+
         }
     }
     
@@ -376,6 +390,7 @@ void SofaPanAudioProcessorEditor::buttonClicked(Button *button)
     
     if(button == &showSOFAMetadataButton)
         metadataView.setVisible(true);
+    
+    if(button == &useGlobalSofaFileButton)
+        processor.setUsingGlobalSofaFile(useGlobalSofaFileButton.getToggleState());
 }
-
-

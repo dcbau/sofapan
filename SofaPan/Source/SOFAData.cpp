@@ -15,9 +15,43 @@ int getIRLengthForNewSampleRate(int IR_Length, int original_SR, int new_SR);
 //void error(char* errorMessage);
 int sampleRateConversion(float* inBuffer, float* outBuffer, int n_inBuffer, int n_outBuffer, int originalSampleRate, int newSampleRate);
 
-SOFAData::SOFAData(const char* filePath, int sampleRate){
+SOFAData::SOFAData(){
     
     loadedHRIRs = NULL;
+    currentFilePath = NULL;
+    currentSampleRate = 0;
+
+    
+}
+
+SOFAData::~SOFAData(){
+    
+    if(loadedHRIRs != NULL){
+        for(int i = 0; i < sofaMetadata.numMeasurements; i++){
+            delete loadedHRIRs[i];
+        }
+        free(loadedHRIRs);
+    }
+}
+
+void SOFAData::initSofaData(const char* filePath, int sampleRate)
+{
+
+    printf("\n Attempting to load SofaFile...");
+    
+    //This line makes sure that the init is not always performed when a new instance of the plugin is created
+    if(filePath == currentFilePath && sampleRate == currentSampleRate)
+        return;
+    
+    printf("\n Loading File");
+
+    
+    if(loadedHRIRs != NULL){
+        for(int i = 0; i < sofaMetadata.numMeasurements; i++){
+            delete loadedHRIRs[i];
+        }
+        free(loadedHRIRs);
+    }
     
     // LOAD SOFA FILE
     int status = loadSofaFile(filePath, sampleRate);
@@ -88,19 +122,6 @@ SOFAData::SOFAData(const char* filePath, int sampleRate){
     fftwf_destroy_plan(FFT);
     
 }
-
-SOFAData::~SOFAData(){
-    
-    printf("\n Destructing SOFAData");
-    
-    if(loadedHRIRs != NULL){
-        for(int i = 0; i < sofaMetadata.numMeasurements; i++){
-            delete loadedHRIRs[i];
-        }
-        free(loadedHRIRs);
-    }
-}
-
 int SOFAData::getLengthOfHRIR(){
     return lengthOfHRIR;
 }

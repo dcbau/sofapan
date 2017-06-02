@@ -54,6 +54,8 @@ private:
     TextButton showSOFAMetadataButton;
     ToggleButton bypassButton;
     ToggleButton testSwitchButton;
+    ToggleButton useGlobalSofaFileButton;
+    
     const String measurementsID =       String("Measurements:         ");
     const String samplesID =            String("Samples:              ");
     const String sofaConventionID =     String("SOFA Convention:      ");
@@ -96,6 +98,7 @@ private:
     float lastDistanceValue;
     
     const float deg2rad = 2.0 * M_PI / 360.0;
+    
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SofaPanAudioProcessorEditor)
 };
