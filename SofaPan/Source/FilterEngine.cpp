@@ -7,8 +7,9 @@
 
   ==============================================================================
 */
-
+//
 #include "FilterEngine.h"
+#include "PluginProcessor.h"
 
 FilterEngine::FilterEngine(SOFAData& sD)
     : sofaData(sD), firLength(sD.getLengthOfHRIR())
@@ -71,14 +72,15 @@ void FilterEngine::prepareToPlay(){
         outputBuffer_R[i] = 0.0;
     }
     
-    previousHRTF = sofaData.getHRTFforAngle(0.0, 0.0, 1.0);
-    
+    previousHRTF_l = sofaData.getHRTFforAngle(0.0, 0.0, 1.0);
+    previousHRTF_r = sofaData.getHRTFforAngle(0.0, 0.0, 1.0);
+
     previousAzimuth = 0.0;
     previousElevation = 0.0;
     
 }
 
-void FilterEngine::process(const float* inBuffer, float* outBuffer_L, float* outBuffer_R, int numSamples, AudioParameterFloat* azimuthParam, AudioParameterFloat* elevationParam, AudioParameterFloat* distanceParam){
+void FilterEngine::process(const float* inBuffer, float* outBuffer_L, float* outBuffer_R, int numSamples, parameterStruct params){
     
     
     for(int sample = 0; sample < numSamples; sample++){
@@ -101,43 +103,55 @@ void FilterEngine::process(const float* inBuffer, float* outBuffer_L, float* out
                 lastInputBuffer[i] = inputBuffer[i];
             }
             
-//            int azimuthIndex = (sample - sample % 4);
-//            int elevationIndex = (sample - sample % 4) + 1;
-//            float azimuth = modBuffer[azimuthIndex];
-//            float elevation = modBuffer[elevationIndex];
-            float azimuth = azimuthParam->get() * 360.0;
-            float elevation = (elevationParam->get()-0.5) * 180.0;
-            float distance = distanceParam->get();
+            float azimuth = params.azimuthParam->get() * 360.0;
+            float elevation = (params.elevationParam->get()-0.5) * 180.0;
+            float distance = params.distanceParam->get();
             
-            fftwf_complex* hrtf = sofaData.getHRTFforAngle(elevation, azimuth, distance);
-
-//            for(int i = 0; i< firLength; i++){
-//                fftInputBuffer[i+firLength] = 0.0; //Zweite Hälfte nullen
-//            }
+            printf("AZIMUTH: %f  ##  ", azimuth);
+            
+            float alpha = params.azimuthParam->get() * 2 * M_PI;
+            const float standardHeadradius = 0.18; //if no other headradius is specified
+            
+            
+            /* The simulation of nearfield hrtfs is in an experimental state! It aims to model the acoustic parallax effect. The idea is that if a source approaches the head, the angle between the individual ears and the source will deviate from the orignal angle between the head centre and the source. With simple geometrical methods, the exact angle for every ear can be derivated (=> calculateNFAngleOffset). The used HRTF-pair will then consist of two different left and right HRTFs from different angles
+                
+                This idea was first discussed by Douglas S. Brungart in his article "AUDITORY PARALLAX EFFECTS IN THE HRTF FOR NEARBY SOURCES", published in 1999 in the Proceedings of the "IEEE Engineering in Medicine and Biology Society", Volume 20(3), pp.1101-1104.
+             
+                For further information, the dissertation of Fotis Georgiou constains a short introduction to the acoustic parallax effect on pages 15/16. It is available for free on researchgate.net and the title is "Relative Distance Perception Of Sound Sources In Critical Listening Environment Via Binaural Reproduction"
+             */
+            
+            float azimuth_l = azimuth;
+            float azimuth_r = azimuth;
+            if(params.distanceSimulationParam->get() && distance < 1.0){
+                float angleLeftEar = calculateNFAngleOffset(alpha, distance, standardHeadradius/2);
+                float angleRightEar = calculateNFAngleOffset(alpha, distance, -standardHeadradius/2);
+                
+                azimuth_l = (angleLeftEar / (2*M_PI)) * 360;
+                azimuth_r = (angleRightEar / (2*M_PI)) * 360;
+                distance = 1.0;
+            }
+            
+            fftwf_complex* hrtf_l = sofaData.getHRTFforAngle(elevation, azimuth_l, distance);
+            fftwf_complex* hrtf_r = sofaData.getHRTFforAngle(elevation, azimuth_r, distance);
             
             fftwf_execute(forward);
             
             memcpy(src, complexBuffer, sizeof(fftwf_complex) * complexLength);
             
-            //Hier findet die Verarbeitung im Frequenzbereich statt!
-            
-            /* Linker Kanal */
+            // Left Channel
             for ( int k=0; k<complexLength; k++ ) {
-                // Y(k) = X(k) * H(K)
-                // Yr = Xr * Hr - Xi * Hi
-                // Yi = Xr * Hi + Xi * Hr
-                complexBuffer[k][RE] = (src[k][RE] * hrtf[k][RE] - src[k][IM] * hrtf[k][IM]) * fftSampleScale;
-                complexBuffer[k][IM] = (src[k][RE] * hrtf[k][IM] + src[k][IM] * hrtf[k][RE]) * fftSampleScale;
+                /*  Complex Multiplication: Y = X * H
+                    Yr = Xr * Hr - Xi * Hi   |  Yi = Xr * Hi + Xi * Hr */
+                complexBuffer[k][RE] = (src[k][RE] * hrtf_l[k][RE] - src[k][IM] * hrtf_l[k][IM]) * fftSampleScale;
+                complexBuffer[k][IM] = (src[k][RE] * hrtf_l[k][IM] + src[k][IM] * hrtf_l[k][RE]) * fftSampleScale;
             }
-            
             fftwf_execute(inverse_L);
             
-            /* Rechter Kanal */
+            // Right Channel
             for ( int k=0; k<complexLength; k++ ) {
-                complexBuffer[k][RE] = (src[k][RE] * hrtf[k+complexLength][RE] - src[k][IM] * hrtf[k+complexLength][IM]) * fftSampleScale;
-                complexBuffer[k][IM] = (src[k][RE] * hrtf[k+complexLength][IM] + src[k][IM] * hrtf[k+complexLength][RE]) * fftSampleScale;
+                complexBuffer[k][RE] = (src[k][RE] * hrtf_r[k+complexLength][RE] - src[k][IM] * hrtf_r[k+complexLength][IM]) * fftSampleScale;
+                complexBuffer[k][IM] = (src[k][RE] * hrtf_r[k+complexLength][IM] + src[k][IM] * hrtf_r[k+complexLength][RE]) * fftSampleScale;
             }
-            
             fftwf_execute(inverse_R);
             
             for(int i = 0; i < firLength; i++){
@@ -146,32 +160,29 @@ void FilterEngine::process(const float* inBuffer, float* outBuffer_L, float* out
             }
 
             
+            /* The same convolution is done a second time with the HRTF that was used in the last run. Then both results are added together with a certain weighting, resulting in a crossfade between the last convolution result and the newer convolution result. This technique prevents audible clicks, when the HRTF is exchanged and the audio stream would all of a sudden use another filter.
+             */
+            for ( int k=0; k<complexLength; k++ ) {
+                complexBuffer[k][RE] = (src[k][RE] * previousHRTF_l[k][RE] - src[k][IM] * previousHRTF_l[k][IM]) * fftSampleScale;
+                complexBuffer[k][IM] = (src[k][RE] * previousHRTF_l[k][IM] + src[k][IM] * previousHRTF_l[k][RE]) * fftSampleScale;
+            }
+            fftwf_execute(inverse_L);
             
-            //if((previousAzimuth != azimuth || previousElevation != elevation) && previousHRTF!=NULL ){
+            for ( int k=0; k<complexLength; k++ ) {
+                complexBuffer[k][RE] = (src[k][RE] * previousHRTF_r[k+complexLength][RE] - src[k][IM] * previousHRTF_r[k+complexLength][IM]) * fftSampleScale;
+                complexBuffer[k][IM] = (src[k][RE] * previousHRTF_r[k+complexLength][IM] + src[k][IM] * previousHRTF_r[k+complexLength][RE]) * fftSampleScale;
+            }
+        
+            fftwf_execute(inverse_R);
             
-            //fftwf_complex* previousHRTF = sofaData.getHRTFforAngle(previousElevation , previousAzimuth);
-            
-                for ( int k=0; k<complexLength; k++ ) {
-                    complexBuffer[k][RE] = (src[k][RE] * previousHRTF[k][RE] - src[k][IM] * previousHRTF[k][IM]) * fftSampleScale;
-                    complexBuffer[k][IM] = (src[k][RE] * previousHRTF[k][IM] + src[k][IM] * previousHRTF[k][RE]) * fftSampleScale;
-                }
-                fftwf_execute(inverse_L);
-                
-                for ( int k=0; k<complexLength; k++ ) {
-                    complexBuffer[k][RE] = (src[k][RE] * previousHRTF[k+complexLength][RE] - src[k][IM] * previousHRTF[k+complexLength][IM]) * fftSampleScale;
-                    complexBuffer[k][IM] = (src[k][RE] * previousHRTF[k+complexLength][IM] + src[k][IM] * previousHRTF[k+complexLength][RE]) * fftSampleScale;
-                }
-
-            
-            
-            //}
             
             for(int i = 0; i < firLength; i++){
                 outputBuffer_L[i] += fftOutputBuffer_L[i + firLength] * weightingCurve[i];
                 outputBuffer_R[i] += fftOutputBuffer_R[i + firLength] * weightingCurve[i];
             }
             
-            previousHRTF = hrtf;
+            previousHRTF_l = hrtf_l;
+            previousHRTF_r = hrtf_r;
             previousAzimuth = azimuth;
             previousElevation = elevation;
             
@@ -185,4 +196,33 @@ void FilterEngine::process(const float* inBuffer, float* outBuffer_L, float* out
 
 int FilterEngine::getComplexLength(){
     return complexLength;
+}
+
+/**
+ angle = angle from headcenter to source in radians
+ distance = distance from headcenter to source in m
+ earPosition = distance from ear to headcenter in m, positive = left shift, negative = rightshift
+ (e.g. 0.09 for left ear, -0.09 for right ear)
+ return value = new angle in radians
+ */
+float FilterEngine::calculateNFAngleOffset(float angle, float r, float earPosition){
+    
+    float newAngle;
+    
+    if( angle < M_PI / 2.0)
+        newAngle = atan( (sin(angle)*r + earPosition) / (cos(angle)*r) );
+    else if(angle < M_PI)
+        newAngle = M_PI - atan( (sin(M_PI-angle)*r + earPosition) / (cos(M_PI-angle)*r) );
+    else if(angle < M_PI*3/2)
+        newAngle = M_PI + atan( (sin(angle)*r + earPosition) / (cos(angle)*r) );
+    else if(angle < M_PI * 2)
+        newAngle = 2*M_PI - atan( (sin(M_PI-angle)*r + earPosition) / (cos(M_PI-angle)*r) );
+    
+    if(newAngle < 0)
+        newAngle = newAngle + 2*M_PI;
+    if(newAngle > 2*M_PI)
+        newAngle = newAngle - 2*M_PI;
+    
+    return newAngle;
+    
 }

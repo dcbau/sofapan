@@ -11,6 +11,8 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
+#include "sofaPanLookAndFeel.h"
+
 
 //==============================================================================
 /*
@@ -33,7 +35,7 @@ public:
         zoomXButton1.setClickingTogglesState(true);
         zoomXButton1.setRadioGroupId(1111);
         zoomXButton1.setColour (TextButton::buttonColourId, Colours::lightgrey);
-        zoomXButton1.setColour (TextButton::buttonOnColourId, mainCyan);
+        zoomXButton1.setColour (TextButton::buttonOnColourId, sofaPanLookAndFeel.mainCyan);
         zoomXButton1.setColour (TextButton::textColourOffId, Colours::black);
         zoomXButton1.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
         zoomXButton1.setToggleState(true, dontSendNotification);
@@ -45,7 +47,7 @@ public:
         zoomXButton2.setClickingTogglesState(true);
         zoomXButton2.setRadioGroupId(1111);
         zoomXButton2.setColour (TextButton::buttonColourId, Colours::lightgrey);
-        zoomXButton2.setColour (TextButton::buttonOnColourId, mainCyan);
+        zoomXButton2.setColour (TextButton::buttonOnColourId, sofaPanLookAndFeel.mainCyan);
         zoomXButton2.setColour (TextButton::textColourOffId, Colours::black);
         zoomXButton2.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
         zoomXButton2.setToggleState(false, dontSendNotification);
@@ -57,7 +59,7 @@ public:
         zoomXButton3.setClickingTogglesState(true);
         zoomXButton3.setRadioGroupId(1111);
         zoomXButton3.setColour (TextButton::buttonColourId, Colours::lightgrey);
-        zoomXButton3.setColour (TextButton::buttonOnColourId, mainCyan);
+        zoomXButton3.setColour (TextButton::buttonOnColourId, sofaPanLookAndFeel.mainCyan);
         zoomXButton3.setColour (TextButton::textColourOffId, Colours::black);
         zoomXButton3.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
         zoomXButton3.setToggleState(false, dontSendNotification);
@@ -69,7 +71,7 @@ public:
         zoomYButton1.setClickingTogglesState(true);
         zoomYButton1.setRadioGroupId(2222);
         zoomYButton1.setColour (TextButton::buttonColourId, Colours::lightgrey);
-        zoomYButton1.setColour (TextButton::buttonOnColourId, mainCyan);
+        zoomYButton1.setColour (TextButton::buttonOnColourId, sofaPanLookAndFeel.mainCyan);
         zoomYButton1.setColour (TextButton::textColourOffId, Colours::black);
         zoomYButton1.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
         zoomYButton1.setToggleState(true, dontSendNotification);
@@ -81,7 +83,7 @@ public:
         zoomYButton2.setClickingTogglesState(true);
         zoomYButton2.setRadioGroupId(2222);
         zoomYButton2.setColour (TextButton::buttonColourId, Colours::lightgrey);
-        zoomYButton2.setColour (TextButton::buttonOnColourId, mainCyan);
+        zoomYButton2.setColour (TextButton::buttonOnColourId, sofaPanLookAndFeel.mainCyan);
         zoomYButton2.setColour (TextButton::textColourOffId, Colours::black);
         zoomYButton2.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
         zoomYButton2.setToggleState(false, dontSendNotification);
@@ -93,7 +95,7 @@ public:
         zoomYButton3.setClickingTogglesState(true);
         zoomYButton3.setRadioGroupId(2222);
         zoomYButton3.setColour (TextButton::buttonColourId, Colours::lightgrey);
-        zoomYButton3.setColour (TextButton::buttonOnColourId, mainCyan);
+        zoomYButton3.setColour (TextButton::buttonOnColourId, sofaPanLookAndFeel.mainCyan);
         zoomYButton3.setColour (TextButton::textColourOffId, Colours::black);
         zoomYButton3.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
         zoomYButton3.setToggleState(false, dontSendNotification);
@@ -105,7 +107,7 @@ public:
         zoomYButton4.setClickingTogglesState(true);
         zoomYButton4.setRadioGroupId(2222);
         zoomYButton4.setColour (TextButton::buttonColourId, Colours::lightgrey);
-        zoomYButton4.setColour (TextButton::buttonOnColourId, mainCyan);
+        zoomYButton4.setColour (TextButton::buttonOnColourId, sofaPanLookAndFeel.mainCyan);
         zoomYButton4.setColour (TextButton::textColourOffId, Colours::black);
         zoomYButton4.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
         zoomYButton4.setToggleState(false, dontSendNotification);
@@ -117,7 +119,7 @@ public:
         zoomYButton5.setClickingTogglesState(true);
         zoomYButton5.setRadioGroupId(2222);
         zoomYButton5.setColour (TextButton::buttonColourId, Colours::lightgrey);
-        zoomYButton5.setColour (TextButton::buttonOnColourId, mainCyan);
+        zoomYButton5.setColour (TextButton::buttonOnColourId, sofaPanLookAndFeel.mainCyan);
         zoomYButton5.setColour (TextButton::textColourOffId, Colours::black);
         zoomYButton5.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
         zoomYButton5.setToggleState(false, dontSendNotification);
@@ -134,92 +136,47 @@ public:
 
     void paint (Graphics& g) override
     {
-        g.fillAll (Colours::white);   // clear the background
+        g.drawImage(backgroundImage, getLocalBounds().toFloat());
+        g.reduceClipRegion(plotBox.toNearestInt());
         
-        Rectangle<float> bounds = getLocalBounds().toFloat();
-        g.setColour (Colours::grey);
-        g.drawRect (bounds, 1);
-        g.setColour (Colours::black);
-        g.drawRect (plotBox, 1);
-        g.setFont(Font(9.f));
-        float xPos, yPos;
-        Line<float> gridLine;
-        float dashes[2] = {3.0, 3.0};
-        
-        gridLine = Line<float>(plotBox.getX(), plotBox.getCentreY(), plotBox.getRight(), plotBox.getCentreY());
-        g.drawDashedLine(gridLine, dashes, 2);
-        
-        
-        if(IR_Left.size() == 0 || IR_Right.size()==0){
-            return;
-        }
-        
-        g.drawFittedText("Zoom X:", zoomXLabelBox.toNearestInt(), Justification::centred, 1);
-        g.drawFittedText("Zoom Y:", zoomYLabelBox.toNearestInt(), Justification::centred, 1);
-//        Rectangle<float> buttonGroupArea = Rectangle<float>(plotBox.getX(),
-//                                                            plotBox.getBottom()+2,
-//                                                            plotBox.getWidth() / 3,
-//                                                            bounds.getBottom() - plotBox.getBottom() - 4);
-//        g.fillRect(buttonGroupArea);
-        
-        /* =================================================================================== */
-        
-        //Create Clipping Regions
-        
-        Rectangle<int> noDrawArea = Rectangle<int>(bounds.getX(), plotBox.getBottom(), bounds.getWidth(), bounds.getHeight()-plotBox.getBottom());
-        g.excludeClipRegion(noDrawArea);
-        
-        noDrawArea = bounds.withHeight(plotBox.getY()).toNearestInt();
-        g.excludeClipRegion(noDrawArea);
-        
-        noDrawArea = Rectangle<int>(bounds.getX(), bounds.getY(), plotBox.getX(), bounds.getHeight());
-        g.excludeClipRegion(noDrawArea);
-        
-        noDrawArea = Rectangle<int>(plotBox.getRight(), bounds.getY(), bounds.getWidth() - plotBox.getWidth(), bounds.getHeight());
-        g.excludeClipRegion(noDrawArea);
-        
-        
-        
-        
-        
-        Path waveform_l;
-        Path waveform_r;
-        
-        int boxWidth = plotBox.getWidth();
-        int numSamples = IR_Left_Zoom.size();
-        
-        float sampleStep = (float)numSamples / (float)boxWidth;
-        
-        
-        //Left Channel
-        const float oversampling = 1.5;
-        waveform_l.startNewSubPath(plotBox.getX(), plotBox.getY() + plotBox.getHeight()*0.5*(zoomYFactor * IR_Left_Zoom[0] + 1));
-        waveform_r.startNewSubPath(plotBox.getX(), plotBox.getY() + plotBox.getHeight()*0.5*(zoomYFactor * IR_Right_Zoom[0] + 1));
-        for(int i = 1; i < boxWidth * oversampling; i++){
-            int sample = (int)truncf(float(i)/oversampling * sampleStep);
-            if(sample >= numSamples)  sample = numSamples-1;
-            xPos = float(i)/oversampling + plotBox.getX();
-            yPos = plotBox.getY() + plotBox.getHeight() * 0.5 * (zoomYFactor * IR_Left_Zoom[sample] + 1);
-            waveform_l.lineTo(xPos, yPos);
-            yPos = plotBox.getY() + plotBox.getHeight() * 0.5 * (zoomYFactor * IR_Right_Zoom[sample] + 1);
-            waveform_r.lineTo(xPos, yPos);
+        if(repaintFlag){
+            repaintFlag = false;
+            if(IR_Left.size() == 0 || IR_Right.size()==0){
+                return;
+            }
+            waveform_l.clear();
+            waveform_r.clear();
+            
+            const int boxWidth = plotBox.getWidth();
+            const int numSamples = IR_Left_Zoom.size();
+            const float sampleStep = (float)numSamples / (float)boxWidth;
+            float xPos, yPos;
+            const float oversampling = 1.5;
+            waveform_l.startNewSubPath(plotBox.getX(), plotBox.getY() + plotBox.getHeight()*0.5*(zoomYFactor * IR_Left_Zoom[0] + 1));
+            waveform_r.startNewSubPath(plotBox.getX(), plotBox.getY() + plotBox.getHeight()*0.5*(zoomYFactor * IR_Right_Zoom[0] + 1));
+            for(int i = 1; i < boxWidth * oversampling; i++){
+                int sample = (int)truncf(float(i)/oversampling * sampleStep);
+                if(sample >= numSamples)  sample = numSamples-1;
+                xPos = float(i)/oversampling + plotBox.getX();
+                yPos = plotBox.getY() + plotBox.getHeight() * 0.5 * (1 - zoomYFactor * IR_Left_Zoom[sample]);
+                waveform_l.lineTo(xPos, yPos);
+                yPos = plotBox.getY() + plotBox.getHeight() * 0.5 * (1 - zoomYFactor * IR_Right_Zoom[sample]);
+                waveform_r.lineTo(xPos, yPos);
 
+            }
         }
         //Left Channel
         g.setColour(Colour(0xffaaaa00));
         g.strokePath(waveform_l.createPathWithRoundedCorners(1.0), PathStrokeType(1.5));
-        //g.strokePath(waveform_l, PathStrokeType(1.5));
+        //Right Channel
         g.setColour(Colour(0xff00aaaa));
         g.strokePath(waveform_r.createPathWithRoundedCorners(1.0), PathStrokeType(1.5));
-//        g.setColour(Colour(0x33666666));
-//        g.fillPath(spectrogram_l);
-        
-        
 
     }
     
     void resized() override
     {
+        printf("HRIR Resized");
         Rectangle<float> bounds = getLocalBounds().toFloat();
         plotBox = bounds.withTrimmedBottom(20).withTrimmedLeft(20).withTrimmedTop(5).withTrimmedRight(5);
         
@@ -253,6 +210,25 @@ public:
         zoomYButton5.setBounds(button);
         
         
+        //Create Background Image
+        backgroundImage = Image (Image::RGB, bounds.getWidth(), bounds.getHeight(), true);
+        Graphics g (backgroundImage);
+        g.fillAll (Colours::white);   // clear the background
+        g.setColour (Colours::grey);
+        g.drawRect (bounds, 1);
+        g.setColour (Colours::black);
+        g.drawRect (plotBox, 1);
+        g.setFont(Font(9.f));
+        Line<float> gridLine;
+        float dashes[2] = {3.0, 3.0};
+        gridLine = Line<float>(plotBox.getX(), plotBox.getCentreY(), plotBox.getRight(), plotBox.getCentreY());
+        g.drawDashedLine(gridLine, dashes, 2);
+        g.drawFittedText("Zoom X:", zoomXLabelBox.toNearestInt(), Justification::centred, 1);
+        g.drawFittedText("Zoom Y:", zoomYLabelBox.toNearestInt(), Justification::centred, 1);
+        
+        repaintFlag = true;
+        repaint();
+
         
         
 
@@ -261,24 +237,36 @@ public:
     /** Size is the length of one IR. The float vector hrir should contain the left AND the right IR, making the vector of length size*2 */
     void drawHRIR(float* _HRIR, int size, int _sampleRate){
         
+        
+
+        
         sampleRate = _sampleRate;
+        IR_Left.clear();
+        IR_Right.clear();
         IR_Left.resize(size);
         IR_Right.resize(size);
+
+        for(int i = 0; i< size; i++){
+            IR_Left[i] = 0.0;
+            IR_Right[i] = 0.0;
+        }
+
         for(int i = 0; i< size; i++){
             IR_Left[i] = _HRIR[i];
             IR_Right[i] = _HRIR[i + size];
         }
         
-        //Remove zero-tail
-        for(int i = 1; i< size; i++){
-            if(IR_Left[size - i] == 0.0 && IR_Right[size - i] == 0.0){
-                IR_Left.pop_back();
-                IR_Right.pop_back();
-            }else{
-                break;
+        //Remove zero-tail of long responses (minimum 128 samples remaining)
+        if(size > 128){
+            for(int i = 1; i < size - 128; i++){
+                if(IR_Left[size - i] == 0.0 && IR_Right[size - i] == 0.0){
+                    IR_Left.pop_back();
+                    IR_Right.pop_back();
+                }else{
+                    break;
+                }
             }
         }
-        
         IR_Left_Zoom = IR_Left;
         IR_Right_Zoom = IR_Right;
         
@@ -289,10 +277,17 @@ public:
             
         }
         
+        repaintFlag = true;
+        repaint();
+        
+        
         
     }
     
     void setZoomX(float _zoomFactor){
+        
+        printf("\n setZoomX\n");
+
         
         if(_zoomFactor != zoomXFactor){
             int newSize = IR_Left.size()/_zoomFactor;
@@ -307,16 +302,15 @@ public:
             
             zoomXFactor = _zoomFactor;
             
+            repaintFlag = true;
             repaint();
         }
     }
     
     void setZoomY(float _zoomFactor){
-        
         if(_zoomFactor != zoomYFactor){
-
             zoomYFactor = _zoomFactor;
-            
+            repaintFlag = true;
             repaint();
         }
     }
@@ -355,13 +349,18 @@ private:
     TextButton zoomYButton3;
     TextButton zoomYButton4;
     TextButton zoomYButton5;
-                                                        
+    
     Rectangle<float> plotBox;
     Rectangle<float> zoomXLabelBox;
     Rectangle<float> zoomYLabelBox;
     
-    const Colour mainCyan = Colour (0xff80cbc4);
+    Image backgroundImage;
+    Path waveform_l, waveform_r;
     
+    
+    SofaPanLookAndFeel sofaPanLookAndFeel;
     LookAndFeel_V4 defaultLookAndFeel;
+    
+    bool repaintFlag = false;
     
 };

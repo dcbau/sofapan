@@ -70,7 +70,11 @@ void SOFAData::initSofaData(const char* filePath, int sampleRate)
         }
     }
     
-    float normalisation = 1.0/maxValue;
+    float normalisation = 1.0;
+    if(maxValue > 100){
+        normalisation = 1.0/maxValue;
+
+    }
     
     for(int i = 0; i < sofaMetadata.numMeasurements; i++){
         for(int j = 0; j < lengthOfHRIR * 2; j++){
@@ -376,6 +380,8 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
         l += 3;
     };
     
+    sofaMetadata.hasMultipleDistances = sofaMetadata.maxDistance != sofaMetadata.minDistance ? true : false;
+    
     free(IR_Left);
     free(IR_Right);
     free(IR_Left_Interpolated);
@@ -477,10 +483,10 @@ void SOFAData::errorHandling(int status) {
 //
 void SOFAData::createPassThrough_FIR(int _sampleRate){
 
-    
+    const int passThroughLength = 512;
     sofaMetadata.sampleRate = _sampleRate;
     sofaMetadata.numMeasurements = 1;
-    sofaMetadata.numSamples = 256;
+    sofaMetadata.numSamples = passThroughLength;
     sofaMetadata.dataType = String ("FIR");
     sofaMetadata.SOFAConventions = String ("Nope");
     sofaMetadata.listenerShortName = String ("Nope");
@@ -488,23 +494,80 @@ void SOFAData::createPassThrough_FIR(int _sampleRate){
     sofaMetadata.minElevation =0.0;
     sofaMetadata.maxElevation =0.0;
 
-    lengthOfHRIR = 256;
+    lengthOfHRIR = passThroughLength;
     lengthOfFFT = 2 * lengthOfHRIR;
     lengthOfHRTF = (lengthOfFFT * 0.5) + 1;
  
     loadedHRIRs = (Single_HRIR_Measurement**)malloc(1 * sizeof(Single_HRIR_Measurement));
     Single_HRIR_Measurement *measurement_object = new Single_HRIR_Measurement(lengthOfHRIR, lengthOfHRTF);
 
-    float *IR_Left = (float *)malloc(256 * sizeof(float));
-    float *IR_Right = (float *)malloc(256 * sizeof(float));
+    float *IR_Left = (float *)malloc(passThroughLength * sizeof(float));
+    float *IR_Right = (float *)malloc(passThroughLength * sizeof(float));
     
     IR_Left[0]  = 1.0;
     IR_Right[0] = 1.0;
-    for (int j = 1; j < 256; j++) {
+    for (int j = 1; j < passThroughLength; j++) {
         IR_Left[j]  = 0.0;
         IR_Right[j] = 0.0;
-    };
+    }
     
+    
+    
+    float z1 = 0.0;
+    float z2 = 0.0;
+    //LP, 44.1kHz, 200Hz, 0.707Q
+    const float a0 = 0.00019897081257375833;
+    const float a1 = 0.00039794162514751667;
+    const float a2 = 0.00019897081257375833;
+    const float b1 = -1.9597011886046918;
+    const float b2 = 0.960497071854987;
+    
+    float u;
+    for (int j = 0; j < passThroughLength; j++) {
+        u = IR_Left[j] - b1*z1 - b2*z2;
+        IR_Left[j] = a0*u + a1*z1 + a2*z2;
+        z2 = z1;
+        z1 = u;
+    }
+
+    z1 = 0.0;
+    z2 = 0.0;
+    for (int j = 0; j < passThroughLength; j++) {
+        u = IR_Left[j] - b1*z1 - b2*z2;
+        IR_Left[j] = a0*u + a1*z1 + a2*z2;
+        z2 = z1;
+        z1 = u;
+    }
+    
+    //HP, 44.1kHz, 200Hz, 0.707Q
+    const float a0h = 0.9800495651149197;
+    const float a1h = -1.9600991302298394;
+    const float a2h = 0.9800495651149197;
+    const float b1h = -1.9597011886046918;
+    const float b2h = 0.960497071854987;
+    
+    z1 = 0.0;
+    z2 = 0.0;
+    for (int j = 0; j < passThroughLength; j++) {
+        u = IR_Right[j] - b1h*z1 - b2h*z2;
+        IR_Right[j] = a0h*u + a1h*z1 + a2h*z2;
+        z2 = z1;
+        z1 = u;
+    }
+    z1 = 0.0;
+    z2 = 0.0;
+    for (int j = 0; j < passThroughLength; j++) {
+        u = IR_Right[j] - b1h*z1 - b2h*z2;
+        IR_Right[j] = a0h*u + a1h*z1 + a2h*z2;
+        z2 = z1;
+        z1 = u;
+    }
+    
+    
+    for(int i = 0; i < lengthOfHRIR; i++){
+        measurement_object->getHRIR()[i] = IR_Left[i];
+        measurement_object->getHRIR()[i+lengthOfHRIR] = IR_Right[i];
+    }
 
     measurement_object->setValues(0.0, 0.0 , 0.0);
     measurement_object->index = 0;
@@ -534,4 +597,3 @@ String SOFAData::getSOFAGlobalAttribute(const char* attribute_ID, int ncid){
     
     return String(att);
 }
-

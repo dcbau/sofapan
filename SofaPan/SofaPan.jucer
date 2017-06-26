@@ -21,9 +21,6 @@
             file="Source/PlotHRTFComponent.h" xcodeResource="0"/>
       <FILE id="CkmPw5" name="SofaMetadataView.h" compile="1" resource="0"
             file="Source/SofaMetadataView.h"/>
-      <FILE id="dQmM3E" name="FilterEngineB.cpp" compile="1" resource="0"
-            file="Source/FilterEngineB.cpp"/>
-      <FILE id="bCi4ua" name="FilterEngineB.h" compile="0" resource="0" file="Source/FilterEngineB.h"/>
       <FILE id="WzrW7l" name="FilterEngine.cpp" compile="1" resource="0"
             file="Source/FilterEngine.cpp"/>
       <FILE id="WitAML" name="FilterEngine.h" compile="0" resource="0" file="Source/FilterEngine.h"/>

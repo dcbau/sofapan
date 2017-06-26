@@ -144,7 +144,6 @@
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source\FilterEngineB.cpp"/>
     <ClCompile Include="..\..\Source\FilterEngine.cpp"/>
     <ClCompile Include="..\..\Source\SOFAData.cpp"/>
     <ClCompile Include="..\..\Source\PluginProcessor.cpp"/>

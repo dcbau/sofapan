@@ -13,10 +13,10 @@
 
 #include "SOFAData.h"
 #include "fftw3.h"
+#include "PluginProcessor.h"
 
 #define RE 0
 #define IM 1
-
 
 class FilterEngine{
 
@@ -24,7 +24,7 @@ public:
     FilterEngine(SOFAData& sD);
     ~FilterEngine();
     
-    void process(const float* inBuffer, float* outBuffer_L, float* outBuffer_R, int numSamples, AudioParameterFloat* azimuthParam, AudioParameterFloat* elevationParam, AudioParameterFloat* distanceParam);
+    void process(const float* inBuffer, float* outBuffer_L, float* outBuffer_R, int numSamples, parameterStruct params);
     void prepareToPlay();
     int getComplexLength();
     
@@ -54,11 +54,12 @@ private:
     
     int fifoIndex;
     
-    fftwf_complex* previousHRTF;
+    fftwf_complex* previousHRTF_l;
+    fftwf_complex* previousHRTF_r;
     float previousAzimuth;
     float previousElevation;
     
-    
+    float calculateNFAngleOffset(float angle, float r, float earPosition);
     
     
 };

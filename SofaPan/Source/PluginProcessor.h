@@ -15,10 +15,7 @@
 
 #include "fftw3.h"
 #include "SOFAData.h"
-#include "FilterEngine.h"
-#include "FilterEngineB.h"
 #include "SofaPathSharedUpdater.h"
-
 
 //Interface für SOFA File:
 extern "C" {
@@ -30,13 +27,20 @@ extern "C" {
 #elif _WIN32
 #define SOFA_DEFAULT_PATH "C:\\Program Files (x86)\\Steinberg\\VstPlugins\\SOFAFiles\\mit_kemar_normal_pinna.sofa"
 #elif __APPLE__
-#define SOFA_DEFAULT_PATH "/Library/Audio/Plug-Ins/VST/SOFAFiles/mit_kemar_normal_pinna.sofa"
+#define SOFA_DEFAULT_PATH "/Users/David/Documents/FH/Master-Thesis/SOFA\ Files/FHKoeln/Nearfield\ 2016/NFHRIR_L2702_SOFA/HRIR_L2702_NF100.sofa"
 #endif
 
 
+typedef struct{
+    AudioParameterFloat* azimuthParam;
+    AudioParameterFloat* elevationParam;
+    AudioParameterFloat* distanceParam;
+    AudioParameterFloat* bypassParam;
+    AudioParameterBool* testSwitchParam;
+    AudioParameterBool* distanceSimulationParam;
+}parameterStruct;
 
-
-
+class FilterEngine;
 
 class SofaPanAudioProcessor  : public AudioProcessor, public InterprocessConnection
 {
@@ -79,13 +83,6 @@ public:
     
     void setSOFAFilePath(String sofaString);
     
-    //Parameters
-    AudioParameterFloat* azimuthParam;
-    AudioParameterFloat* elevationParam;
-    AudioParameterFloat* distanceParam;
-    AudioParameterFloat* bypassParam;
-    AudioParameterBool* testSwitchParam;
-    
     String pathToSOFAFile = String(SOFA_DEFAULT_PATH);
     sofaMetadataStruct metadata_sofafile;
     void initData(String sofaFile);
@@ -100,6 +97,8 @@ public:
 private:
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SofaPanAudioProcessor)
+
+    parameterStruct params;
     
     //Zähler für periodische print-ausgaben
     int counter;
@@ -108,7 +107,6 @@ private:
     
     SOFAData* HRTFs;
     FilterEngine* Filter;
-    FilterEngineB* FilterB;
     
     SofaPathSharedUpdater* updater;
     
@@ -117,7 +115,6 @@ private:
     void messageReceived (const MemoryBlock &message) override;
     
     bool usingGlobalSofaFile = true;
-    
 };
 
 

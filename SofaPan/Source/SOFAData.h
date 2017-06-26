@@ -42,6 +42,7 @@ typedef struct{
     float maxElevation;
     float minDistance;
     float maxDistance;
+    bool hasMultipleDistances;
     float receiverPosition[2];
     
     int numberOfGlobalAttributes;
