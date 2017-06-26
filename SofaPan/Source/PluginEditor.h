@@ -14,6 +14,11 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "PluginProcessor.h"
 
+#include "SofaMetadataView.h"
+#include "PlotHRTFComponent.h"
+#include "PlotHRIRComponent.h"
+
+
 #include "sofaPanLookAndFeel.h"
 #include "azimuthSliderLookAndFeel.h"
 #include "elevationSliderLookAndFeel.h"
@@ -21,9 +26,8 @@
 #include "HeadTopHexData.h"
 #include "HeadSideHexData.h"
 #include "SpeakerHexData.h"
-#include "SofaMetadataView.h"
-#include "PlotHRTFComponent.h"
-#include "PlotHRIRComponent.h"
+
+
 
 //==============================================================================
 /**
@@ -41,6 +45,9 @@ public:
     void timerCallback() override;
     void sliderValueChanged(Slider* slider) override;
     void buttonClicked (Button* button) override;
+    
+    void mouseEnter (const MouseEvent &e) override;
+    void mouseExit (const MouseEvent &e) override;
 
 private:
     // This reference is provided as a quick way for your editor to
@@ -54,26 +61,18 @@ private:
     TextButton showSOFAMetadataButton;
     ToggleButton bypassButton;
     ToggleButton testSwitchButton;
-    const String measurementsID =       String("Measurements:         ");
-    const String samplesID =            String("Samples:              ");
-    const String sofaConventionID =     String("SOFA Convention:      ");
-    const String dataTypeID =           String("Data Type:            ");
-    const String listenerShortNameID =  String("Listener Short Name:  ");
-    const String elevationRangID =      String("Elevation Range:      ");
-    const String distanceRangeID =      String("Distance Range:      ");
-    const String sofaMetadataID = String(listenerShortNameID + "\n" +
-                                         measurementsID + "\n" +
-                                         samplesID + "\n" +
-                                         sofaConventionID + "\n" +
-                                         dataTypeID + "\n" +
-                                         elevationRangID + "\n" +
-                                         distanceRangeID);
+    ToggleButton useGlobalSofaFileButton;
+    ToggleButton useDistanceSimulationButton;
+    ToggleButton showTooltipsButton;
+    
+    const String sofaMetadataID = String("Listener Short Name: \nMeasurements: \nSamples per IR: \nSOFA Convention: \nData Type: \nElevation: \nDistance:");
     
     String sofaMetadataValue;
     
     SofaPanLookAndFeel sofaPanLookAndFeel;
     ElevationSliderLookAndFeel elSliderLookAndFeel;
     AzimuthSliderLookAndFeel azSliderLookAndFeel;
+    LookAndFeel_V4 juceDefaultLookAndFeel;
     
     AudioProcessorParameter* getParameter (const String& paramId);
     float getParameterValue (const String& paramId);
@@ -82,9 +81,7 @@ private:
     void sliderDragStarted(Slider* slider) override;
     void sliderDragEnded(Slider* slider) override;
 
-    Image speakerImage;
-    Image headTopImage;
-    Image headSideImage;
+    
     
     SofaMetadataView metadataView;
     PlotHRTFComponent plotHRTFView;
@@ -96,6 +93,19 @@ private:
     float lastDistanceValue;
     
     const float deg2rad = 2.0 * M_PI / 360.0;
+    
+    const Image logoHSD = ImageFileFormat::loadFrom(hsd_logo, hsd_logo_size);
+    const Image headTopImage = ImageCache::getFromMemory(headTopPicto, headTopPicto_Size);
+    const Image speakerImage = ImageCache::getFromMemory(speaker, speaker_Size);
+    const Image headSideImage = ImageCache::getFromMemory(headSidePicto, headSidePicto_Size);
+    
+    Image backgroundImage;
+    
+    const float simulationDistanceMin = 0.2;
+    const float simulationDistanceMax = 1.0;
+    
+    ScopedPointer<BubbleMessageComponent> popUpInfo;
+    
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SofaPanAudioProcessorEditor)
 };

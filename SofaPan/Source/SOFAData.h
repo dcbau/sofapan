@@ -26,7 +26,10 @@ extern "C" {
 #define ERR_OPENFILE    4
 #define ERR_NOTSUP      5
 
+
+
 typedef struct{
+
     int sampleRate;
     int numMeasurements;
     int numMeasurements0ev;
@@ -39,6 +42,7 @@ typedef struct{
     float maxElevation;
     float minDistance;
     float maxDistance;
+    bool hasMultipleDistances;
     float receiverPosition[2];
     
     int numberOfGlobalAttributes;
@@ -88,8 +92,10 @@ private:
 
 class SOFAData{
 public:
-    SOFAData(const char* filePath, int sampleRate);
+    SOFAData();
     ~SOFAData();
+    
+    void initSofaData(const char* filePath, int sampleRate);
     
     /** Will directly return the length of the new resampled HRTF */
     int setSampleRate(int newSampleRate);
@@ -106,7 +112,6 @@ public:
     int getLengthOfHRIR();
     
 private:
-    
     /** Number of Samples in the samplerate-converted HRIRs */
     int lengthOfHRIR;
     /** Has to be double the size of HRIR (due to linear convolution) */
@@ -129,6 +134,8 @@ private:
     
     String getSOFAGlobalAttribute(const char* attribute_ID, int ncid);
     
+    char* currentFilePath;
+    int currentSampleRate;
     
 };
 

@@ -16,6 +16,7 @@
 SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor& p)
     : AudioProcessorEditor (&p), processor (p)
 {
+    
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize (400, 400);
@@ -26,6 +27,7 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     setSize (900, 500);
     
     panner_az.setSliderStyle(Slider::Rotary);
+    panner_az.setComponentID("1");
     panner_az.setLookAndFeel(&azSliderLookAndFeel);
     panner_az.setRange(0.0, 359.0, 1.0);
     panner_az.setTextValueSuffix(" deg");
@@ -38,6 +40,7 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
 
     
     panner_el.setSliderStyle(Slider::Rotary);
+    panner_el.setComponentID("2");
     panner_el.setLookAndFeel(&elSliderLookAndFeel);
     panner_el.setRange(-90.0, 90.0, 1.0);
     panner_el.setTextValueSuffix(" deg");
@@ -57,6 +60,7 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     addAndMakeVisible(&panner_dist);
     
     loadSOFAButton.setButtonText ("Load HRTF");
+    loadSOFAButton.setComponentID("3");
     loadSOFAButton.addListener(this);
     addAndMakeVisible(&loadSOFAButton);
     
@@ -69,10 +73,20 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     testSwitchButton.setColour(ToggleButton::textColourId, Colours::white);
     testSwitchButton.addListener(this);
     addAndMakeVisible(&testSwitchButton);
+    
+    useDistanceSimulationButton.setButtonText("Nearfield Simulation");
+    useDistanceSimulationButton.setComponentID("nfSimButton");
+    useDistanceSimulationButton.setColour(ToggleButton::textColourId, Colours::white);
+    useDistanceSimulationButton.addListener(this);
+    useDistanceSimulationButton.addMouseListener(this, true);
+    addAndMakeVisible(&useDistanceSimulationButton);
  
-    headTopImage = ImageCache::getFromMemory(headTopPicto, headTopPicto_Size);
-    headSideImage = ImageCache::getFromMemory(headSidePicto, headSidePicto_Size);
-    speakerImage = ImageCache::getFromMemory(speaker, speaker_Size);
+    useGlobalSofaFileButton.setButtonText("Global SOFA File");
+    useGlobalSofaFileButton.setComponentID("globalSofaButton");
+    useGlobalSofaFileButton.setColour(ToggleButton::textColourId, Colours::white);
+    useGlobalSofaFileButton.addListener(this);
+    useGlobalSofaFileButton.addMouseListener(this, true);
+    addAndMakeVisible(&useGlobalSofaFileButton);
     
     addAndMakeVisible(&plotHRTFView);
     addAndMakeVisible(&plotHRIRView);
@@ -83,111 +97,141 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     addAndMakeVisible(&metadataView);
     metadataView.setVisible(false);
     
+    showTooltipsButton.setButtonText("Show Mouseover Tooltips");
+    addAndMakeVisible(&showTooltipsButton);
+    
     counter = 0;
     startTimer(50);
     lastAzimuthValue = 0.0;
     lastElevationValue = 0.0;
     lastDistanceValue = 0.0;
 
+    
+    //When the Editor is reloaded, the sofaMetadata is automtically omitted and has to be reloaded
+    processor.updateSofaMetadataFlag = true;
+    
+    popUpInfo = new BubbleMessageComponent();
+    popUpInfo->setAlwaysOnTop (true);
+    popUpInfo->addToDesktop(0);
+    
+    
+ 
 }
 
 SofaPanAudioProcessorEditor::~SofaPanAudioProcessorEditor()
 {
+    
 }
 
 
 void SofaPanAudioProcessorEditor::paint (Graphics& g)
 {
-    g.fillAll (Colours::black);
     
-    g.setFont (15.0f);
-    g.setColour(Colours::white);
-    g.setOpacity(1.0f);
 
-    const Image logo = ImageFileFormat::loadFrom(hsd_logo, hsd_logo_size);
-    g.drawImageAt(logo, 0, getHeight()-40, true);
+    g.drawImage(backgroundImage, getLocalBounds().toFloat());
     
-    // images for azimuth slider
-    Rectangle<int> rect = panner_az.getBounds();
-    int newWidth = rect.getWidth() - panner_az.getTextBoxHeight(); //always quadratic
-    rect.setSize(newWidth, newWidth);
-    const int pngPixelAdjust = 2;
-    
-    // head image (top view)
-    g.drawImage(headTopImage,
-                rect.getCentreX()-rect.getWidth()/4 + 10,
-                rect.getCentreY()-rect.getHeight()/4 + 10 - pngPixelAdjust,
-                rect.getWidth()/2 - 20,
-                rect.getWidth()/2 - 20,
-                0, 0, 200, 200);
-
-    // rotating speaker image
-    const int speakerSize = 40;
-    const int spaceBetweenSpeakerAndSlider = 6;
-    float sliderPosition = (float)panner_az.getValue() / 360.0;
-    AffineTransform t = AffineTransform().translated(rect.getCentreX()- speakerSize/2 ,
-                 rect.getY() - speakerSize - spaceBetweenSpeakerAndSlider). rotated((float)(M_PI*2.0*sliderPosition), (float)rect.getCentreX(), (float)rect.getCentreY());
-    g.drawImageTransformed(speakerImage.rescaled(speakerSize, speakerSize),
-                           t,
-                           false);
-
-    // images for elevation slider
-    rect = panner_el.getBounds();
-    newWidth = rect.getWidth() - panner_el.getTextBoxHeight();
-    rect.setSize(newWidth, newWidth);
-    
-    // head image (side)
-    g.drawImage(headSideImage,
-                rect.getCentreX()-rect.getWidth()/4 + 10,
-                rect.getCentreY()-rect.getHeight()/4 + 10,
-                rect.getWidth()/2 - 20,
-                rect.getWidth()/2 - 20,
-                0, 0, 200, 200);
     
     // rotating speaker image
-    sliderPosition = panner_el.getValue() / 360 + 0.75;
-    t = AffineTransform().translated(rect.getCentreX()- speakerSize/2 ,
-                                    rect.getY() - speakerSize - spaceBetweenSpeakerAndSlider). rotated((float)(M_PI*2.0*sliderPosition), (float)rect.getCentreX(), (float)rect.getCentreY());
-    g.drawImageTransformed(speakerImage.rescaled(speakerSize, speakerSize),
-                           t,
-                           false);
+//    const int speakerSize = 40;
+//    const int spaceBetweenSpeakerAndSlider = 6;
+//    float sliderPosition = (float)panner_az.getValue() / 360.0;
+//    AffineTransform t = AffineTransform().translated(rect.getCentreX()- speakerSize/2 ,
+//                 rect.getY() - speakerSize - spaceBetweenSpeakerAndSlider). rotated((float)(M_PI*2.0*sliderPosition), (float)rect.getCentreX(), (float)rect.getCentreY());
+//    g.drawImageTransformed(speakerImage.rescaled(speakerSize, speakerSize),
+//                           t,
+//                           false);
+
     
-    // labels for panning sliders
-    g.setFont(Font(20.f));
-    g.drawText("Azimuth", panner_az.getBounds().withHeight(40).translated(0, -40), juce::Justification::topLeft);
-    g.drawText("Elevation", panner_el.getBounds().withHeight(40).translated(0, -40), juce::Justification::topLeft);
-    g.drawText("Distance", panner_dist.getBounds().withHeight(40).translated(0, -40), juce::Justification::topLeft);
+    
+    // rotating speaker image
+//    sliderPosition = panner_el.getValue() / 360 + 0.75;
+//    t = AffineTransform().translated(rect.getCentreX()- speakerSize/2 ,
+//                                    rect.getY() - speakerSize - spaceBetweenSpeakerAndSlider). rotated((float)(M_PI*2.0*sliderPosition), (float)rect.getCentreX(), (float)rect.getCentreY());
+//    g.drawImageTransformed(speakerImage.rescaled(speakerSize, speakerSize),
+//                           t,
+//                           false);
     
     // sofa metadata short info
+    g.setColour(Colours::white);
     g.setFont(Font(11));
     g.drawFittedText(sofaMetadataID, 10, 130, 100, 100, Justification::topLeft, 3);
     g.drawFittedText(sofaMetadataValue, 110, 130, 300, 100, Justification::topLeft, 3);
+    
 }
 
 void SofaPanAudioProcessorEditor::resized()
 {
     const int panner_size = 200;
     panner_az.setBounds(250, 300.0 * 0.50 - panner_size/2, panner_size, panner_size);
-    panner_el.setBounds(550, 300.0 * 0.50 - panner_size/2, panner_size, panner_size);
+    panner_el.setBounds(500, 300.0 * 0.50 - panner_size/2, panner_size, panner_size);
     panner_dist.setBounds(750, 300.0 * 0.50 - panner_size/2, 100, panner_size);
     
     loadSOFAButton.setBounds(-5., 10., 150., 30.);
     showSOFAMetadataButton.setBounds(-8, 230, 200, 30);
+    showTooltipsButton.setBounds(100, getLocalBounds().getBottom() - 30, 100, 30);
     
     metadataView.setBounds(getLocalBounds().reduced(20));
     
     bypassButton.setBounds(10., 50., 150., 30.);
     testSwitchButton.setBounds(10., 80., 150., 30.);
+    useGlobalSofaFileButton.setBounds(135, 10., 80, 30);
+    useDistanceSimulationButton.setBounds(panner_dist.getX(), panner_dist.getBottom(), panner_dist.getWidth(), 30);
+
     
     plotHRTFView.setBounds(25.0, 300.0, 350.0, 130.0);
     plotHRIRView.setBounds(425.0, 300.0, 350.0, 130.0);
+    
+    
+    //Create Background Image
+    backgroundImage = Image(Image::RGB, getLocalBounds().getWidth(), getLocalBounds().getHeight(), true);
+    Graphics g(backgroundImage);
+    
+    g.fillAll (Colours::black);
+    g.setFont (15.0f);
+    g.setColour(Colours::white);
+    g.setOpacity(1.0f);
+    g.drawImageAt(logoHSD, 0, getHeight()-40, true);
+    
+    // azimuth slider
+    Rectangle<int> rect = panner_az.getBounds();
+    int newWidth = rect.getWidth() - panner_az.getTextBoxHeight(); //always quadratic
+    rect.setSize(newWidth, newWidth);
+    const int pngPixelAdjust = 2;
+    g.drawImage(headTopImage,
+                rect.getCentreX()-rect.getWidth()/4 + 10 + pngPixelAdjust,
+                rect.getCentreY()-rect.getHeight()/4 + 10,// - pngPixelAdjust,
+                rect.getWidth()/2 - 20,
+                rect.getWidth()/2 - 20,
+                0, 0, 200, 200);
+
+    // elevation slider
+    rect = panner_el.getBounds();
+    newWidth = rect.getWidth() - panner_el.getTextBoxHeight();
+    rect.setSize(newWidth, newWidth);
+    g.drawImage(headSideImage,
+                rect.getCentreX()-rect.getWidth()/4 + 10,
+                rect.getCentreY()-rect.getHeight()/4 + 10,
+                rect.getWidth()/2 - 20,
+                rect.getWidth()/2 - 20,
+                0, 0, 200, 200);
+
+    // labels for panning sliders
+    g.setFont(Font(20.f));
+    g.drawText("Azimuth", panner_az.getBounds().withHeight(40).translated(0, -40), juce::Justification::topLeft);
+    g.drawText("Elevation", panner_el.getBounds().withHeight(40).translated(0, -40), juce::Justification::topLeft);
+    g.drawText("Distance", panner_dist.getBounds().withHeight(40).translated(0, -40), juce::Justification::topLeft);
+    
 }
 
 // This timer periodically checks whether any of the filter's parameters have changed...
 void SofaPanAudioProcessorEditor::timerCallback() {
-    
+
     bypassButton.setToggleState((bool)getParameterValue("bypass"), NotificationType::dontSendNotification);
     testSwitchButton.setToggleState((bool)getParameterValue("test"), NotificationType::dontSendNotification);
+    useGlobalSofaFileButton.setToggleState(processor.getUsingGlobalSofaFile(), NotificationType::dontSendNotification);
+
+    bool distanceSimActive = (bool)getParameterValue("dist_sim");
+    useDistanceSimulationButton.setToggleState(distanceSimActive, NotificationType::dontSendNotification);
     
     // update panning sliders if needed
     float azimuthValue = getParameterValue("azimuth") * 360.;
@@ -204,6 +248,7 @@ void SofaPanAudioProcessorEditor::timerCallback() {
     
     // update hrtf/hrir plots
     if(lastElevationValue!=elevationValue || lastAzimuthValue!=azimuthValue || lastDistanceValue!=distanceValue || processor.updateSofaMetadataFlag){
+        printf("\n\n 1. Trigger Repaint! \n");
         fftwf_complex* hrtf = processor.getCurrentHRTF();
         float* hrir = processor.getCurrentHRIR();
         int complexLength = processor.getComplexLength();
@@ -219,7 +264,6 @@ void SofaPanAudioProcessorEditor::timerCallback() {
     
     // update metadata when new sofa file is loaded
     if(processor.updateSofaMetadataFlag){
-        
         metadataView.setMetadata(processor.metadata_sofafile.globalAttributeNames, processor.metadata_sofafile.globalAttributeValues);
         
         String numMeasurement_Note = static_cast <String> (processor.metadata_sofafile.numMeasurements);
@@ -238,22 +282,34 @@ void SofaPanAudioProcessorEditor::timerCallback() {
             panner_el.setRange(eleMin, eleMax);
             panner_el.setRotaryParameters((270. + eleMin) * deg2rad , (270. + eleMax) * deg2rad, true);
         }else{
+            panner_el.setRotaryParameters((270. + eleMin) * deg2rad , (270. + eleMax) * deg2rad, true);
             elevationRange_Note = "none";
             panner_el.setValue(0.0);
             panner_el.setEnabled(false);
         }
         float distMin = processor.metadata_sofafile.minDistance;
         float distMax = processor.metadata_sofafile.maxDistance;
+        
+        //distance-simulation overrides measured distance data
+        if(distanceSimActive){
+            distMin = simulationDistanceMin;
+            distMax = simulationDistanceMax;
+        }
+        
         String distanceRange_Note;
-        if(distMax - distMin != 0.0){
-            String distanceMin = static_cast<String>(processor.metadata_sofafile.minDistance);
-            String distanceMax = static_cast<String>(processor.metadata_sofafile.maxDistance);
-            distanceRange_Note = (distanceMin + "m to " + distanceMax + "m" );
+        String distanceMin = String(distMin);
+        String distanceMax = String(distMax);
+        if(distMin != distMax){
+            if(distanceSimActive)
+                distanceRange_Note = (distanceMin + "m to " + distanceMax + "m (sim)" );
+            else
+                distanceRange_Note = (distanceMin + "m to " + distanceMax + "m" );
             panner_dist.setEnabled(true);
             panner_dist.setRange(distMin, distMax);
         }else{
-            distanceRange_Note = "none";
-            panner_dist.setValue(0.0);
+            distanceRange_Note = (distanceMin + "m ");
+            panner_dist.setValue(distMax);
+            panner_dist.setRange(distMin, distMax);
             panner_dist.setEnabled(false);
         }
         
@@ -270,7 +326,11 @@ void SofaPanAudioProcessorEditor::timerCallback() {
         repaint();
     }
     
-    
+    // if the nearfield simulation is active, possible distance information of the loaded sofafile will be omitted and the simulation will become active. The simulation will use one single distance (most likely 1m) of the file for its simulation.
+    if(distanceSimActive){
+        panner_dist.setEnabled(true);
+        panner_dist.setRange(simulationDistanceMin, simulationDistanceMax);
+    }
     
 }
 
@@ -364,7 +424,8 @@ void SofaPanAudioProcessorEditor::buttonClicked(Button *button)
         if (fc.browseForFileToOpen()){
             String chosen = fc.getResult().getFullPathName();
             processor.setSOFAFilePath(chosen);
-            processor.initData(chosen);
+            
+
         }
     }
     
@@ -376,6 +437,41 @@ void SofaPanAudioProcessorEditor::buttonClicked(Button *button)
     
     if(button == &showSOFAMetadataButton)
         metadataView.setVisible(true);
+    
+    if(button == &useGlobalSofaFileButton)
+        processor.setUsingGlobalSofaFile(useGlobalSofaFileButton.getToggleState());
+    
+    if(button == &useDistanceSimulationButton){
+        setParameterValue("dist_sim", useDistanceSimulationButton.getToggleState());
+        processor.updateSofaMetadataFlag = true;
+    }
+}
+
+void SofaPanAudioProcessorEditor::mouseEnter(const MouseEvent &e){
+    
+    if(showTooltipsButton.getToggleState()){
+        if(e.eventComponent->getComponentID() == "globalSofaButton"){
+
+            AttributedString text ("By activating this option, a single SOFA file will be used by every plugin instance running on this host that has this option activated. \n Deactivating this option in one ore more instances excludes them from this feature.");
+            text.setJustification (Justification::centred);
+            text.setColour(Colours::white);
+            popUpInfo->showAt(e.eventComponent, text, 10000, true, false);
+            
+        }
+        if(e.eventComponent->getComponentID() == "nfSimButton"){
+            
+            AttributedString text ("By activating this option, the effect of the source approaching the head will be simulated. \n The distance slider becomes active and can be adjusted from 1m to 20cm. \n If the loaded SOFA file has already multiple distance sets, those will be deactivated and the set with the distance nearest to 1m will be used for the simulation");
+            text.setJustification (Justification::centred);
+            text.setColour(Colours::white);
+            popUpInfo->showAt(e.eventComponent, text, 10000, true, false);
+            
+        }
+    }
+
 }
 
 
+void SofaPanAudioProcessorEditor::mouseExit(const MouseEvent &e){
+    popUpInfo->setVisible(false);
+    
+}

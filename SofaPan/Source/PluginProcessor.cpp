@@ -11,6 +11,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+#include "FilterEngine.h"
 
 //==============================================================================
 SofaPanAudioProcessor::SofaPanAudioProcessor()
@@ -25,33 +26,36 @@ SofaPanAudioProcessor::SofaPanAudioProcessor()
                        )
 #endif
 {
+    addParameter(params.azimuthParam = new AudioParameterFloat("azimuth", "Azimuth", 0.f, 1.f, 0.f));
+    addParameter(params.bypassParam = new AudioParameterFloat("bypass", "Bypass", 0.f, 1.f, 0.f));
+    addParameter(params.elevationParam = new AudioParameterFloat("elevation", "Elevation", 0.f, 1.f, 0.5f));
+    addParameter(params.distanceParam = new AudioParameterFloat("distance", "Distance", 0.f, 1.f, 0.5f));
+    addParameter(params.testSwitchParam = new AudioParameterBool("test", "Test Switch", false));
+    addParameter(params.distanceSimulationParam = new AudioParameterBool("dist_sim", "Distance Simulation", false));
+
     
-    addParameter(azimuthParam = new AudioParameterFloat("azimuth", "Azimuth", 0.f, 1.f, 0.f));
-    addParameter(bypassParam = new AudioParameterFloat("bypass", "Bypass", 0.f, 1.f, 0.f));
-    addParameter(elevationParam = new AudioParameterFloat("elevation", "Elevation", 0.f, 1.f, 0.5f));
-    addParameter(distanceParam = new AudioParameterFloat("distance", "Distance", 0.f, 1.f, 0.5f));
-    addParameter(testSwitchParam = new AudioParameterBool("test", "Test Switch", false));
-    
-    HRTFs = NULL;
+    HRTFs = new SOFAData();
     Filter = NULL;
-    FilterB = NULL;
-    
     sampleRate_f = 0;
     
     updateSofaMetadataFlag = false;
 
+    updater = &SofaPathSharedUpdater::instance();
+    String connectionID = updater->createConnection();
+    connectToPipe(connectionID, 10);
     
     
 }
 
 SofaPanAudioProcessor::~SofaPanAudioProcessor()
 {
-    if(HRTFs!=NULL)
-        delete HRTFs;
+    
+    delete HRTFs;
     if(Filter != NULL)
         delete Filter;
-    if(FilterB != NULL)
-        delete FilterB;
+    
+    updater->removeConnection(getPipe()->getName());
+    
 }
 
 //==============================================================================
@@ -115,6 +119,11 @@ void SofaPanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     
     if(sampleRate != sampleRate_f){
         sampleRate_f = sampleRate;
+        if(usingGlobalSofaFile){
+            String currentGlobalSofaFile = updater->requestCurrentFilePath();
+            if(currentGlobalSofaFile.length() > 1)
+                pathToSOFAFile = currentGlobalSofaFile;
+        }
         initData(pathToSOFAFile);
     }else{
         Filter->prepareToPlay();
@@ -128,11 +137,11 @@ void SofaPanAudioProcessor::initData(String sofaFile){
     
     printf("\n initalise Data \n ");
     
+    pathToSOFAFile = sofaFile;
+    
     suspendProcessing(true);
     
-    if(HRTFs!=NULL)
-        delete HRTFs;
-    HRTFs = new SOFAData(pathToSOFAFile.toUTF8(), (int)sampleRate_f);
+    HRTFs->initSofaData(pathToSOFAFile.toUTF8(), (int)sampleRate_f);
     metadata_sofafile = HRTFs->getMetadata();
     
     updateSofaMetadataFlag = true;
@@ -140,9 +149,6 @@ void SofaPanAudioProcessor::initData(String sofaFile){
     if(Filter != NULL)
         delete Filter;
     Filter = new FilterEngine(*HRTFs);
-    if(FilterB != NULL)
-        delete FilterB;
-    FilterB = new FilterEngineB(*HRTFs);
     
     suspendProcessing(false);
 }
@@ -187,7 +193,7 @@ void SofaPanAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     
     const int numberOfSamples = buffer.getNumSamples();
     
-    if (bypassParam->get() == true) { return; }
+    if (params.bypassParam->get() == true) { return; }
     
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
@@ -204,14 +210,13 @@ void SofaPanAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     const float* inBuffer = buffer.getReadPointer(0);
     
     
+    Filter->process(inBuffer, outBufferL, outBufferR, numberOfSamples, params);
     
-    //if(!*testSwitchParam)
-        Filter->process(inBuffer, outBufferL, outBufferR, numberOfSamples, azimuthParam, elevationParam, distanceParam);
-    
-    float gain = 1.0;
-    if(distanceParam->get() > 0.1)
-        gain = 1.0 / distanceParam->get();
-        
+    float gain = 0.25;
+    if(params.distanceSimulationParam || metadata_sofafile.hasMultipleDistances){
+        if(params.distanceParam->get() > 0.1)
+            gain = 0.25 / params.distanceParam->get();
+    }
     buffer.applyGain(gain);
 
 
@@ -231,9 +236,9 @@ AudioProcessorEditor* SofaPanAudioProcessor::createEditor()
 //==============================================================================
 void SofaPanAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
+//    ScopedPointer<XmlElement> xml (new XmlElement ("SofaPanSave"));
+//    xml->setAttribute ("gain", (double) *gain);
+//    copyXmlToBinary (*xml, destData);
 }
 
 void SofaPanAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
@@ -254,6 +259,18 @@ AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 void SofaPanAudioProcessor::setSOFAFilePath(String sofaString)
 {
     pathToSOFAFile = sofaString;
+    initData(pathToSOFAFile);
+    
+    if(usingGlobalSofaFile){
+        MemoryBlock message;
+        const char* messageText = pathToSOFAFile.toRawUTF8();
+        size_t messageSize = pathToSOFAFile.getNumBytesAsUTF8();
+        message.append(messageText, messageSize);
+        
+        sendMessage(message);
+    }
+    
+    
 }
 
 fftwf_complex* SofaPanAudioProcessor::getCurrentHRTF()
@@ -261,9 +278,11 @@ fftwf_complex* SofaPanAudioProcessor::getCurrentHRTF()
     if(HRTFs == NULL)
         return NULL;
     
-    float azimuth = azimuthParam->get() * 360.0;
-    float elevation = (elevationParam->get()-0.5) * 180.0;
-    float distance = distanceParam->get();
+    float azimuth = params.azimuthParam->get() * 360.0;
+    float elevation = (params.elevationParam->get()-0.5) * 180.0;
+    float distance = 1;
+    if(!(bool)params.distanceSimulationParam->get())
+        distance = params.distanceParam->get();
     
     return HRTFs->getHRTFforAngle(elevation, azimuth, distance);
 }
@@ -273,9 +292,12 @@ float* SofaPanAudioProcessor::getCurrentHRIR()
     if(HRTFs == NULL)
         return NULL;
     
-    float azimuth = azimuthParam->get() * 360.0;
-    float elevation = (elevationParam->get()-0.5) * 180.0;
-    float distance = distanceParam->get();
+    float azimuth = params.azimuthParam->get() * 360.0;
+    float elevation = (params.elevationParam->get()-0.5) * 180.0;
+    
+    float distance = 1;
+    if(!(bool)params.distanceSimulationParam->get())
+        distance = params.distanceParam->get();
     
     return HRTFs->getHRIRForAngle(elevation, azimuth, distance);
 }
@@ -290,3 +312,30 @@ int SofaPanAudioProcessor::getComplexLength()
     return Filter->getComplexLength();
 }
 
+void SofaPanAudioProcessor::messageReceived (const MemoryBlock &message){
+    
+    if(usingGlobalSofaFile){
+        String newFilePath = message.toString();
+        printf("\n%s: Set New File Path: %s", getPipe()->getName().toRawUTF8(), newFilePath.toRawUTF8());
+    
+        initData(newFilePath);
+    }
+    
+}
+
+void SofaPanAudioProcessor::setUsingGlobalSofaFile(bool useGlobal){
+    if(useGlobal){
+        String path = updater->requestCurrentFilePath();
+        if(path.length() > 1 && path!=pathToSOFAFile){
+            pathToSOFAFile = path;
+            initData(pathToSOFAFile);
+        }
+        usingGlobalSofaFile = true;
+    }else{
+        usingGlobalSofaFile = false;
+    }
+}
+
+bool SofaPanAudioProcessor::getUsingGlobalSofaFile(){
+    return usingGlobalSofaFile;
+}

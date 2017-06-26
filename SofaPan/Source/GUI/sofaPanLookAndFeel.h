@@ -85,7 +85,18 @@ public:
         
         ignoreUnused (style, minSliderPos, maxSliderPos);
         
+        Rectangle<int> bounds = Rectangle<int> (x+2, y, width-4, height);
+        g.setColour (sliderInactivePart);
+        g.drawRoundedRectangle(bounds.toFloat(), 6, 4);
+        
+        float maxValue = slider.getMaximum();
+        float minValue = slider.getMinimum();
+
+        
+        
         if(style == Slider::LinearHorizontal){
+            
+            
             Rectangle<int> r = Rectangle<int> (x + haloRadius, y, width - (haloRadius * 2), height);
             Rectangle<int> backgroundBar = r.withSizeKeepingCentre(r.getWidth(), 2);
             
@@ -131,9 +142,18 @@ public:
         }
         
         if(style == Slider::LinearVertical){
+            
+            //shift everything 5px to the right
+            x = x + 5;
+            
+            
             Rectangle<int> r = Rectangle<int> (x , y + haloRadius, 40,  height- (haloRadius * 2));
             //printf("\n +++++++ WIDTH: %d", width);
             Rectangle<int> backgroundBar = r.withSizeKeepingCentre(2, r.getHeight());
+            
+            Rectangle<int> barArea = Rectangle<int>(r.translated(r.getWidth()+5, 0).withWidth(15));
+            
+            
             
             //            g.setColour (Colour(0xcccccccc));
             //            g.fillRect(r);
@@ -165,6 +185,24 @@ public:
             
             g.setColour (Colour(0xFF444444));
             g.fillRoundedRectangle (knobBounds.toFloat(), 2.f);
+            
+            g.setColour(knobBackgroundColour);
+            g.drawLine(barArea.getX(), barArea.getY(), barArea.getRight(), barArea.getY(), 2);
+            g.drawLine(barArea.getX(), barArea.getBottom(), barArea.getRight(), barArea.getBottom(), 2);
+            g.drawLine(barArea.getCentreX(), barArea.getY(), barArea.getCentreX(), barArea.getBottom(), 2);
+            g.drawLine(barArea.getX()+2, barArea.getY() + barArea.getHeight()/4, barArea.getRight()-2, barArea.getY() + barArea.getHeight()/4, 1);
+            g.drawLine(barArea.getX()+2, barArea.getY() + 2* barArea.getHeight()/4, barArea.getRight()-2, barArea.getY() + 2*barArea.getHeight()/4, 1);
+            g.drawLine(barArea.getX()+2, barArea.getY() + 3* barArea.getHeight()/4, barArea.getRight()-2, barArea.getY() + 3* barArea.getHeight()/4, 1);
+            
+            String label = String(maxValue);
+            g.drawText(label, barArea.getRight()+4, barArea.getY()-10, 40, 20, dontSendNotification);
+            label = String(minValue);
+            g.drawText(label, barArea.getRight()+4, barArea.getBottom()-10, 40, 20, dontSendNotification);
+            label = String((minValue+maxValue) / 2);
+            g.drawText(label, barArea.getRight()+4, barArea.getCentreY()-10, 40, 20, dontSendNotification);
+            
+            //g.drawRect(barArea);
+            
         }
         
         
@@ -268,6 +306,7 @@ public:
     const Colour sliderInactivePart = Colour (0xff545d62); //benutzt für rotary->außenring und slider->inaktiverpart
     const Colour sliderActivePart = Colour (0xff80cbc4);
     const Colour knobBackgroundColour = Colour(0xffcccccc);
+    const Colour mainCyan = Colour(0xff80cbc4);
 };
 
 
