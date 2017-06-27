@@ -12,6 +12,7 @@
 #include "PluginEditor.h"
 
 #include "FilterEngine.h"
+#include "EarlyReflection.h"
 
 //==============================================================================
 SofaPanAudioProcessor::SofaPanAudioProcessor()
@@ -36,6 +37,8 @@ SofaPanAudioProcessor::SofaPanAudioProcessor()
     
     HRTFs = new SOFAData();
     Filter = NULL;
+    reflection1 = NULL;
+    reflection2 = NULL;
     sampleRate_f = 0;
     
     updateSofaMetadataFlag = false;
@@ -51,9 +54,10 @@ SofaPanAudioProcessor::~SofaPanAudioProcessor()
 {
     
     delete HRTFs;
-    if(Filter != NULL)
-        delete Filter;
-    
+    if(Filter != NULL) delete Filter;
+    if(reflection1 != NULL) delete reflection1;
+    if(reflection2 != NULL) delete reflection2;
+
     updater->removeConnection(getPipe()->getName());
     
 }
@@ -127,6 +131,8 @@ void SofaPanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
         initData(pathToSOFAFile);
     }else{
         Filter->prepareToPlay();
+        reflection1->prepareToPlay();
+        reflection2->prepareToPlay();
     }
 
     
@@ -146,9 +152,13 @@ void SofaPanAudioProcessor::initData(String sofaFile){
     
     updateSofaMetadataFlag = true;
     
-    if(Filter != NULL)
-        delete Filter;
+    if(Filter != NULL) delete Filter;
     Filter = new FilterEngine(*HRTFs);
+    
+    if(reflection1 != NULL) delete reflection1;
+    reflection1 = new EarlyReflection(HRTFs->getHRTFforAngle(0.0, 90.0, 1.0), HRTFs->getLengthOfHRIR(), (int)sampleRate_f);
+    if(reflection2 != NULL) delete reflection2;
+    reflection2 = new EarlyReflection(HRTFs->getHRTFforAngle(0.0, 270.0, 1.0), HRTFs->getLengthOfHRIR(), (int)sampleRate_f);
     
     suspendProcessing(false);
 }
@@ -205,12 +215,29 @@ void SofaPanAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         buffer.clear (i, 0, buffer.getNumSamples());
     
     
+    AudioSampleBuffer bufferCopy1 = AudioSampleBuffer(2, numberOfSamples);
+    AudioSampleBuffer bufferCopy2 = AudioSampleBuffer(2, numberOfSamples);
+    bufferCopy1.clear();
+    bufferCopy2.clear();
+    bufferCopy1.copyFrom(0, 0, buffer.getReadPointer(0), numberOfSamples);
+    bufferCopy2.copyFrom(0, 0, buffer.getReadPointer(0), numberOfSamples);
+    
     float* outBufferL = buffer.getWritePointer (0);
     float* outBufferR = buffer.getWritePointer (1);
     const float* inBuffer = buffer.getReadPointer(0);
     
+    const float* inBuffer_c1 = bufferCopy1.getReadPointer(0);
+    float* outBufferL_c2 = bufferCopy2.getWritePointer (0);
+    float* outBufferR_c2 = bufferCopy2.getWritePointer (1);
+    const float* inBuffer_c2 = bufferCopy2.getReadPointer(0);
+    
     
     Filter->process(inBuffer, outBufferL, outBufferR, numberOfSamples, params);
+
+    if(params.testSwitchParam->get()){
+        reflection1->process(inBuffer_c1, outBufferL, outBufferR, numberOfSamples, 15, Decibels::decibelsToGain(-10));
+        reflection2->process(inBuffer_c2, outBufferL, outBufferR, numberOfSamples, 16, Decibels::decibelsToGain(-10));
+    }
     
     float gain = 0.25;
     if(params.distanceSimulationParam || metadata_sofafile.hasMultipleDistances){

@@ -17,6 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SofaPan", "SofaPan", "{983F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source", "Source", "{5128F99F-CF33-C86D-EFA2-728C0F47745A}"
 	ProjectSection(SolutionItems) = preProject
+		..\..\Source\EarlyReflection.cpp = ..\..\Source\EarlyReflection.cpp
+		..\..\Source\EarlyReflection.h = ..\..\Source\EarlyReflection.h
 		..\..\Source\SofaPathSharedUpdater.h = ..\..\Source\SofaPathSharedUpdater.h
 		..\..\Source\PlotHRIRComponent.h = ..\..\Source\PlotHRIRComponent.h
 		..\..\Source\PlotHRTFComponent.h = ..\..\Source\PlotHRTFComponent.h

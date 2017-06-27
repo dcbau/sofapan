@@ -13,6 +13,10 @@
               splashScreenColour="Dark" buildStandalone="0" enableIAA="0">
   <MAINGROUP id="XmHYCT" name="SofaPan">
     <GROUP id="{044A0D15-8678-AA45-7263-8E06162C7D6C}" name="Source">
+      <FILE id="T6ZeY5" name="EarlyReflection.cpp" compile="1" resource="0"
+            file="Source/EarlyReflection.cpp"/>
+      <FILE id="zeToDt" name="EarlyReflection.h" compile="0" resource="0"
+            file="Source/EarlyReflection.h"/>
       <FILE id="J4UtBE" name="SofaPathSharedUpdater.h" compile="0" resource="0"
             file="Source/SofaPathSharedUpdater.h"/>
       <FILE id="V1UPIK" name="PlotHRIRComponent.h" compile="1" resource="0"

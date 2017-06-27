@@ -17,6 +17,7 @@
 #include "SOFAData.h"
 #include "SofaPathSharedUpdater.h"
 
+
 //Interface für SOFA File:
 extern "C" {
 #include <netcdf.h>
@@ -41,6 +42,7 @@ typedef struct{
 }parameterStruct;
 
 class FilterEngine;
+class EarlyReflection;
 
 class SofaPanAudioProcessor  : public AudioProcessor, public InterprocessConnection
 {
@@ -107,6 +109,8 @@ private:
     
     SOFAData* HRTFs;
     FilterEngine* Filter;
+    EarlyReflection* reflection1;
+    EarlyReflection* reflection2;
     
     SofaPathSharedUpdater* updater;
     
