@@ -56,6 +56,12 @@ EarlyReflection::EarlyReflection(fftwf_complex* _hrtf, int lengthOfHRIR, int sam
     delayLineLength = (int)(_sampleRate * maxDelayTimeMs * 0.001) + 1;
     delayLine = (float*)malloc(sizeof(float) * delayLineLength);
     
+    //LP coeffs
+    float K = tanf(M_PI * cutoff/_sampleRate);
+    b0 = b1 = K / (K + 1);
+    a1 = (K - 1) / (K + 1);
+    z1 = 0.0;
+    
     prepareToPlay();
 }
 
@@ -95,7 +101,7 @@ void EarlyReflection::prepareToPlay(){
     writeIndex = 0;
 }
 
-void EarlyReflection::process(const float* inBuffer, float* outBuffer_L, float* outBuffer_R, int numSamples, int delayInMs, float gain){
+void EarlyReflection::process(const float* inBuffer, float* outBuffer_L, float* outBuffer_R, int numSamples, float delayInMs, float gain){
     
     float offset = delayInMs * _sampleRate * 0.001;
     int offset_int = truncf(offset);
@@ -105,21 +111,30 @@ void EarlyReflection::process(const float* inBuffer, float* outBuffer_L, float* 
     
     for(int sample = 0; sample < numSamples; sample++){
         
-        
+        //Delay
         readIndex1 = writeIndex - offset;
         readIndex2 = readIndex1 - 1;
         while(readIndex1 < 0)
             readIndex1 += delayLineLength;
         while(readIndex2 < 0)
             readIndex2 += delayLineLength;
-        
 
-        inputBuffer[fifoIndex] = delayLine[readIndex1] * offset_frac + delayLine[readIndex2]* (1.0 - offset_frac);
+        float delayLineOutput = delayLine[readIndex1] * offset_frac + delayLine[readIndex2]* (1.0 - offset_frac);
         
         delayLine[writeIndex++] = inBuffer[sample];
         if (writeIndex >= delayLineLength)
             writeIndex -= delayLineLength;
         
+
+        //Lowpass Filter 
+        float v1 =  delayLineOutput - (a1 * z1);
+        float lowpassFilterOutput = b0 * v1 + b1 * z1;
+        z1 = v1;
+        
+        //Collect Samples
+        inputBuffer[fifoIndex] = lowpassFilterOutput;
+        
+        //Output of already convoluted Samples
         outBuffer_L[sample] += outputBuffer_L[fifoIndex] * gain;
         outBuffer_R[sample] += outputBuffer_R[fifoIndex] * gain;
         

@@ -109,8 +109,9 @@ private:
     
     SOFAData* HRTFs;
     FilterEngine* Filter;
-    EarlyReflection* reflection1;
-    EarlyReflection* reflection2;
+    
+    std::vector<EarlyReflection*> earlyReflections;
+    
     
     SofaPathSharedUpdater* updater;
     

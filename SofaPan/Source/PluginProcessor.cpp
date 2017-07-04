@@ -37,8 +37,11 @@ SofaPanAudioProcessor::SofaPanAudioProcessor()
     
     HRTFs = new SOFAData();
     Filter = NULL;
-    reflection1 = NULL;
-    reflection2 = NULL;
+
+    earlyReflections.resize(4);
+    for(int i = 0; i < earlyReflections.size(); i++)
+        earlyReflections[i] = NULL;
+    
     sampleRate_f = 0;
     
     updateSofaMetadataFlag = false;
@@ -55,9 +58,8 @@ SofaPanAudioProcessor::~SofaPanAudioProcessor()
     
     delete HRTFs;
     if(Filter != NULL) delete Filter;
-    if(reflection1 != NULL) delete reflection1;
-    if(reflection2 != NULL) delete reflection2;
-
+    for(int i=0; i < earlyReflections.size(); i++)
+        if(earlyReflections[i] != NULL) delete earlyReflections[i];
     updater->removeConnection(getPipe()->getName());
     
 }
@@ -131,8 +133,8 @@ void SofaPanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
         initData(pathToSOFAFile);
     }else{
         Filter->prepareToPlay();
-        reflection1->prepareToPlay();
-        reflection2->prepareToPlay();
+        for(int i=0; i < earlyReflections.size(); i++)
+            earlyReflections[i]->prepareToPlay();
     }
 
     
@@ -155,10 +157,11 @@ void SofaPanAudioProcessor::initData(String sofaFile){
     if(Filter != NULL) delete Filter;
     Filter = new FilterEngine(*HRTFs);
     
-    if(reflection1 != NULL) delete reflection1;
-    reflection1 = new EarlyReflection(HRTFs->getHRTFforAngle(0.0, 90.0, 1.0), HRTFs->getLengthOfHRIR(), (int)sampleRate_f);
-    if(reflection2 != NULL) delete reflection2;
-    reflection2 = new EarlyReflection(HRTFs->getHRTFforAngle(0.0, 270.0, 1.0), HRTFs->getLengthOfHRIR(), (int)sampleRate_f);
+    const float angles[4] = {90, 270, 0, 180}; //right, left, front, back
+    for(int i=0; i < earlyReflections.size(); i++){
+        if(earlyReflections[i] != NULL) delete earlyReflections[0];
+        earlyReflections[i] = new EarlyReflection(HRTFs->getHRTFforAngle(0.0, angles[i], 1.0), HRTFs->getLengthOfHRIR(), (int)sampleRate_f);
+    }
     
     suspendProcessing(false);
 }
@@ -215,36 +218,81 @@ void SofaPanAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         buffer.clear (i, 0, buffer.getNumSamples());
     
     
-    AudioSampleBuffer bufferCopy1 = AudioSampleBuffer(2, numberOfSamples);
-    AudioSampleBuffer bufferCopy2 = AudioSampleBuffer(2, numberOfSamples);
-    bufferCopy1.clear();
-    bufferCopy2.clear();
-    bufferCopy1.copyFrom(0, 0, buffer.getReadPointer(0), numberOfSamples);
-    bufferCopy2.copyFrom(0, 0, buffer.getReadPointer(0), numberOfSamples);
+    AudioSampleBuffer reflectionInBuffer = AudioSampleBuffer(2, numberOfSamples);
+    reflectionInBuffer.clear();
+    reflectionInBuffer.copyFrom(0, 0, buffer.getReadPointer(0), numberOfSamples);
     
     float* outBufferL = buffer.getWritePointer (0);
     float* outBufferR = buffer.getWritePointer (1);
     const float* inBuffer = buffer.getReadPointer(0);
     
-    const float* inBuffer_c1 = bufferCopy1.getReadPointer(0);
-    float* outBufferL_c2 = bufferCopy2.getWritePointer (0);
-    float* outBufferR_c2 = bufferCopy2.getWritePointer (1);
-    const float* inBuffer_c2 = bufferCopy2.getReadPointer(0);
+    const float* inBufferRefl = reflectionInBuffer.getReadPointer(0);
     
     
     Filter->process(inBuffer, outBufferL, outBufferR, numberOfSamples, params);
 
-    if(params.testSwitchParam->get()){
-        reflection1->process(inBuffer_c1, outBufferL, outBufferR, numberOfSamples, 15, Decibels::decibelsToGain(-10));
-        reflection2->process(inBuffer_c2, outBufferL, outBufferR, numberOfSamples, 16, Decibels::decibelsToGain(-10));
-    }
-    
-    float gain = 0.25;
+    //buffer.clear();
+    float gain = 1.0;
     if(params.distanceSimulationParam || metadata_sofafile.hasMultipleDistances){
         if(params.distanceParam->get() > 0.1)
-            gain = 0.25 / params.distanceParam->get();
+             gain = 1 / params.distanceParam->get();
+        buffer.applyGain(gain);
+
     }
-    buffer.applyGain(gain);
+    
+    //Calculating an approximation of the angle depentant reflection delays and damping-factors (the approximations were made for a square room of 3.5x3.5m and a source distance of 1m)
+    
+    if(params.distanceSimulationParam->get()){
+        
+        float alpha_s = sinf(params.azimuthParam->get() * 2.0 * M_PI); //Running from 0 -> 1 -> 0 -> -1 -> 0 for a full circle
+        float alpha_c = cosf(params.azimuthParam->get() * 2.0 * M_PI); //Running from 1 -> 0 -> -1 -> 0 -> 1 for a full circle
+        float delay[4], damp[4];
+        
+        float distance = 1.0;
+        if(params.distanceSimulationParam || metadata_sofafile.hasMultipleDistances){
+            distance = params.distanceParam->get();
+            printf("\n Distance: %f", distance);
+        }
+        const float roomRadius = 4; //6x6m room
+        const float speedOfSound = 343.2;
+        const float meterToMs = 1000.0 / speedOfSound;
+        delay[0] = meterToMs * ((2.0 * roomRadius - distance) - alpha_s * distance);
+        delay[1] = meterToMs * ((2.0 * roomRadius - distance) + alpha_s * distance);
+        delay[1] = meterToMs * ((2.0 * roomRadius - distance) - alpha_c * distance);
+        delay[1] = meterToMs * ((2.0 * roomRadius - distance) + alpha_c * distance);
+
+        damp[0] = 1.0/(2*roomRadius-alpha_s * distance);
+        damp[1] = 1.0/(2*roomRadius+alpha_s * distance);
+        damp[2] = 1.0/(2*roomRadius-alpha_c * distance);
+        damp[3] = 1.0/(2*roomRadius+alpha_c * distance);
+        
+        for(int i=0; i < 2; i++){
+            earlyReflections[i]->process(inBufferRefl, outBufferL, outBufferR, numberOfSamples, delay[i], damp[i]);
+            
+
+//    }else{
+//    
+//        //Approximation by interpolating between extremal values
+//        delay[0] = 14.0 - (alpha_s * 3.5); //rightSide: 14 -> 11 -> 14 -> 17ms delay
+//        delay[1] = 14.0 + (alpha_s * 3.5); //leftSide: 14 -> 17 -> 14 -> 11ms
+//        delay[2] = 14.0 - (alpha_c * 3.5); //front: 11 -> 14 -> 17 -> 14ms
+//        delay[3] = 14.0 + (alpha_c * 3.5); //back: 17 -> 14 -> 11 -> 14ms
+////        printf("\n delay1 = %f, newDelay = %f", delay[0], newDelay);
+//
+//        damp[0] = 1.0/(5.0-alpha_s); // 1/5 -> 1/4 -> 1/5 -> 1/6
+//        damp[1] = 1.0/(5.0+alpha_s); // 1/5 -> 1/6 -> 1/5 -> 1/4
+//        damp[2] = 1.0/(5.0-alpha_c); // 1/4 -> 1/5 -> 1/6 -> 1/5
+//        damp[3] = 1.0/(5.0+alpha_c); // 1/6 -> 1/5 -> 1/4 -> 1/5
+//        
+//    }
+
+//        earlyReflections[0]->process(inBufferRefl, outBufferL, outBufferR, numberOfSamples, delay[0], damp[0]); //90°
+//        earlyReflections[1]->process(inBufferRefl, outBufferL, outBufferR, numberOfSamples, delay[1], damp[1]); //-90°
+//        earlyReflections[2]->process(inBufferRefl, outBufferL, outBufferR, numberOfSamples, delay[2], damp[2]); //90°
+//        earlyReflections[3]->process(inBufferRefl, outBufferL, outBufferR, numberOfSamples, delay[3], damp[3]); //-90°
+    }
+    
+    buffer.applyGain(0.25);
 
 
 }

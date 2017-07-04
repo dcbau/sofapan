@@ -107,7 +107,7 @@ void FilterEngine::process(const float* inBuffer, float* outBuffer_L, float* out
             float elevation = (params.elevationParam->get()-0.5) * 180.0;
             float distance = params.distanceParam->get();
             
-            printf("AZIMUTH: %f  ##  ", azimuth);
+            //printf("AZIMUTH: %f  ##  ", azimuth);
             
             float alpha = params.azimuthParam->get() * 2 * M_PI;
             const float standardHeadradius = 0.18; //if no other headradius is specified

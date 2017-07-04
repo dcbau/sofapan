@@ -102,7 +102,7 @@ private:
     Image backgroundImage;
     
     const float simulationDistanceMin = 0.2;
-    const float simulationDistanceMax = 1.0;
+    const float simulationDistanceMax = 5.0;
     
     ScopedPointer<BubbleMessageComponent> popUpInfo;
     

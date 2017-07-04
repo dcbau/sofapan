@@ -31,13 +31,14 @@ public:
     EarlyReflection(fftwf_complex* hrtf, int lengthOfHRIR, int sampleRate);
     ~EarlyReflection();
     
-    void process(const float* inBuffer, float* outBuffer_L, float* outBuffer_R, int numSamples, int delayInMs, float gain);
+    void process(const float* inBuffer, float* outBuffer_L, float* outBuffer_R, int numSamples, float delayInMs, float gain);
     
     void prepareToPlay();
     
 private:
     fftwf_complex* hrtf_l;
     fftwf_complex* hrtf_r;
+    int _sampleRate;
 
     
     const int firLength;
@@ -60,15 +61,20 @@ private:
     float* outputBuffer_L;
     float* outputBuffer_R;
     
-    float* delayLine;
     
     int fifoIndex;
-    
+
+    //delayline stuff
+    float* delayLine;
     const int maxDelayTimeMs = 100;
     int delayLineLength;
-    
-    int _sampleRate;
     int writeIndex;
+    
+    //onepole lp
+    float z1;
+    const float cutoff = 5000;
+    float b0, b1, a1;
+    
     
 };
 
