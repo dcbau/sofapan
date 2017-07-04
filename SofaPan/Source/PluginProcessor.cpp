@@ -268,7 +268,7 @@ void SofaPanAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         
         for(int i=0; i < 2; i++){
             earlyReflections[i]->process(inBufferRefl, outBufferL, outBufferR, numberOfSamples, delay[i], damp[i]);
-            
+        }
 
 //    }else{
 //    
