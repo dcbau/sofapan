@@ -11,6 +11,8 @@
 #ifndef HEADTOPHEXDATA_H_INCLUDED
 #define HEADTOPHEXDATA_H_INCLUDED
 
+//converted with http://tools.garry.tv/bin2c/
+
 
 const long int headTopPicto_Size = 9811;
 static const unsigned char headTopPicto[] =

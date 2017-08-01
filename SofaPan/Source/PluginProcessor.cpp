@@ -251,7 +251,6 @@ void SofaPanAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         float distance = 1.0;
         if(params.distanceSimulationParam || metadata_sofafile.hasMultipleDistances){
             distance = params.distanceParam->get();
-            printf("\n Distance: %f", distance);
         }
         const float roomRadius = 4; //6x6m room
         const float speedOfSound = 343.2;
@@ -364,6 +363,7 @@ fftwf_complex* SofaPanAudioProcessor::getCurrentHRTF()
 
 float* SofaPanAudioProcessor::getCurrentHRIR()
 {
+
     if(HRTFs == NULL)
         return NULL;
     

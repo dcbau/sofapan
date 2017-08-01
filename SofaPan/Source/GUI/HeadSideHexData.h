@@ -11,6 +11,8 @@
 #ifndef HEADSIDEHEXDATA_H_INCLUDED
 #define HEADSIDEHEXDATA_H_INCLUDED
 
+//converted with http://tools.garry.tv/bin2c/
+
 
 const long int headSidePicto_Size = 10913;
 static const unsigned char headSidePicto[] =

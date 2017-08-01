@@ -17,7 +17,7 @@
 #include "SofaMetadataView.h"
 #include "PlotHRTFComponent.h"
 #include "PlotHRIRComponent.h"
-
+#include "PannerComponent.h"
 
 #include "sofaPanLookAndFeel.h"
 #include "azimuthSliderLookAndFeel.h"
@@ -27,7 +27,7 @@
 #include "HeadSideHexData.h"
 #include "SpeakerHexData.h"
 
-
+//#define roomsimLayout 1
 
 //==============================================================================
 /**
@@ -48,7 +48,7 @@ public:
     
     void mouseEnter (const MouseEvent &e) override;
     void mouseExit (const MouseEvent &e) override;
-
+    
 private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
@@ -64,6 +64,8 @@ private:
     ToggleButton useGlobalSofaFileButton;
     ToggleButton useDistanceSimulationButton;
     ToggleButton showTooltipsButton;
+    TextButton useLayoutSOFAPlayerButton;
+    TextButton useLayoutRoomsimButton;
     
     const String sofaMetadataID = String("Listener Short Name: \nMeasurements: \nSamples per IR: \nSOFA Convention: \nData Type: \nElevation: \nDistance:");
     
@@ -75,8 +77,8 @@ private:
     LookAndFeel_V4 juceDefaultLookAndFeel;
     
     AudioProcessorParameter* getParameter (const String& paramId);
-    float getParameterValue (const String& paramId);
     void setParameterValue (const String& paramId, float value);
+    float getParameterValue (const String& paramId);
     
     void sliderDragStarted(Slider* slider) override;
     void sliderDragEnded(Slider* slider) override;
@@ -86,6 +88,8 @@ private:
     SofaMetadataView metadataView;
     PlotHRTFComponent plotHRTFView;
     PlotHRIRComponent plotHRIRView;
+    PannerComponent panner2D;
+    PannerComponent panner2D_elev;
     int counter;
     
     float lastElevationValue;
@@ -102,9 +106,13 @@ private:
     Image backgroundImage;
     
     const float simulationDistanceMin = 0.2;
-    const float simulationDistanceMax = 5.0;
+    const float simulationDistanceMax = 3.0;
     
     ScopedPointer<BubbleMessageComponent> popUpInfo;
+    
+    bool roomsimLayout = 0;
+    void rearrange();
+    
     
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SofaPanAudioProcessorEditor)

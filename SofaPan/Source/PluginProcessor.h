@@ -96,6 +96,7 @@ public:
     void setUsingGlobalSofaFile(bool useGlobal);
     bool getUsingGlobalSofaFile();
     
+    
 private:
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SofaPanAudioProcessor)

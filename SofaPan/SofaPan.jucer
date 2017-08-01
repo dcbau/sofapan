@@ -28,6 +28,10 @@
       <FILE id="WzrW7l" name="FilterEngine.cpp" compile="1" resource="0"
             file="Source/FilterEngine.cpp"/>
       <FILE id="WitAML" name="FilterEngine.h" compile="0" resource="0" file="Source/FilterEngine.h"/>
+      <FILE id="Nbi0Vw" name="PannerComponent.h" compile="0" resource="0"
+            file="Source/PannerComponent.h"/>
+      <FILE id="O3yu2t" name="PannerComponentBackup.h" compile="0" resource="0"
+            file="Source/PannerComponentBackup.h"/>
       <GROUP id="{51723BDB-0C84-0182-8911-B10250B6842A}" name="GUI">
         <FILE id="MNc1hT" name="azimuthSliderLookAndFeel.h" compile="0" resource="0"
               file="Source/GUI/azimuthSliderLookAndFeel.h"/>
@@ -39,6 +43,8 @@
               file="Source/GUI/HeadSideHexData.h"/>
         <FILE id="Xew6gt" name="HeadTopHexData.h" compile="0" resource="0"
               file="Source/GUI/HeadTopHexData.h"/>
+        <FILE id="woAHxi" name="HeadRearHexData.h" compile="0" resource="0"
+              file="Source/GUI/HeadRearHexData.h"/>
         <FILE id="lO5Hya" name="LogoHexData.h" compile="0" resource="0" file="Source/GUI/LogoHexData.h"/>
         <FILE id="MVijtL" name="SpeakerHexData.h" compile="0" resource="0"
               file="Source/GUI/SpeakerHexData.h"/>

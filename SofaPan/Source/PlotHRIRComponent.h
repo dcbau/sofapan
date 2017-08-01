@@ -137,7 +137,7 @@ public:
     void paint (Graphics& g) override
     {
         g.drawImage(backgroundImage, getLocalBounds().toFloat());
-        g.reduceClipRegion(plotBox.toNearestInt());
+        g.reduceClipRegion(plotBox.toNearestInt().withTrimmedTop(6).withTrimmedLeft(6).withTrimmedRight(3));
         
         if(repaintFlag){
             repaintFlag = false;
@@ -176,15 +176,15 @@ public:
     
     void resized() override
     {
-        printf("HRIR Resized");
+        //printf("HRIR Resized");
         Rectangle<float> bounds = getLocalBounds().toFloat();
-        plotBox = bounds.withTrimmedBottom(20).withTrimmedLeft(20).withTrimmedTop(5).withTrimmedRight(5);
+        plotBox = bounds.withTrimmedBottom(20);//.withTrimmedLeft(20).withTrimmedTop(5).withTrimmedRight(5);
         
-        Rectangle<float> buttonXGroupArea = Rectangle<float>(plotBox.getX(),
+        Rectangle<float> buttonXGroupArea = Rectangle<float>(plotBox.getX() + 10,
                                                         plotBox.getBottom()+2,
                                                         plotBox.getWidth() / 3,
-                                                        bounds.getBottom() - plotBox.getBottom() - 4);
-        Rectangle<float> buttonYGroupArea = buttonXGroupArea.withX(plotBox.getCentreX()).withWidth(plotBox.getWidth()/2);
+                                                        bounds.getBottom() - plotBox.getBottom() - 7);
+        Rectangle<float> buttonYGroupArea = buttonXGroupArea.withX(plotBox.getCentreX()).withWidth(plotBox.getWidth()/3);
         
         zoomXLabelBox = buttonXGroupArea.removeFromLeft(buttonXGroupArea.getWidth()/3.5);
         float buttonWidth = buttonXGroupArea.getWidth() / 3.0;
@@ -214,10 +214,10 @@ public:
         backgroundImage = Image (Image::RGB, bounds.getWidth(), bounds.getHeight(), true);
         Graphics g (backgroundImage);
         g.fillAll (Colours::white);   // clear the background
-        g.setColour (Colours::grey);
-        g.drawRect (bounds, 1);
-        g.setColour (Colours::black);
-        g.drawRect (plotBox, 1);
+//        g.setColour (Colours::grey);
+//        g.drawRect (bounds, 1);
+//        g.setColour (Colours::black);
+//        g.drawRect (plotBox, 1);
         g.setFont(Font(9.f));
         Line<float> gridLine;
         float dashes[2] = {3.0, 3.0};
@@ -225,6 +225,13 @@ public:
         g.drawDashedLine(gridLine, dashes, 2);
         g.drawFittedText("Zoom X:", zoomXLabelBox.toNearestInt(), Justification::centred, 1);
         g.drawFittedText("Zoom Y:", zoomYLabelBox.toNearestInt(), Justification::centred, 1);
+        
+        g.setColour (Colours::grey);
+        g.drawRect (plotBox, 1);
+        g.drawRect (bounds.reduced(2,2).translated(1, 1), 3);
+        g.setColour (sofaPanLookAndFeel.mainCyan);
+        g.drawRect (bounds, 3);
+        g.setColour (Colours::grey);
         
         repaintFlag = true;
         repaint();
@@ -286,7 +293,7 @@ public:
     
     void setZoomX(float _zoomFactor){
         
-        printf("\n setZoomX\n");
+        //printf("\n setZoomX\n");
 
         
         if(_zoomFactor != zoomXFactor){

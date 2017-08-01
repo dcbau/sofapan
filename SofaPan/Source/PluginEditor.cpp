@@ -14,12 +14,11 @@
 
 //==============================================================================
 SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor& p)
-    : AudioProcessorEditor (&p), processor (p)
+    : AudioProcessorEditor (&p), processor (p), panner2D(p, false), panner2D_elev(p, true)
 {
     
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    setSize (400, 400);
     
     LookAndFeel::setDefaultLookAndFeel(&sofaPanLookAndFeel);
     
@@ -51,7 +50,7 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     panner_el.addListener(this);
     addAndMakeVisible(&panner_el);
     
-    panner_dist.setSliderStyle(Slider::LinearVertical);
+    panner_dist.setSliderStyle(roomsimLayout ? Slider::LinearHorizontal : Slider::LinearVertical);
     panner_dist.setRange(0.0, 1.0);
     panner_dist.setTextValueSuffix(" m");
     panner_dist.setPopupDisplayEnabled(false, this);
@@ -72,7 +71,7 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     testSwitchButton.setButtonText("Test Switch");
     testSwitchButton.setColour(ToggleButton::textColourId, Colours::white);
     testSwitchButton.addListener(this);
-    addAndMakeVisible(&testSwitchButton);
+    //addAndMakeVisible(&testSwitchButton);
     
     useDistanceSimulationButton.setButtonText("Nearfield Simulation");
     useDistanceSimulationButton.setComponentID("nfSimButton");
@@ -80,7 +79,8 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     useDistanceSimulationButton.addListener(this);
     useDistanceSimulationButton.addMouseListener(this, true);
     addAndMakeVisible(&useDistanceSimulationButton);
- 
+    useDistanceSimulationButton.setToggleState(true, NotificationType::sendNotification);
+    
     useGlobalSofaFileButton.setButtonText("Global SOFA File");
     useGlobalSofaFileButton.setComponentID("globalSofaButton");
     useGlobalSofaFileButton.setColour(ToggleButton::textColourId, Colours::white);
@@ -88,8 +88,13 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     useGlobalSofaFileButton.addMouseListener(this, true);
     addAndMakeVisible(&useGlobalSofaFileButton);
     
-    addAndMakeVisible(&plotHRTFView);
-    addAndMakeVisible(&plotHRIRView);
+    if(!roomsimLayout){
+        addAndMakeVisible(&plotHRTFView);
+        addAndMakeVisible(&plotHRIRView);
+    }else{
+        addAndMakeVisible(&panner2D);
+        addAndMakeVisible(&panner2D_elev);
+    }
     
     showSOFAMetadataButton.setButtonText("Show More Information");
     showSOFAMetadataButton.addListener(this);
@@ -99,6 +104,33 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     
     showTooltipsButton.setButtonText("Show Mouseover Tooltips");
     addAndMakeVisible(&showTooltipsButton);
+    
+    
+    useLayoutSOFAPlayerButton.setButtonText("SOFA Player");
+    useLayoutSOFAPlayerButton.setClickingTogglesState(true);
+    useLayoutSOFAPlayerButton.setRadioGroupId(1111);
+    useLayoutSOFAPlayerButton.setColour (TextButton::buttonColourId, Colours::lightgrey);
+    useLayoutSOFAPlayerButton.setColour (TextButton::buttonOnColourId, sofaPanLookAndFeel.mainCyan);
+    useLayoutSOFAPlayerButton.setColour (TextButton::textColourOffId, Colours::grey);
+    useLayoutSOFAPlayerButton.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
+    useLayoutSOFAPlayerButton.setToggleState(true, dontSendNotification);
+    useLayoutSOFAPlayerButton.setLookAndFeel(&juceDefaultLookAndFeel);
+    useLayoutSOFAPlayerButton.addListener(this);
+    addAndMakeVisible(&useLayoutSOFAPlayerButton);
+    
+    useLayoutRoomsimButton.setButtonText("Room Simulation");
+    useLayoutRoomsimButton.setClickingTogglesState(true);
+    useLayoutRoomsimButton.setRadioGroupId(1111);
+    useLayoutRoomsimButton.setColour (TextButton::buttonColourId, Colours::lightgrey);
+    useLayoutRoomsimButton.setColour (TextButton::buttonOnColourId, sofaPanLookAndFeel.mainCyan);
+    useLayoutRoomsimButton.setColour (TextButton::textColourOffId, Colours::grey);
+    useLayoutRoomsimButton.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
+    useLayoutRoomsimButton.setToggleState(false, dontSendNotification);
+    useLayoutRoomsimButton.setLookAndFeel(&juceDefaultLookAndFeel);
+    useLayoutRoomsimButton.addListener(this);
+    addAndMakeVisible(useLayoutRoomsimButton);
+    
+    
     
     counter = 0;
     startTimer(50);
@@ -116,6 +148,7 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     
     
  
+    rearrange();
 }
 
 SofaPanAudioProcessorEditor::~SofaPanAudioProcessorEditor()
@@ -161,66 +194,8 @@ void SofaPanAudioProcessorEditor::paint (Graphics& g)
 
 void SofaPanAudioProcessorEditor::resized()
 {
-    const int panner_size = 200;
-    panner_az.setBounds(250, 300.0 * 0.50 - panner_size/2, panner_size, panner_size);
-    panner_el.setBounds(500, 300.0 * 0.50 - panner_size/2, panner_size, panner_size);
-    panner_dist.setBounds(750, 300.0 * 0.50 - panner_size/2, 100, panner_size);
-    
-    loadSOFAButton.setBounds(-5., 10., 150., 30.);
-    showSOFAMetadataButton.setBounds(-8, 230, 200, 30);
-    showTooltipsButton.setBounds(100, getLocalBounds().getBottom() - 30, 100, 30);
-    
-    metadataView.setBounds(getLocalBounds().reduced(20));
-    
-    bypassButton.setBounds(10., 50., 150., 30.);
-    testSwitchButton.setBounds(10., 80., 150., 30.);
-    useGlobalSofaFileButton.setBounds(135, 10., 80, 30);
-    useDistanceSimulationButton.setBounds(panner_dist.getX(), panner_dist.getBottom(), panner_dist.getWidth(), 30);
-
-    
-    plotHRTFView.setBounds(25.0, 300.0, 350.0, 130.0);
-    plotHRIRView.setBounds(425.0, 300.0, 350.0, 130.0);
-    
-    
-    //Create Background Image
-    backgroundImage = Image(Image::RGB, getLocalBounds().getWidth(), getLocalBounds().getHeight(), true);
-    Graphics g(backgroundImage);
-    
-    g.fillAll (Colours::black);
-    g.setFont (15.0f);
-    g.setColour(Colours::white);
-    g.setOpacity(1.0f);
-    g.drawImageAt(logoHSD, 0, getHeight()-40, true);
-    
-    // azimuth slider
-    Rectangle<int> rect = panner_az.getBounds();
-    int newWidth = rect.getWidth() - panner_az.getTextBoxHeight(); //always quadratic
-    rect.setSize(newWidth, newWidth);
-    const int pngPixelAdjust = 2;
-    g.drawImage(headTopImage,
-                rect.getCentreX()-rect.getWidth()/4 + 10 + pngPixelAdjust,
-                rect.getCentreY()-rect.getHeight()/4 + 10,// - pngPixelAdjust,
-                rect.getWidth()/2 - 20,
-                rect.getWidth()/2 - 20,
-                0, 0, 200, 200);
-
-    // elevation slider
-    rect = panner_el.getBounds();
-    newWidth = rect.getWidth() - panner_el.getTextBoxHeight();
-    rect.setSize(newWidth, newWidth);
-    g.drawImage(headSideImage,
-                rect.getCentreX()-rect.getWidth()/4 + 10,
-                rect.getCentreY()-rect.getHeight()/4 + 10,
-                rect.getWidth()/2 - 20,
-                rect.getWidth()/2 - 20,
-                0, 0, 200, 200);
-
-    // labels for panning sliders
-    g.setFont(Font(20.f));
-    g.drawText("Azimuth", panner_az.getBounds().withHeight(40).translated(0, -40), juce::Justification::topLeft);
-    g.drawText("Elevation", panner_el.getBounds().withHeight(40).translated(0, -40), juce::Justification::topLeft);
-    g.drawText("Distance", panner_dist.getBounds().withHeight(40).translated(0, -40), juce::Justification::topLeft);
-    
+   
+    rearrange();
 }
 
 // This timer periodically checks whether any of the filter's parameters have changed...
@@ -246,16 +221,23 @@ void SofaPanAudioProcessorEditor::timerCallback() {
     if(distanceValue != lastDistanceValue)
         panner_dist.setValue(distanceValue, NotificationType::dontSendNotification);
     
+    
     // update hrtf/hrir plots
     if(lastElevationValue!=elevationValue || lastAzimuthValue!=azimuthValue || lastDistanceValue!=distanceValue || processor.updateSofaMetadataFlag){
-        printf("\n\n 1. Trigger Repaint! \n");
-        fftwf_complex* hrtf = processor.getCurrentHRTF();
-        float* hrir = processor.getCurrentHRIR();
-        int complexLength = processor.getComplexLength();
-        int firLength = complexLength - 1;
-        int sampleRate = processor.getSampleRate();
-        plotHRTFView.drawHRTF(hrtf, complexLength, sampleRate);
-        plotHRIRView.drawHRIR(hrir, firLength, processor.getSampleRate());
+        //printf("\n\n 1. Trigger Repaint! \n");
+        if(!roomsimLayout){
+            float* hrir = processor.getCurrentHRIR();
+            fftwf_complex* hrtf = processor.getCurrentHRTF();
+            int complexLength = processor.getComplexLength();
+            int firLength = complexLength - 1;
+            int sampleRate = processor.getSampleRate();
+            plotHRIRView.drawHRIR(hrir, firLength, sampleRate);
+            plotHRTFView.drawHRTF(hrtf, complexLength, sampleRate);
+        }
+        panner2D.setDistanceAndAngle(distanceValue, azimuthValue, elevationValue);
+        panner2D_elev.setDistanceAndAngle(distanceValue, azimuthValue, elevationValue);
+
+
     }
    
     lastAzimuthValue = azimuthValue;
@@ -445,6 +427,30 @@ void SofaPanAudioProcessorEditor::buttonClicked(Button *button)
         setParameterValue("dist_sim", useDistanceSimulationButton.getToggleState());
         processor.updateSofaMetadataFlag = true;
     }
+    
+    if(button == &useLayoutRoomsimButton){
+        roomsimLayout = 1;
+        rearrange();
+        removeChildComponent(&plotHRIRView);
+        removeChildComponent(&plotHRTFView);
+        addAndMakeVisible(&panner2D);
+        addAndMakeVisible(&panner2D_elev);
+        panner_dist.setSliderStyle(Slider::LinearHorizontal);
+        repaint();
+
+    }
+    if(button == & useLayoutSOFAPlayerButton){
+        roomsimLayout = 0;
+        rearrange();
+        removeChildComponent(&panner2D);
+        removeChildComponent(&panner2D_elev);
+        addAndMakeVisible(&plotHRTFView);
+        addAndMakeVisible(&plotHRIRView);
+        panner_dist.setSliderStyle(Slider::LinearVertical);
+        repaint();
+    }
+    
+
 }
 
 void SofaPanAudioProcessorEditor::mouseEnter(const MouseEvent &e){
@@ -474,4 +480,143 @@ void SofaPanAudioProcessorEditor::mouseEnter(const MouseEvent &e){
 void SofaPanAudioProcessorEditor::mouseExit(const MouseEvent &e){
     popUpInfo->setVisible(false);
     
+}
+
+void SofaPanAudioProcessorEditor::rearrange(){
+
+    
+    loadSOFAButton.setBounds(-5., 10., 150., 30.);
+    showSOFAMetadataButton.setBounds(-8, 230, 200, 30);
+    showTooltipsButton.setBounds(100, getLocalBounds().getBottom() - 30, 100, 30);
+    
+    metadataView.setBounds(getLocalBounds().reduced(20));
+    
+    bypassButton.setBounds(10., 50., 150., 30.);
+    //testSwitchButton.setBounds(10., 80., 150., 30.);
+    useGlobalSofaFileButton.setBounds(135, 10., 80, 30);
+    useDistanceSimulationButton.setBounds(10, showSOFAMetadataButton.getBottom() + 30, 100, 30);
+    
+    
+    
+    
+    int panner_size;
+    const int spacing = 30;
+
+    const Rectangle<int> mainControlBox = Rectangle<int>(240, spacing, getWidth() - 260, getHeight() - spacing * 2);
+    Rectangle<int> boxWithSpacing = mainControlBox.reduced(spacing, 10);
+
+    Rectangle<int> azimuthLabel, elevationLabel, distanceLabel, topViewLabel, rearViewLabel, hrtfLabel, hrirLabel;
+    
+    if(roomsimLayout) {
+        int panner2D_size = (boxWithSpacing.getWidth() - spacing) / 2.0;
+
+        topViewLabel = boxWithSpacing.withSize(panner2D_size, 30);
+        rearViewLabel = topViewLabel.translated(panner2D_size + spacing, 0);
+        
+        panner2D.setBounds(topViewLabel.getX(), topViewLabel.getBottom(), panner2D_size, panner2D_size);
+        panner2D_elev.setBounds(rearViewLabel.getX(), rearViewLabel.getBottom(), panner2D_size, panner2D_size);
+        
+        panner_size = 80;
+        panner_az.setBounds(panner2D.getX(), panner2D.getBottom() + spacing, panner_size, panner_size);
+        panner_el.setBounds(panner_az.getRight() + spacing, panner_az.getY(), panner_size, panner_size);
+        panner_dist.setBounds(panner_el.getRight() + spacing, panner_az.getY(), panner_size * 3, panner_size);
+        azimuthLabel.setBounds(panner_az.getX(), panner_az.getY() - 20, panner_az.getWidth(), 20);
+        elevationLabel.setBounds(panner_el.getX(), panner_el.getY() - 20, panner_el.getWidth(), 20);
+        distanceLabel.setBounds(panner_dist.getX(), panner_dist.getY() - 20, panner_dist.getWidth(), 20);
+
+        
+    }else{
+        
+        panner_size = (boxWithSpacing.getWidth() - spacing * 2) / 2.5;
+        
+        Rectangle<int>boxForTopLabels = boxWithSpacing.removeFromTop(30);
+        Rectangle<int>boxForSliders = boxWithSpacing.removeFromTop(panner_size);
+        
+        azimuthLabel = boxForTopLabels.removeFromLeft(panner_size);
+        elevationLabel = azimuthLabel.translated(panner_size + spacing, 0);
+        distanceLabel = elevationLabel.translated(panner_size + spacing, 0).withWidth(panner_size / 2);
+
+        panner_az.setBounds(boxForSliders.removeFromLeft(panner_size));
+        panner_el.setBounds(panner_az.getBounds().translated(panner_size + spacing, 0));
+        panner_dist.setBounds(panner_el.getBounds().translated(panner_size + spacing, 0).withWidth(panner_size/2));
+        
+        int plotWidth = (boxWithSpacing.getWidth() - spacing) / 2;
+        boxWithSpacing.removeFromTop(spacing);
+        Rectangle<int> boxForPlotLabels = boxWithSpacing.removeFromTop(spacing);
+        hrirLabel = boxForPlotLabels.removeFromLeft(plotWidth);
+        hrtfLabel = hrirLabel.translated(plotWidth + spacing, 0);
+        
+        plotHRIRView.setBounds(boxWithSpacing.removeFromLeft(plotWidth));
+        plotHRTFView.setBounds(plotHRIRView.getBounds().translated(plotWidth + spacing, 0));
+        
+        
+    }
+    
+    const float modeSelectionBoxWidth = getWidth() / 4.0;
+    Rectangle<int> modeSelectionBox = Rectangle<int>(mainControlBox.getX(), mainControlBox.getY()-20, modeSelectionBoxWidth, 20);
+    useLayoutSOFAPlayerButton.setBounds(modeSelectionBox.withWidth(modeSelectionBoxWidth/2.0));
+    useLayoutRoomsimButton.setBounds(modeSelectionBox.withWidth(modeSelectionBoxWidth/2.0).translated(modeSelectionBoxWidth/2.0, 0));
+    
+    
+    //Create Background Image
+    backgroundImage = Image(Image::RGB, getLocalBounds().getWidth(), getLocalBounds().getHeight(), true);
+    Graphics g(backgroundImage);
+    
+    g.fillAll (Colour(0xFF222222));
+    g.setFont (15.0f);
+    g.setColour(Colours::white);
+    g.setOpacity(1.0f);
+    g.drawImageAt(logoHSD, 0, getHeight()-40, true);
+    
+    g.setColour(Colour(0xFF000000));
+    g.fillRect(mainControlBox);
+    g.setColour(Colours::grey);
+    g.drawRect(mainControlBox);
+    g.setColour(Colours::white);
+    
+    if(!roomsimLayout){
+        // azimuth slider
+        Rectangle<int> rect = panner_az.getBounds();
+        int newWidth = rect.getWidth() - panner_az.getTextBoxHeight(); //always quadratic
+        rect.setSize(newWidth, newWidth);
+        //const int pngPixelAdjust = 0;//2;
+        g.drawImage(headTopImage,
+                    rect.getCentreX()-rect.getWidth()/4 + 10 ,
+                    rect.getCentreY()-rect.getHeight()/4 + 10,// - pngPixelAdjust,
+                    rect.getWidth()/2 - 20,
+                    rect.getWidth()/2 - 20,
+                    0, 0, 200, 200);
+        
+        // elevation slider
+        rect = panner_el.getBounds();
+        newWidth = rect.getWidth() - panner_el.getTextBoxHeight();
+        rect.setSize(newWidth, newWidth);
+        g.drawImage(headSideImage,
+                    rect.getCentreX()-rect.getWidth()/4 + 10,
+                    rect.getCentreY()-rect.getHeight()/4 + 10,
+                    rect.getWidth()/2 - 20,
+                    rect.getWidth()/2 - 20,
+                    0, 0, 200, 200);
+        
+        // labels for panning sliders
+        g.setFont(Font(20.f));
+        g.drawText("Azimuth", azimuthLabel, juce::Justification::topLeft);
+        g.drawText("Elevation", elevationLabel, juce::Justification::topLeft);
+        g.drawText("Distance", distanceLabel, juce::Justification::topLeft);
+        g.setFont(Font(15.f));
+        g.drawText("HRIR", hrirLabel, Justification::centredLeft);
+        g.drawText("HRTF", hrtfLabel, Justification::centredLeft);
+                   
+
+    }else{
+        g.setFont(Font(12.f));
+        g.drawText("Azimuth", azimuthLabel, juce::Justification::topLeft);
+        g.drawText("Elevation", elevationLabel, juce::Justification::topLeft);
+        g.drawText("Distance", distanceLabel, juce::Justification::topLeft);
+        g.setFont(Font(20.f));
+
+        g.drawText("Top View", topViewLabel, Justification::topLeft);
+        g.drawText("Rear View", rearViewLabel, Justification::topLeft);
+        
+    }
 }

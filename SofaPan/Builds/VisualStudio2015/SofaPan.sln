@@ -25,6 +25,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source", "Source", "{5128F9
 		..\..\Source\SofaMetadataView.h = ..\..\Source\SofaMetadataView.h
 		..\..\Source\FilterEngine.cpp = ..\..\Source\FilterEngine.cpp
 		..\..\Source\FilterEngine.h = ..\..\Source\FilterEngine.h
+		..\..\Source\PannerComponent.h = ..\..\Source\PannerComponent.h
+		..\..\Source\PannerComponentBackup.h = ..\..\Source\PannerComponentBackup.h
 		..\..\Source\SOFAData.cpp = ..\..\Source\SOFAData.cpp
 		..\..\Source\SOFAData.h = ..\..\Source\SOFAData.h
 		..\..\Source\PluginProcessor.cpp = ..\..\Source\PluginProcessor.cpp
@@ -40,6 +42,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GUI", "GUI", "{7355D112-FB5
 		..\..\Source\GUI\elevationSliderLookAndFeel.h = ..\..\Source\GUI\elevationSliderLookAndFeel.h
 		..\..\Source\GUI\HeadSideHexData.h = ..\..\Source\GUI\HeadSideHexData.h
 		..\..\Source\GUI\HeadTopHexData.h = ..\..\Source\GUI\HeadTopHexData.h
+		..\..\Source\GUI\HeadRearHexData.h = ..\..\Source\GUI\HeadRearHexData.h
 		..\..\Source\GUI\LogoHexData.h = ..\..\Source\GUI\LogoHexData.h
 		..\..\Source\GUI\SpeakerHexData.h = ..\..\Source\GUI\SpeakerHexData.h
 	EndProjectSection

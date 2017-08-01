@@ -60,13 +60,17 @@ public:
 
     void paint (Graphics& g) override
     {
+
+        
         g.drawImage(backgroundImage, getLocalBounds().toFloat());
-        g.reduceClipRegion(plotBox.toNearestInt());
+        g.reduceClipRegion(plotBox.toNearestInt().withTrimmedTop(6).withTrimmedLeft(6).withTrimmedRight(3));
         
         if(repaintFlag){
+
             repaintFlag = false;
             if(mag_l.size() == 0 || mag_r.size()==0)
                 return;
+
             spectrogram_l.clear();
             spectrogram_r.clear();
             float xPos, yPos;
@@ -125,11 +129,12 @@ public:
 
     void resized() override
     {
+        const float heightLowerPanel = 20;
         Rectangle<float> bounds = getLocalBounds().toFloat();
-        plotBox = bounds.withTrimmedBottom(20).withTrimmedLeft(20).withTrimmedTop(5).withTrimmedRight(5);
+        plotBox = bounds.withTrimmedBottom(heightLowerPanel);//.withTrimmedLeft(20).withTrimmedTop(5).withTrimmedRight(5);
 
-        magViewButton.setBounds(plotBox.getX(), plotBox.getBottom()+2, 40, 16);
-        phaseViewButton.setBounds(plotBox.getX()+40, plotBox.getBottom()+2, 40, 16);
+        magViewButton.setBounds(plotBox.getX()+10 , plotBox.getBottom()+2, 40., heightLowerPanel - 7.);
+        phaseViewButton.setBounds(plotBox.getX()+50, plotBox.getBottom()+2, 40, heightLowerPanel - 7.);
 
         
         
@@ -137,9 +142,7 @@ public:
         backgroundImage = Image(Image::RGB, getLocalBounds().getWidth(), getLocalBounds().getHeight(), true);
         Graphics g (backgroundImage);
         g.fillAll (Colours::white);   // clear the background
-        g.setColour (Colours::grey);
-        g.drawRect (bounds, 1);
-        g.drawRect (plotBox, 1);
+
         g.setFont(Font(9.f));
         float xPos;
         Line<float> gridLine;
@@ -148,12 +151,22 @@ public:
         float gridLinesX[8] = {50, 100, 200, 500, 1000, 2000, 5000, 10000};
         for(int i = 0; i < 8; i++){
             xPos = log10f(gridLinesX[i]/20.0) * (plotBox.getWidth()/3) + plotBox.getX();
-            gridLine = Line<float>(xPos , plotBox.getBottom() , xPos , plotBox.getY());
+            gridLine = Line<float>(xPos , plotBox.getBottom() - 1 , xPos , plotBox.getY() + 1);
             g.drawDashedLine(gridLine, dashes, 2);
             g.drawText(String(gridLinesX[i]) , xPos-40 , plotBox.getBottom() + 5 , 80 , 20 , juce::Justification::centredTop);
         }
-        g.drawText("20", plotBox.getX()-40, plotBox.getBottom() + 5, 80, 20, juce::Justification::centredTop);
-        g.drawText("20k", plotBox.getRight()-40, plotBox.getBottom() + 5, 80, 20, juce::Justification::centredTop);
+        //g.drawText("20", plotBox.getX()-40, plotBox.getBottom() + 5, 80, 20, juce::Justification::centredTop);
+        //g.drawText("20k", plotBox.getRight()-40, plotBox.getBottom() + 5, 80, 20, juce::Justification::centredTop);
+        
+        g.setColour (Colours::grey);
+        g.drawRect (plotBox, 1);
+        //g.setColour (Colours::lightgrey);
+
+        g.drawRect (bounds.reduced(2,2).translated(1, 1), 3);
+        g.setColour (sofaPanLookAndFeel.mainCyan);
+        g.drawRect (bounds, 3);
+        g.setColour (Colours::grey);
+        
         
         repaintFlag = true;
 
@@ -178,6 +191,7 @@ public:
          }
         sampleRate = _sampleRate;
         repaintFlag = true;
+        repaint();
     }
 
     void buttonClicked (Button* button) override{
