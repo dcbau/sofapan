@@ -252,7 +252,11 @@ void SofaPanAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         if(params.distanceSimulationParam || metadata_sofafile.hasMultipleDistances){
             distance = params.distanceParam->get();
         }
-        const float roomRadius = 4; //6x6m room
+        //clip distance, to avoid negative delay values. More a dirty solution, because in the edges of a 10x10m room, where the distance is larger than 5m, there is no change in the reflections anymore. This might be neglible, because the reflections are only an approximation anyway
+        if(distance > 5.0){
+            distance = 5.0;
+        }
+        const float roomRadius = 5; //10x10m room
         const float speedOfSound = 343.2;
         const float meterToMs = 1000.0 / speedOfSound;
         delay[0] = meterToMs * ((2.0 * roomRadius - distance) - alpha_s * distance);
@@ -268,27 +272,6 @@ void SofaPanAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         for(int i=0; i < 2; i++){
             earlyReflections[i]->process(inBufferRefl, outBufferL, outBufferR, numberOfSamples, delay[i], damp[i]);
         }
-
-//    }else{
-//    
-//        //Approximation by interpolating between extremal values
-//        delay[0] = 14.0 - (alpha_s * 3.5); //rightSide: 14 -> 11 -> 14 -> 17ms delay
-//        delay[1] = 14.0 + (alpha_s * 3.5); //leftSide: 14 -> 17 -> 14 -> 11ms
-//        delay[2] = 14.0 - (alpha_c * 3.5); //front: 11 -> 14 -> 17 -> 14ms
-//        delay[3] = 14.0 + (alpha_c * 3.5); //back: 17 -> 14 -> 11 -> 14ms
-////        printf("\n delay1 = %f, newDelay = %f", delay[0], newDelay);
-//
-//        damp[0] = 1.0/(5.0-alpha_s); // 1/5 -> 1/4 -> 1/5 -> 1/6
-//        damp[1] = 1.0/(5.0+alpha_s); // 1/5 -> 1/6 -> 1/5 -> 1/4
-//        damp[2] = 1.0/(5.0-alpha_c); // 1/4 -> 1/5 -> 1/6 -> 1/5
-//        damp[3] = 1.0/(5.0+alpha_c); // 1/6 -> 1/5 -> 1/4 -> 1/5
-//        
-//    }
-
-//        earlyReflections[0]->process(inBufferRefl, outBufferL, outBufferR, numberOfSamples, delay[0], damp[0]); //90°
-//        earlyReflections[1]->process(inBufferRefl, outBufferL, outBufferR, numberOfSamples, delay[1], damp[1]); //-90°
-//        earlyReflections[2]->process(inBufferRefl, outBufferL, outBufferR, numberOfSamples, delay[2], damp[2]); //90°
-//        earlyReflections[3]->process(inBufferRefl, outBufferL, outBufferR, numberOfSamples, delay[3], damp[3]); //-90°
     }
     
     buffer.applyGain(0.25);

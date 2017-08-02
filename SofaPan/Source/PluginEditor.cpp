@@ -14,7 +14,7 @@
 
 //==============================================================================
 SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor& p)
-    : AudioProcessorEditor (&p), processor (p), panner2D(p, false), panner2D_elev(p, true)
+    : AudioProcessorEditor (&p), processor (p), panner2D_top(p, false), panner2D_rear(p, true)
 {
     
     // Make sure that before the constructor has finished, you've set the
@@ -71,7 +71,7 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     testSwitchButton.setButtonText("Test Switch");
     testSwitchButton.setColour(ToggleButton::textColourId, Colours::white);
     testSwitchButton.addListener(this);
-    //addAndMakeVisible(&testSwitchButton);
+    addAndMakeVisible(&testSwitchButton);
     
     useDistanceSimulationButton.setButtonText("Nearfield Simulation");
     useDistanceSimulationButton.setComponentID("nfSimButton");
@@ -92,8 +92,8 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
         addAndMakeVisible(&plotHRTFView);
         addAndMakeVisible(&plotHRIRView);
     }else{
-        addAndMakeVisible(&panner2D);
-        addAndMakeVisible(&panner2D_elev);
+        addAndMakeVisible(&panner2D_top);
+        addAndMakeVisible(&panner2D_rear);
     }
     
     showSOFAMetadataButton.setButtonText("Show More Information");
@@ -234,8 +234,8 @@ void SofaPanAudioProcessorEditor::timerCallback() {
             plotHRIRView.drawHRIR(hrir, firLength, sampleRate);
             plotHRTFView.drawHRTF(hrtf, complexLength, sampleRate);
         }
-        panner2D.setDistanceAndAngle(distanceValue, azimuthValue, elevationValue);
-        panner2D_elev.setDistanceAndAngle(distanceValue, azimuthValue, elevationValue);
+        panner2D_top.setDistanceAndAngle(distanceValue, azimuthValue, elevationValue);
+        panner2D_rear.setDistanceAndAngle(distanceValue, azimuthValue, elevationValue);
 
 
     }
@@ -263,11 +263,14 @@ void SofaPanAudioProcessorEditor::timerCallback() {
             panner_el.setEnabled(true);
             panner_el.setRange(eleMin, eleMax);
             panner_el.setRotaryParameters((270. + eleMin) * deg2rad , (270. + eleMax) * deg2rad, true);
+            panner2D_rear.setHasElevation(true);
+
         }else{
             panner_el.setRotaryParameters((270. + eleMin) * deg2rad , (270. + eleMax) * deg2rad, true);
             elevationRange_Note = "none";
             panner_el.setValue(0.0);
             panner_el.setEnabled(false);
+            panner2D_rear.setHasElevation(false);
         }
         float distMin = processor.metadata_sofafile.minDistance;
         float distMax = processor.metadata_sofafile.maxDistance;
@@ -433,21 +436,24 @@ void SofaPanAudioProcessorEditor::buttonClicked(Button *button)
         rearrange();
         removeChildComponent(&plotHRIRView);
         removeChildComponent(&plotHRTFView);
-        addAndMakeVisible(&panner2D);
-        addAndMakeVisible(&panner2D_elev);
+        addAndMakeVisible(&panner2D_top);
+        addAndMakeVisible(&panner2D_rear);
         panner_dist.setSliderStyle(Slider::LinearHorizontal);
         repaint();
+        setParameterValue("dist_sim", true);
 
     }
     if(button == & useLayoutSOFAPlayerButton){
         roomsimLayout = 0;
         rearrange();
-        removeChildComponent(&panner2D);
-        removeChildComponent(&panner2D_elev);
+        removeChildComponent(&panner2D_top);
+        removeChildComponent(&panner2D_rear);
         addAndMakeVisible(&plotHRTFView);
         addAndMakeVisible(&plotHRIRView);
         panner_dist.setSliderStyle(Slider::LinearVertical);
         repaint();
+        setParameterValue("dist_sim", false);
+
     }
     
 
@@ -492,10 +498,10 @@ void SofaPanAudioProcessorEditor::rearrange(){
     metadataView.setBounds(getLocalBounds().reduced(20));
     
     bypassButton.setBounds(10., 50., 150., 30.);
-    //testSwitchButton.setBounds(10., 80., 150., 30.);
     useGlobalSofaFileButton.setBounds(135, 10., 80, 30);
     useDistanceSimulationButton.setBounds(10, showSOFAMetadataButton.getBottom() + 30, 100, 30);
-    
+    testSwitchButton.setBounds(10., useDistanceSimulationButton.getBottom() + 30, 100., 30.);
+
     
     
     
@@ -513,11 +519,11 @@ void SofaPanAudioProcessorEditor::rearrange(){
         topViewLabel = boxWithSpacing.withSize(panner2D_size, 30);
         rearViewLabel = topViewLabel.translated(panner2D_size + spacing, 0);
         
-        panner2D.setBounds(topViewLabel.getX(), topViewLabel.getBottom(), panner2D_size, panner2D_size);
-        panner2D_elev.setBounds(rearViewLabel.getX(), rearViewLabel.getBottom(), panner2D_size, panner2D_size);
+        panner2D_top.setBounds(topViewLabel.getX(), topViewLabel.getBottom(), panner2D_size, panner2D_size);
+        panner2D_rear.setBounds(rearViewLabel.getX(), rearViewLabel.getBottom(), panner2D_size, panner2D_size);
         
         panner_size = 80;
-        panner_az.setBounds(panner2D.getX(), panner2D.getBottom() + spacing, panner_size, panner_size);
+        panner_az.setBounds(panner2D_top.getX(), panner2D_top.getBottom() + spacing, panner_size, panner_size);
         panner_el.setBounds(panner_az.getRight() + spacing, panner_az.getY(), panner_size, panner_size);
         panner_dist.setBounds(panner_el.getRight() + spacing, panner_az.getY(), panner_size * 3, panner_size);
         azimuthLabel.setBounds(panner_az.getX(), panner_az.getY() - 20, panner_az.getWidth(), 20);

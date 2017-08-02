@@ -122,7 +122,7 @@ void FilterEngine::process(const float* inBuffer, float* outBuffer_L, float* out
             
             float azimuth_l = azimuth;
             float azimuth_r = azimuth;
-            if(params.distanceSimulationParam->get() && distance < 1.0){
+            if(params.distanceSimulationParam->get() && distance < 1.0 && params.testSwitchParam->get() == true){
                 float angleLeftEar = calculateNFAngleOffset(alpha, distance, standardHeadradius/2);
                 float angleRightEar = calculateNFAngleOffset(alpha, distance, -standardHeadradius/2);
                 

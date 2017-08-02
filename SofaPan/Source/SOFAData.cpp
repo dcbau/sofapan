@@ -512,58 +512,6 @@ void SOFAData::createPassThrough_FIR(int _sampleRate){
     }
     
     
-    
-    float z1 = 0.0;
-    float z2 = 0.0;
-    //LP, 44.1kHz, 200Hz, 0.707Q
-    const float a0 = 0.00019897081257375833;
-    const float a1 = 0.00039794162514751667;
-    const float a2 = 0.00019897081257375833;
-    const float b1 = -1.9597011886046918;
-    const float b2 = 0.960497071854987;
-    
-    float u;
-    for (int j = 0; j < passThroughLength; j++) {
-        u = IR_Left[j] - b1*z1 - b2*z2;
-        IR_Left[j] = a0*u + a1*z1 + a2*z2;
-        z2 = z1;
-        z1 = u;
-    }
-
-    z1 = 0.0;
-    z2 = 0.0;
-    for (int j = 0; j < passThroughLength; j++) {
-        u = IR_Left[j] - b1*z1 - b2*z2;
-        IR_Left[j] = a0*u + a1*z1 + a2*z2;
-        z2 = z1;
-        z1 = u;
-    }
-    
-    //HP, 44.1kHz, 200Hz, 0.707Q
-    const float a0h = 0.9800495651149197;
-    const float a1h = -1.9600991302298394;
-    const float a2h = 0.9800495651149197;
-    const float b1h = -1.9597011886046918;
-    const float b2h = 0.960497071854987;
-    
-    z1 = 0.0;
-    z2 = 0.0;
-    for (int j = 0; j < passThroughLength; j++) {
-        u = IR_Right[j] - b1h*z1 - b2h*z2;
-        IR_Right[j] = a0h*u + a1h*z1 + a2h*z2;
-        z2 = z1;
-        z1 = u;
-    }
-    z1 = 0.0;
-    z2 = 0.0;
-    for (int j = 0; j < passThroughLength; j++) {
-        u = IR_Right[j] - b1h*z1 - b2h*z2;
-        IR_Right[j] = a0h*u + a1h*z1 + a2h*z2;
-        z2 = z1;
-        z1 = u;
-    }
-    
-    
     for(int i = 0; i < lengthOfHRIR; i++){
         measurement_object->getHRIR()[i] = IR_Left[i];
         measurement_object->getHRIR()[i+lengthOfHRIR] = IR_Right[i];

@@ -17,22 +17,33 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SofaPan", "SofaPan", "{983F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source", "Source", "{5128F99F-CF33-C86D-EFA2-728C0F47745A}"
 	ProjectSection(SolutionItems) = preProject
-		..\..\Source\EarlyReflection.cpp = ..\..\Source\EarlyReflection.cpp
-		..\..\Source\EarlyReflection.h = ..\..\Source\EarlyReflection.h
-		..\..\Source\SofaPathSharedUpdater.h = ..\..\Source\SofaPathSharedUpdater.h
-		..\..\Source\PlotHRIRComponent.h = ..\..\Source\PlotHRIRComponent.h
-		..\..\Source\PlotHRTFComponent.h = ..\..\Source\PlotHRTFComponent.h
-		..\..\Source\SofaMetadataView.h = ..\..\Source\SofaMetadataView.h
-		..\..\Source\FilterEngine.cpp = ..\..\Source\FilterEngine.cpp
-		..\..\Source\FilterEngine.h = ..\..\Source\FilterEngine.h
-		..\..\Source\PannerComponent.h = ..\..\Source\PannerComponent.h
-		..\..\Source\PannerComponentBackup.h = ..\..\Source\PannerComponentBackup.h
-		..\..\Source\SOFAData.cpp = ..\..\Source\SOFAData.cpp
-		..\..\Source\SOFAData.h = ..\..\Source\SOFAData.h
 		..\..\Source\PluginProcessor.cpp = ..\..\Source\PluginProcessor.cpp
 		..\..\Source\PluginProcessor.h = ..\..\Source\PluginProcessor.h
 		..\..\Source\PluginEditor.cpp = ..\..\Source\PluginEditor.cpp
 		..\..\Source\PluginEditor.h = ..\..\Source\PluginEditor.h
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SOFA Data", "SOFA Data", "{AF34E568-2DE3-072E-F363-D7519E061CFC}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\Source\SOFAData.cpp = ..\..\Source\SOFAData.cpp
+		..\..\Source\SOFAData.h = ..\..\Source\SOFAData.h
+		..\..\Source\SofaPathSharedUpdater.h = ..\..\Source\SofaPathSharedUpdater.h
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Signal Processing", "Signal Processing", "{C4222352-A6FD-0CA5-F955-BCD4DD66AFD5}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\Source\EarlyReflection.cpp = ..\..\Source\EarlyReflection.cpp
+		..\..\Source\EarlyReflection.h = ..\..\Source\EarlyReflection.h
+		..\..\Source\FilterEngine.cpp = ..\..\Source\FilterEngine.cpp
+		..\..\Source\FilterEngine.h = ..\..\Source\FilterEngine.h
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Components", "Components", "{800885F9-656D-0E04-E392-EE62F0FFD2F7}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\Source\PlotHRIRComponent.h = ..\..\Source\PlotHRIRComponent.h
+		..\..\Source\PlotHRTFComponent.h = ..\..\Source\PlotHRTFComponent.h
+		..\..\Source\SofaMetadataView.h = ..\..\Source\SofaMetadataView.h
+		..\..\Source\RoomPannerComponent.h = ..\..\Source\RoomPannerComponent.h
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GUI", "GUI", "{7355D112-FB5B-473B-260D-9EBDDE00CFBB}"
@@ -1887,6 +1898,9 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{AF34E568-2DE3-072E-F363-D7519E061CFC} = {5128F99F-CF33-C86D-EFA2-728C0F47745A}
+		{C4222352-A6FD-0CA5-F955-BCD4DD66AFD5} = {5128F99F-CF33-C86D-EFA2-728C0F47745A}
+		{800885F9-656D-0E04-E392-EE62F0FFD2F7} = {5128F99F-CF33-C86D-EFA2-728C0F47745A}
 		{7355D112-FB5B-473B-260D-9EBDDE00CFBB} = {5128F99F-CF33-C86D-EFA2-728C0F47745A}
 		{5128F99F-CF33-C86D-EFA2-728C0F47745A} = {983FB2A7-8E19-8350-83E6-C0357DFFB80C}
 		{EBF046F5-7CA3-37D3-9D14-C9A7C0217454} = {7D98269F-FE96-6BA2-6982-95A094257474}

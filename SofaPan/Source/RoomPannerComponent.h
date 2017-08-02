@@ -1,7 +1,7 @@
 /*
   ==============================================================================
 
-    PannerComponent.h
+    RoomPannerComponent.h
     Created: 7 Jul 2017 10:05:05am
     Author:  David Bau
 
@@ -20,7 +20,9 @@
 /*
 */
 
-#define ROOMRADIUS 3.0
+#define ROOMRADIUS 5.0
+
+/* The nonuniformscale is a solution to the problem, that the nearfield area (<1m) is more interesting than the farfield and should be adjustable with more precision. So the 2D plane is split into two areas: the area till half the radius of the plane represents the nearfield up to 1m. The second area (from half to the full radius) covers the rest of the room (1m to the desired room size) */
 #define NONUNIFORMSCALE true
 
 
@@ -33,7 +35,6 @@ static struct {
 
 static bool mouseInComponent = false;
 
-
 typedef struct {
     float x, y;
     void set(float _x, float _y){
@@ -45,18 +46,18 @@ typedef struct {
 
 
 
-class PannerComponent    : public Component, public InterprocessConnection
+class RoomPannerComponent    : public Component, public InterprocessConnection
 {
 public:
-    PannerComponent(SofaPanAudioProcessor& p, bool _isSideView)
+    RoomPannerComponent(SofaPanAudioProcessor& p, bool _isRearView)
     : processor(p)
     {
         
         //sourcePositionCartesian= std::vector<float>(0.0, 1.0, 0.0);
         spherical.set(0.0, 0.0, 1.0);
-        isSideView = _isSideView;
+        isRearView = _isRearView;
         
-        if(!isSideView)
+        if(!isRearView)
             createPipe("1234", 10);
         else{
             sleep(1);
@@ -65,7 +66,7 @@ public:
 
     }
 
-    ~PannerComponent()
+    ~RoomPannerComponent()
     {
     }
 
@@ -83,7 +84,7 @@ public:
         const float dashes[2] = {5, 10};
         g.drawDashedLine(Line<float>(Point<float>(boarderBox.getX(), boarderBox.getCentreY()), boarderBox.getCentre()), dashes, 2, 1, 1);
         g.drawDashedLine(Line<float>(Point<float>(boarderBox.getRight(), boarderBox.getCentreY()), boarderBox.getCentre()), dashes, 2, 1, 1);
-        if(!isSideView){
+        if(!isRearView){
             g.drawDashedLine(Line<float>(Point<float>(boarderBox.getCentreX(), boarderBox.getY()), boarderBox.getCentre()), dashes, 2, 1, 1);
             g.drawDashedLine(Line<float>(Point<float>(boarderBox.getCentreX(), boarderBox.getBottom()), boarderBox.getCentre()), dashes, 2, 1, 1);
         }
@@ -104,19 +105,17 @@ public:
         
         const int imageSize = boarderBox.getWidth() / 7;
         float scaleFor3DEffect;
-        if(isSideView){
+        if(isRearView){
             scaleFor3DEffect = -y;
         }else{
             scaleFor3DEffect = z;
-//printf("\nNorm Height = %f", scaleFor3DEffect);
-
         }
         scaleFor3DEffect /= 3.0;
         float sourceSize = 10 + scaleFor3DEffect * 2;
         float scaleFor3DEffect_pos = scaleFor3DEffect * 0.5 + 0.5;
         g.setColour(Colours::orange.withBrightness(0.7 + 0.1*scaleFor3DEffect_pos));
         Rectangle<float> source = Rectangle<float>(pixel.x - sourceSize/2., pixel.y - sourceSize/2., sourceSize, sourceSize);
-        if(isSideView){
+        if(isRearView){
             if(scaleFor3DEffect > 0 ){
                 g.drawImage(headRearImage, boarderBox.getCentreX()-imageSize/2, boarderBox.getCentreY()-imageSize/2 - 1, imageSize, imageSize, 0, 0, 200, 200);
                 g.fillRoundedRectangle(source, sourceSize/3.);
@@ -148,63 +147,27 @@ public:
     {
         coordsToPixel();
     }
-    
-//    void positionToPixelCoordinates(){
-//        if(NONUNIFORMSCALE){
-//            Rectangle<float> bounds = getLocalBounds().toFloat();
-//            float normX = cartesian.x / ROOMRADIUS;
-//            float normY = - cartesian.y / ROOMRADIUS;
-//            pixel.set(bounds.getCentreX() + normX * bounds.getWidth()/2.0, bounds.getCentreY() + normY * bounds.getHeight()/2.0);
-//        }else{
-//            Rectangle<float> bounds = getLocalBounds().toFloat();
-//            float normX = cartesian.x / ROOMRADIUS;
-//            float normY = - cartesian.y / ROOMRADIUS;
-//            pixel.set(bounds.getCentreX() + normX * bounds.getWidth()/2.0, bounds.getCentreY() + normY * bounds.getHeight()/2.0);
-//        }
-//        
-//    }
-//    
-//    void pixelCoordinatesToPosition(){
-//        if(NONUNIFORMSCALE){
-//            Rectangle<float> bounds = getLocalBounds().toFloat();
-//            float normX = pixel.x / bounds.getWidth(); // 0 - 1
-//            float normY = pixel.y / bounds.getHeight();
-//            cartesian.x = (normX * 2.0 - 1.0) * ROOMRADIUS;
-//            cartesian.y = - (normY * 2.0 - 1.0) * ROOMRADIUS;
-//        }else{
-//            Rectangle<float> bounds = getLocalBounds().toFloat();
-//            float normX = pixel.x / bounds.getWidth(); // 0 - 1
-//            float normY = pixel.y / bounds.getHeight();
-//            cartesian.x = (normX * 2.0 - 1.0) * ROOMRADIUS;
-//            cartesian.y = - (normY * 2.0 - 1.0) * ROOMRADIUS;
-//        }
-//    }
+
 
     void pixelToCoords(){
         
         //float x, y, z;
-        if(isSideView){
+        if(isRearView){
             Rectangle<float> bounds = getLocalBounds().toFloat();
             float normX = pixel.x / bounds.getWidth(); // 0 - 1
             float normZ = pixel.y / bounds.getHeight();
             x =  (normX * 2.0 - 1.0) * ROOMRADIUS;
             z = - (normZ * 2.0 - 1.0) * ROOMRADIUS;
-            //x = sinf(spherical.azimuth * M_PI / 180.0) * cosf(spherical.elevation * M_PI / 180.0) * spherical.distance;
-            printf("\nSIDE: x: %.2f | y: %.2f | z: %.2f", x, y, z);
         }else{
             Rectangle<float> bounds = getLocalBounds().toFloat();
             float normX = pixel.x / bounds.getWidth(); // 0 - 1
             float normY = pixel.y / bounds.getHeight();
             x = (normX * 2.0 - 1.0) * ROOMRADIUS;
             y = - (normY * 2.0 - 1.0) * ROOMRADIUS;
-            //z = spherical.distance * sinf(spherical.elevation * M_PI / 180.);
-            printf("\nTOP: x: %.2f | y: %.2f | z: %.2f", x, y, z);
-
         }
         spherical.azimuth = atan2f(y , x) *  180.0/ M_PI - 90.0;
         spherical.azimuth = spherical.azimuth > 0.0 ? 360.0 - spherical.azimuth : -spherical.azimuth;
         spherical.elevation = atan2f(z, sqrtf(x*x + y*y))* 180.0/ M_PI;
-        //printf("elevation = %f", spherical.elevation);
 
         spherical.distance = sqrtf(y * y  + x * x + z * z);
 
@@ -242,11 +205,7 @@ public:
         x = sinf(spherical.azimuth * M_PI / 180.0) * cosf(spherical.elevation * M_PI / 180.0) * distance;
         y = cosf(spherical.azimuth * M_PI / 180.0) * cosf(spherical.elevation * M_PI / 180.0) * distance;
         
-        //z = spherical.distance * sinf(spherical.elevation * M_PI / 180.);
-        //x = sinf(spherical.azimuth * M_PI / 180.0) * cosf(spherical.elevation * M_PI / 180.0) * spherical.distance;
-        //y = cosf(spherical.azimuth * M_PI / 180.0) * cosf(spherical.elevation * M_PI / 180.0) * spherical.distance;
-//
-        if(isSideView){
+        if(isRearView){
             Rectangle<float> bounds = getLocalBounds().toFloat();
             float normZ = - z / ROOMRADIUS;
             float normX = x / ROOMRADIUS;
@@ -262,8 +221,12 @@ public:
     void mouseDrag(const MouseEvent &  	event) override{
         
         Rectangle<float> box = getLocalBounds().toFloat().reduced(4, 4);
-        
+    
         pixel.set(event.getPosition().x, event.getPosition().y);
+
+        if(isRearView && !hasElevation)
+            pixel.y = getHeight() / 2.0;
+        
         if(pixel.x > box.getRight())    pixel.x = box.getRight();
         if(pixel.x < 4.0)   pixel.x = 4.0;
         if(pixel.y > box.getBottom())   pixel.y = box.getBottom();
@@ -271,14 +234,13 @@ public:
 
         pixelToCoords();
         
-//        //clipping if distance is too narrow or too far
-//        if(spherical.distance < 0.2 || spherical.distance > ROOMRADIUS) {
-//            spherical.distance = spherical.distance < 0.2 ? 0.2 : ROOMRADIUS;
-//            sphericalToPixel();
-//        }
+        //clipping if distance is too far
+        if(spherical.distance < 0.2) {
+            spherical.distance = 0.2;
+            coordsToPixel();
+        }
         
-        
-        
+
         setParameterValue("elevation", (spherical.elevation / 180.0) + 0.5);
         setParameterValue("azimuth", spherical.azimuth/360.0);
         setParameterValue("distance", spherical.distance);
@@ -326,16 +288,9 @@ public:
     
     void setDistanceAndAngle( float _distance, float _angle, float _angle_elevation){
         if(!mouseInComponent){ //to prevent redundant calls to both windows
-//            if(isSideView)
-//                printf("Set Distance And Angle SIDE \n");
-//            else
-//                printf("Set Distance And Angle TOP \n");
-
-            //if(!isSideView){ //DANGER: this is a small workaround. The values are always set first on the top-panner, so they dont need to be set on the side-panner again
-                spherical.azimuth = _angle;
-                spherical.distance = _distance;
-                spherical.elevation = _angle_elevation;
-            //}
+            spherical.azimuth = _angle;
+            spherical.distance = _distance;
+            spherical.elevation = _angle_elevation;
             coordsToPixel();
             repaint();
         }
@@ -348,22 +303,34 @@ public:
     void connectionLost() override{
     }
     void messageReceived (const MemoryBlock &message) override{
-        printf(isSideView ? "Message Received Side \n" : "Message Received Top \n");
+        printf(isRearView ? "Message Received Side \n" : "Message Received Top \n");
         coordsToPixel();
         repaint();
     }
     
+    void setHasElevation(bool _hasElevation){
+        if(hasElevation != _hasElevation){
+            hasElevation = _hasElevation;
+            spherical.elevation = 0.0;
+            coordsToPixel();
+        }
+    }
+    
 private:
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PannerComponent)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RoomPannerComponent)
     SofaPanLookAndFeel sofaPanLookAndFeel;
     const Image headTopImage = ImageCache::getFromMemory(headTopPicto, headTopPicto_Size);
     const Image headRearImage = ImageCache::getFromMemory(headRearPicto, headRearPicto_Size);
-    bool isSideView;
+    bool isRearView;
     float x, y, z;
     
     sourcePositionPixel pixel;
     //static sourcePositionSpherical spherical;
 
     SofaPanAudioProcessor& processor;
+    bool hasElevation = true;
+
+    
+    
 
 };

@@ -17,7 +17,7 @@
 #include "SofaMetadataView.h"
 #include "PlotHRTFComponent.h"
 #include "PlotHRIRComponent.h"
-#include "PannerComponent.h"
+#include "RoomPannerComponent.h"
 
 #include "sofaPanLookAndFeel.h"
 #include "azimuthSliderLookAndFeel.h"
@@ -83,13 +83,11 @@ private:
     void sliderDragStarted(Slider* slider) override;
     void sliderDragEnded(Slider* slider) override;
 
-    
-    
     SofaMetadataView metadataView;
     PlotHRTFComponent plotHRTFView;
     PlotHRIRComponent plotHRIRView;
-    PannerComponent panner2D;
-    PannerComponent panner2D_elev;
+    RoomPannerComponent panner2D_top;
+    RoomPannerComponent panner2D_rear;
     int counter;
     
     float lastElevationValue;
@@ -106,7 +104,7 @@ private:
     Image backgroundImage;
     
     const float simulationDistanceMin = 0.2;
-    const float simulationDistanceMax = 3.0;
+    const float simulationDistanceMax = 5.0;
     
     ScopedPointer<BubbleMessageComponent> popUpInfo;
     

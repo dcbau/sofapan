@@ -66,7 +66,7 @@ private:
 
     //delayline stuff
     float* delayLine;
-    const int maxDelayTimeMs = 100;
+    const int maxDelayTimeMs = 200;
     int delayLineLength;
     int writeIndex;
     
