@@ -34,6 +34,7 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     panner_az.setTextBoxStyle(Slider::TextBoxBelow, false, 70, 15);
     panner_az.setColour(Slider::textBoxBackgroundColourId, Colours::white);
     panner_az.setRotaryParameters(0, M_PI*2.0, false);
+    panner_az.setDoubleClickReturnValue(true, 0.0);
     panner_az.addListener(this);
     addAndMakeVisible(&panner_az);
 
@@ -47,6 +48,7 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     panner_el.setTextBoxStyle(Slider::TextBoxBelow, false, 70, 15);
     panner_el.setColour(Slider::textBoxBackgroundColourId, Colours::white);
     panner_el.setRotaryParameters(M_PI, M_PI*2, true);
+    panner_el.setDoubleClickReturnValue(true, 0.0);
     panner_el.addListener(this);
     addAndMakeVisible(&panner_el);
     
@@ -55,6 +57,7 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     panner_dist.setTextValueSuffix(" m");
     panner_dist.setPopupDisplayEnabled(false, this);
     panner_dist.setTextBoxStyle(Slider::TextBoxBelow, false, 70, 15);
+    panner_dist.setDoubleClickReturnValue(true, 1.0);
     panner_dist.addListener(this);
     addAndMakeVisible(&panner_dist);
     
@@ -106,17 +109,17 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     addAndMakeVisible(&showTooltipsButton);
     
     
-    useLayoutSOFAPlayerButton.setButtonText("SOFA Player");
-    useLayoutSOFAPlayerButton.setClickingTogglesState(true);
-    useLayoutSOFAPlayerButton.setRadioGroupId(1111);
-    useLayoutSOFAPlayerButton.setColour (TextButton::buttonColourId, Colours::lightgrey);
-    useLayoutSOFAPlayerButton.setColour (TextButton::buttonOnColourId, sofaPanLookAndFeel.mainCyan);
-    useLayoutSOFAPlayerButton.setColour (TextButton::textColourOffId, Colours::grey);
-    useLayoutSOFAPlayerButton.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
-    useLayoutSOFAPlayerButton.setToggleState(true, dontSendNotification);
-    useLayoutSOFAPlayerButton.setLookAndFeel(&juceDefaultLookAndFeel);
-    useLayoutSOFAPlayerButton.addListener(this);
-    addAndMakeVisible(&useLayoutSOFAPlayerButton);
+    useLayoutSimplePanningButton.setButtonText("Simple Panning");
+    useLayoutSimplePanningButton.setClickingTogglesState(true);
+    useLayoutSimplePanningButton.setRadioGroupId(1111);
+    useLayoutSimplePanningButton.setColour (TextButton::buttonColourId, Colours::lightgrey);
+    useLayoutSimplePanningButton.setColour (TextButton::buttonOnColourId, sofaPanLookAndFeel.mainCyan);
+    useLayoutSimplePanningButton.setColour (TextButton::textColourOffId, Colours::grey);
+    useLayoutSimplePanningButton.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
+    useLayoutSimplePanningButton.setToggleState(true, dontSendNotification);
+    useLayoutSimplePanningButton.setLookAndFeel(&juceDefaultLookAndFeel);
+    useLayoutSimplePanningButton.addListener(this);
+    addAndMakeVisible(&useLayoutSimplePanningButton);
     
     useLayoutRoomsimButton.setButtonText("Room Simulation");
     useLayoutRoomsimButton.setClickingTogglesState(true);
@@ -443,7 +446,7 @@ void SofaPanAudioProcessorEditor::buttonClicked(Button *button)
         setParameterValue("dist_sim", true);
 
     }
-    if(button == & useLayoutSOFAPlayerButton){
+    if(button == & useLayoutSimplePanningButton){
         roomsimLayout = 0;
         rearrange();
         removeChildComponent(&panner2D_top);
@@ -560,7 +563,7 @@ void SofaPanAudioProcessorEditor::rearrange(){
     
     const float modeSelectionBoxWidth = getWidth() / 4.0;
     Rectangle<int> modeSelectionBox = Rectangle<int>(mainControlBox.getX(), mainControlBox.getY()-20, modeSelectionBoxWidth, 20);
-    useLayoutSOFAPlayerButton.setBounds(modeSelectionBox.withWidth(modeSelectionBoxWidth/2.0));
+    useLayoutSimplePanningButton.setBounds(modeSelectionBox.withWidth(modeSelectionBoxWidth/2.0));
     useLayoutRoomsimButton.setBounds(modeSelectionBox.withWidth(modeSelectionBoxWidth/2.0).translated(modeSelectionBoxWidth/2.0, 0));
     
     

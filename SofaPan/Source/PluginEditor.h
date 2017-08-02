@@ -64,7 +64,7 @@ private:
     ToggleButton useGlobalSofaFileButton;
     ToggleButton useDistanceSimulationButton;
     ToggleButton showTooltipsButton;
-    TextButton useLayoutSOFAPlayerButton;
+    TextButton useLayoutSimplePanningButton;
     TextButton useLayoutRoomsimButton;
     
     const String sofaMetadataID = String("Listener Short Name: \nMeasurements: \nSamples per IR: \nSOFA Convention: \nData Type: \nElevation: \nDistance:");

@@ -8,18 +8,21 @@ This is a university project from the University of Applied Sciences Duesseldorf
 - Mac/PC
 - 360 degree (3D Full Sphere: Azimuth, Elevation & Distance(when provided)) Sourround Panning of a Mono Input Source
 - Load SOFA Files from disc during runtime 
+- All running plugins in a host can load the same SOFA file by loading it in one plugin
 - Binaural Rendering via Fast Convolution
 - Access to SOFA Metadata (view only)
 - Crossfading between Convolution Products when the HRTF is exchanged (Angle changed) 
 - Graphical Representation (Plot) of current HRTF and HRIR 
+- Room/Distance Simulation Mode: Direct placing of the source in a virtual room with two 2DPlanes
+	- Room is simulated with semistatic early reflections, based on mirror source model
+	- Nearfield simulation by using acoustic parallax effect
 
 # Planned:
 - Documentation
 - Better Name
 - Linux Support
 - Individualization of Head Characteristics, e.g. Ear Distance (ITD)
-- Early Reflections  
-- Distance Simulation
+- Dynamic Early Reflections n
 - Headtracking
 - Different interpolation techniques (for positions between measured HRTFs) 
 - … and of course bugfixes and improved audio quality.
