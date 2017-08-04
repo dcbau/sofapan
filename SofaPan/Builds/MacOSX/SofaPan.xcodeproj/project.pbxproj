@@ -88,6 +88,7 @@
 		4F814ECD8C92301456D3FA21 = {isa = PBXFileReference; lastKnownFileType = file; name = "juce_cryptography"; path = "../../../../JUCE/modules/juce_cryptography"; sourceTree = "SOURCE_ROOT"; };
 		544488531003A41B2E378755 = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = PlotHRIRComponent.h; path = ../../Source/PlotHRIRComponent.h; sourceTree = "SOURCE_ROOT"; };
 		55EF5C51AC13152B7364FC32 = {isa = PBXFileReference; lastKnownFileType = file; name = "juce_opengl"; path = "../../../../JUCE/modules/juce_opengl"; sourceTree = "SOURCE_ROOT"; };
+		56A44B8B0100BD670C45EFAB = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Delayline.h; path = ../../Source/Delayline.h; sourceTree = "SOURCE_ROOT"; };
 		591278EA243D67F7A754FCB7 = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = "include_juce_audio_plugin_client_VST2.cpp"; path = "../../JuceLibraryCode/include_juce_audio_plugin_client_VST2.cpp"; sourceTree = "SOURCE_ROOT"; };
 		5BC7696992806BA662D6F210 = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Info-AUv3_AppExtension.plist"; path = "Info-AUv3_AppExtension.plist"; sourceTree = "SOURCE_ROOT"; };
 		5D2C5CACD538E96BA4F5A394 = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
@@ -150,6 +151,7 @@
 					2EAD75875DFB0FC40798F802,
 					06EE7A64431F908CD89A371F, ); name = "SOFA Data"; sourceTree = "<group>"; };
 		1B861888C9113AE4A32E5187 = {isa = PBXGroup; children = (
+					56A44B8B0100BD670C45EFAB,
 					2ECF5FE33F35E163109F458E,
 					368737A36910970C98FBF444,
 					E334B607BD429A04F5B9D7E7,

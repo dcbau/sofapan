@@ -20,6 +20,7 @@
               file="Source/SofaPathSharedUpdater.h"/>
       </GROUP>
       <GROUP id="{5486C6E1-FC20-1B3E-70BF-F12BC7680A5B}" name="Signal Processing">
+        <FILE id="sCtrkL" name="Delayline.h" compile="0" resource="0" file="Source/Delayline.h"/>
         <FILE id="T6ZeY5" name="EarlyReflection.cpp" compile="1" resource="0"
               file="Source/EarlyReflection.cpp"/>
         <FILE id="zeToDt" name="EarlyReflection.h" compile="0" resource="0"
