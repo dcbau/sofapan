@@ -13,6 +13,7 @@
 
 #include "FilterEngine.h"
 #include "EarlyReflection.h"
+#include "math.h"
 
 //==============================================================================
 SofaPanAudioProcessor::SofaPanAudioProcessor()
@@ -33,6 +34,7 @@ SofaPanAudioProcessor::SofaPanAudioProcessor()
     addParameter(params.distanceParam = new AudioParameterFloat("distance", "Distance", 0.f, 1.f, 0.5f));
     addParameter(params.testSwitchParam = new AudioParameterBool("test", "Test Switch", false));
     addParameter(params.distanceSimulationParam = new AudioParameterBool("dist_sim", "Distance Simulation", false));
+    addParameter(params.nearfieldSimulationParam = new AudioParameterBool("nearfield_sim", "Nearfield Simulation", false));
 
     
     HRTFs = new SOFAData();
@@ -49,6 +51,7 @@ SofaPanAudioProcessor::SofaPanAudioProcessor()
     updater = &SofaPathSharedUpdater::instance();
     String connectionID = updater->createConnection();
     connectToPipe(connectionID, 10);
+    
     
     
 }
@@ -228,15 +231,35 @@ void SofaPanAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     
     const float* inBufferRefl = reflectionInBuffer.getReadPointer(0);
     
-    
     Filter->process(inBuffer, outBufferL, outBufferR, numberOfSamples, params);
 
     //buffer.clear();
     float gain = 1.0;
-    if(params.distanceSimulationParam || metadata_sofafile.hasMultipleDistances){
+    if(params.distanceSimulationParam->get() || metadata_sofafile.hasMultipleDistances){
         if(params.distanceParam->get() > 0.1)
              gain = 1 / params.distanceParam->get();
         buffer.applyGain(gain);
+        
+        
+        //Nearfield Simulation: Increasing IID effect
+        float distance = params.distanceParam->get();
+        if(params.nearfieldSimulationParam->get() && distance < 1.0 && distance > 0.2){
+        
+            //alpha_az determines how much the increasing IID effect will be applied, because it is dependent on the azimuth angle
+            float alpha_az = powf( sinf(  params.azimuthParam->get() * 2.0 * M_PI  ), 3 ); //Running from 0 -> 1 -> 0 -> -1 -> 0 for a full circle. The ^3 results in a steeper sine-function, so that the effect will be less present in the areas around 0° or 180°, but emphasized for angles 90° or 270°, where the source is cleary more present to one ear, while the head masks the other ear
+            
+            //alpha_el weakens the effect, if the source is elevated above or below the head, because shadowing of the head will be less present. It is 1 for zero elevation and moves towards zero for +90° and -90°
+            float alpha_el = cosf(params.elevationParam->get() * 2.0 * M_PI);
+        
+            float normGain = 7.8 * (1.0 - distance) * (1.0 - distance); //will run exponentially from +0db to ~+5db when distance goes from 1m to 0.2m
+        
+            float IID_gain_l = Decibels::decibelsToGain(   (normGain * -alpha_az * alpha_el)  ); // 0db -> 0...-5db -> 0db -> 0..5db
+            float IID_gain_r = Decibels::decibelsToGain(  normGain * alpha_az * alpha_el); // 0db -> 0...5db -> 0db -> 0..-5db
+        
+            buffer.applyGain(0, 0, numberOfSamples, IID_gain_l);
+            buffer.applyGain(1, 0, numberOfSamples, IID_gain_r);
+        }
+
 
     }
     
@@ -272,6 +295,7 @@ void SofaPanAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         for(int i=0; i < 2; i++){
             earlyReflections[i]->process(inBufferRefl, outBufferL, outBufferR, numberOfSamples, delay[i], damp[i]);
         }
+        
     }
     
     buffer.applyGain(0.25);

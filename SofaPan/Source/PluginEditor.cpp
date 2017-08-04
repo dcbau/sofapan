@@ -76,13 +76,21 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     testSwitchButton.addListener(this);
     addAndMakeVisible(&testSwitchButton);
     
-    useDistanceSimulationButton.setButtonText("Nearfield Simulation");
-    useDistanceSimulationButton.setComponentID("nfSimButton");
+    useDistanceSimulationButton.setButtonText("Distance Simulation");
+    useDistanceSimulationButton.setComponentID("distSimButton");
     useDistanceSimulationButton.setColour(ToggleButton::textColourId, Colours::white);
     useDistanceSimulationButton.addListener(this);
     useDistanceSimulationButton.addMouseListener(this, true);
     addAndMakeVisible(&useDistanceSimulationButton);
     useDistanceSimulationButton.setToggleState(true, NotificationType::sendNotification);
+    
+    useNearfieldSimulationButton.setButtonText("Nearfield Simulation");
+    useNearfieldSimulationButton.setComponentID("nfSimButton");
+    useNearfieldSimulationButton.setColour(ToggleButton::textColourId, Colours::white);
+    useNearfieldSimulationButton.addListener(this);
+    useNearfieldSimulationButton.addMouseListener(this, true);
+    addAndMakeVisible(&useNearfieldSimulationButton);
+    useNearfieldSimulationButton.setToggleState(true, NotificationType::sendNotification);
     
     useGlobalSofaFileButton.setButtonText("Global SOFA File");
     useGlobalSofaFileButton.setComponentID("globalSofaButton");
@@ -91,20 +99,20 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     useGlobalSofaFileButton.addMouseListener(this, true);
     addAndMakeVisible(&useGlobalSofaFileButton);
     
+    addAndMakeVisible(&plotHRTFView);
+    addAndMakeVisible(&plotHRIRView);
+    addAndMakeVisible(&panner2D_top);
+    addAndMakeVisible(&panner2D_rear);
+    
     if(!roomsimLayout){
-        addAndMakeVisible(&plotHRTFView);
-        addAndMakeVisible(&plotHRIRView);
+        panner2D_top.setVisible(false);
+        panner2D_rear.setVisible(false);
     }else{
-        addAndMakeVisible(&panner2D_top);
-        addAndMakeVisible(&panner2D_rear);
+        plotHRIRView.setVisible(false);
+        plotHRTFView.setVisible(false);
     }
     
-    showSOFAMetadataButton.setButtonText("Show More Information");
-    showSOFAMetadataButton.addListener(this);
-    addAndMakeVisible(&showSOFAMetadataButton);
-    addAndMakeVisible(&metadataView);
-    metadataView.setVisible(false);
-    
+
     showTooltipsButton.setButtonText("Show Mouseover Tooltips");
     addAndMakeVisible(&showTooltipsButton);
     
@@ -133,6 +141,11 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     useLayoutRoomsimButton.addListener(this);
     addAndMakeVisible(useLayoutRoomsimButton);
     
+    showSOFAMetadataButton.setButtonText("Show More Information");
+    showSOFAMetadataButton.addListener(this);
+    addAndMakeVisible(&showSOFAMetadataButton);
+    addAndMakeVisible(&metadataView);
+    metadataView.setVisible(false);
     
     
     counter = 0;
@@ -209,7 +222,9 @@ void SofaPanAudioProcessorEditor::timerCallback() {
     useGlobalSofaFileButton.setToggleState(processor.getUsingGlobalSofaFile(), NotificationType::dontSendNotification);
 
     bool distanceSimActive = (bool)getParameterValue("dist_sim");
+    bool nearfieldSimActive = (bool)getParameterValue("nearfield_sim");
     useDistanceSimulationButton.setToggleState(distanceSimActive, NotificationType::dontSendNotification);
+    useNearfieldSimulationButton.setToggleState(nearfieldSimActive, NotificationType::dontSendNotification);
     
     // update panning sliders if needed
     float azimuthValue = getParameterValue("azimuth") * 360.;
@@ -431,16 +446,26 @@ void SofaPanAudioProcessorEditor::buttonClicked(Button *button)
     
     if(button == &useDistanceSimulationButton){
         setParameterValue("dist_sim", useDistanceSimulationButton.getToggleState());
+        if(!useDistanceSimulationButton.getToggleState())
+            setParameterValue("nearfield_sim", false);
+        processor.updateSofaMetadataFlag = true;
+    }
+    
+    if(button == &useNearfieldSimulationButton){
+        setParameterValue("nearfield_sim", useNearfieldSimulationButton.getToggleState());
+        if(useNearfieldSimulationButton.getToggleState())
+            setParameterValue("dist_sim", true);
         processor.updateSofaMetadataFlag = true;
     }
     
     if(button == &useLayoutRoomsimButton){
         roomsimLayout = 1;
         rearrange();
-        removeChildComponent(&plotHRIRView);
-        removeChildComponent(&plotHRTFView);
-        addAndMakeVisible(&panner2D_top);
-        addAndMakeVisible(&panner2D_rear);
+
+        plotHRTFView.setVisible(false);
+        plotHRIRView.setVisible(false);
+        panner2D_top.setVisible(true);
+        panner2D_rear.setVisible(true);
         panner_dist.setSliderStyle(Slider::LinearHorizontal);
         repaint();
         setParameterValue("dist_sim", true);
@@ -449,13 +474,14 @@ void SofaPanAudioProcessorEditor::buttonClicked(Button *button)
     if(button == & useLayoutSimplePanningButton){
         roomsimLayout = 0;
         rearrange();
-        removeChildComponent(&panner2D_top);
-        removeChildComponent(&panner2D_rear);
-        addAndMakeVisible(&plotHRTFView);
-        addAndMakeVisible(&plotHRIRView);
+        plotHRTFView.setVisible(true);
+        plotHRIRView.setVisible(true);
+        panner2D_top.setVisible(false);
+        panner2D_rear.setVisible(false);
         panner_dist.setSliderStyle(Slider::LinearVertical);
         repaint();
         setParameterValue("dist_sim", false);
+        setParameterValue("nearfield_sim", false);
 
     }
     
@@ -473,9 +499,18 @@ void SofaPanAudioProcessorEditor::mouseEnter(const MouseEvent &e){
             popUpInfo->showAt(e.eventComponent, text, 10000, true, false);
             
         }
+        if(e.eventComponent->getComponentID() == "distSimButton"){
+            
+            AttributedString text ("By activating this option, it is possible to conrol the distance of the source even without a multiple-distance SOFA-File. The distance is modeled with various effects, like early reflections of a simulated shoebox room. \n The distance slider becomes active and can be adjusted from 0.2m to 5m. \n If the loaded SOFA file has already multiple distance sets, those will be deactivated and the set with the distance nearest to 1m will be used for the simulation");
+            text.setJustification (Justification::centred);
+            text.setColour(Colours::white);
+            popUpInfo->showAt(e.eventComponent, text, 10000, true, false);
+            
+        }
+        
         if(e.eventComponent->getComponentID() == "nfSimButton"){
             
-            AttributedString text ("By activating this option, the effect of the source approaching the head will be simulated. \n The distance slider becomes active and can be adjusted from 1m to 20cm. \n If the loaded SOFA file has already multiple distance sets, those will be deactivated and the set with the distance nearest to 1m will be used for the simulation");
+            AttributedString text ("By activating this option, the effect of the source approaching the head will be simulated. \n The nearfield effects are occuring in the range 0.2m to 1m. \n Note that this option is only available in comination with the distance simulation");
             text.setJustification (Justification::centred);
             text.setColour(Colours::white);
             popUpInfo->showAt(e.eventComponent, text, 10000, true, false);
@@ -503,7 +538,8 @@ void SofaPanAudioProcessorEditor::rearrange(){
     bypassButton.setBounds(10., 50., 150., 30.);
     useGlobalSofaFileButton.setBounds(135, 10., 80, 30);
     useDistanceSimulationButton.setBounds(10, showSOFAMetadataButton.getBottom() + 30, 100, 30);
-    testSwitchButton.setBounds(10., useDistanceSimulationButton.getBottom() + 30, 100., 30.);
+    useNearfieldSimulationButton.setBounds(20., useDistanceSimulationButton.getBottom(), 100., 30.);
+    testSwitchButton.setBounds(10., useNearfieldSimulationButton.getBottom() + 10, 100., 30.);
 
     
     

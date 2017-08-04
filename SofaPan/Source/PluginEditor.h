@@ -63,6 +63,7 @@ private:
     ToggleButton testSwitchButton;
     ToggleButton useGlobalSofaFileButton;
     ToggleButton useDistanceSimulationButton;
+    ToggleButton useNearfieldSimulationButton;
     ToggleButton showTooltipsButton;
     TextButton useLayoutSimplePanningButton;
     TextButton useLayoutRoomsimButton;

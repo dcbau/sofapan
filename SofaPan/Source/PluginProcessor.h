@@ -17,7 +17,6 @@
 #include "SOFAData.h"
 #include "SofaPathSharedUpdater.h"
 
-
 //Interface für SOFA File:
 extern "C" {
 #include <netcdf.h>
@@ -39,6 +38,7 @@ typedef struct{
     AudioParameterFloat* bypassParam;
     AudioParameterBool* testSwitchParam;
     AudioParameterBool* distanceSimulationParam;
+    AudioParameterBool* nearfieldSimulationParam;
 }parameterStruct;
 
 class FilterEngine;
@@ -121,6 +121,7 @@ private:
     void messageReceived (const MemoryBlock &message) override;
     
     bool usingGlobalSofaFile = true;
+    
 };
 
 

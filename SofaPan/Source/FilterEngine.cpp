@@ -118,17 +118,26 @@ void FilterEngine::process(const float* inBuffer, float* outBuffer_L, float* out
                 This idea was first discussed by Douglas S. Brungart in his article "AUDITORY PARALLAX EFFECTS IN THE HRTF FOR NEARBY SOURCES", published in 1999 in the Proceedings of the "IEEE Engineering in Medicine and Biology Society", Volume 20(3), pp.1101-1104.
              
                 For further information, the dissertation of Fotis Georgiou constains a short introduction to the acoustic parallax effect on pages 15/16. It is available for free on researchgate.net and the title is "Relative Distance Perception Of Sound Sources In Critical Listening Environment Via Binaural Reproduction"
+             
+             
+                TODO: write explanation on the increasing IID effect for nearfield
              */
             
             float azimuth_l = azimuth;
             float azimuth_r = azimuth;
-            if(params.distanceSimulationParam->get() && distance < 1.0 && params.testSwitchParam->get() == true){
+            
+            //NearfieldSimulation: Acoustic parallax effect
+            if(params.nearfieldSimulationParam->get() && distance < 1.0 ){
                 float angleLeftEar = calculateNFAngleOffset(alpha, distance, standardHeadradius/2);
                 float angleRightEar = calculateNFAngleOffset(alpha, distance, -standardHeadradius/2);
                 
                 azimuth_l = (angleLeftEar / (2*M_PI)) * 360;
                 azimuth_r = (angleRightEar / (2*M_PI)) * 360;
+
+                //In case there are stored HRTFs with a smaller distance, this ensures that only the 1m-distance-hrtfs are used for the parallax-effect
                 distance = 1.0;
+
+            
             }
             
             fftwf_complex* hrtf_l = sofaData.getHRTFforAngle(elevation, azimuth_l, distance);
