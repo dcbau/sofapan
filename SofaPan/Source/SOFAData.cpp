@@ -89,7 +89,6 @@ int SOFAData::initSofaData(const char* filePath, int sampleRate)
         return 1;
     }
     fftwf_complex* fftOutputBuffer = fftwf_alloc_complex(lengthOfHRTF);
-    fftOutputBuffer = NULL;
     if(fftOutputBuffer == NULL){
         ErrorHandling::reportError("SOFA File Loader", "Could not allocate memory for FFT Output Buffer", true);
         return 1;
