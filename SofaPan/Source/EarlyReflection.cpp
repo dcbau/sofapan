@@ -10,8 +10,8 @@
 
 #include "EarlyReflection.h"
 
-EarlyReflection::EarlyReflection(fftwf_complex* _hrtf, int lengthOfHRIR, int sampleRate)
-:  firLength(lengthOfHRIR)
+EarlyReflection::EarlyReflection(fftwf_complex* _hrtf, int lengthOfHRIR, int _sampleRate)
+:  sampleRate(_sampleRate), firLength(lengthOfHRIR)
 {
     //Initialize Variables
     fftLength = firLength * 2;
@@ -29,6 +29,18 @@ EarlyReflection::EarlyReflection(fftwf_complex* _hrtf, int lengthOfHRIR, int sam
     src = fftwf_alloc_complex(complexLength);
     fftOutputBuffer_L = fftwf_alloc_real(fftLength);
     fftOutputBuffer_R = fftwf_alloc_real(fftLength);
+
+    if(inputBuffer == NULL ||
+       lastInputBuffer == NULL ||
+       outputBuffer_L == NULL ||
+       outputBuffer_R == NULL ||
+       fftInputBuffer == NULL ||
+       complexBuffer == NULL ||
+       src == NULL ||
+       fftOutputBuffer_L == NULL ||
+       fftOutputBuffer_R == NULL){
+        ErrorHandling::reportError("Early Reflection Module", ERRMALLOC, true);
+    }
     
     //Init FFTW Plans
     forward = fftwf_plan_dft_r2c_1d(fftLength, fftInputBuffer, complexBuffer, FFTW_ESTIMATE);
@@ -51,13 +63,8 @@ EarlyReflection::EarlyReflection(fftwf_complex* _hrtf, int lengthOfHRIR, int sam
     }
     
     
-    //Init Delayline
-    _sampleRate = sampleRate;
-    delayLineLength = (int)(_sampleRate * maxDelayTimeMs * 0.001) + 1;
-    delayLine = (float*)malloc(sizeof(float) * delayLineLength);
-    
     //LP coeffs
-    float K = tanf(M_PI * cutoff/_sampleRate);
+    float K = tanf(M_PI * cutoff/sampleRate);
     b0 = b1 = K / (K + 1);
     a1 = (K - 1) / (K + 1);
     z1 = 0.0;
@@ -66,7 +73,7 @@ EarlyReflection::EarlyReflection(fftwf_complex* _hrtf, int lengthOfHRIR, int sam
 }
 
 EarlyReflection::~EarlyReflection(){
-    fftwf_free(inputBuffer);
+    if(inputBuffer != NULL) fftwf_free(inputBuffer);
     fftwf_free(lastInputBuffer);
     fftwf_free(outputBuffer_L);
     fftwf_free(outputBuffer_R);
@@ -80,7 +87,6 @@ EarlyReflection::~EarlyReflection(){
     fftwf_destroy_plan(forward);
     fftwf_destroy_plan(inverse_L);
     fftwf_destroy_plan(inverse_R);
-    free(delayLine);
     
     
 }
@@ -95,36 +101,20 @@ void EarlyReflection::prepareToPlay(){
         outputBuffer_R[i] = 0.0;
     }
     
-    for(int i = 0; i < delayLineLength; i++)
-        delayLine[i] = 0.0;
+    delay.specifyMaxDelayLength(50);
+    delay.prepareToPlay(sampleRate);
     
-    writeIndex = 0;
 }
 
 void EarlyReflection::process(const float* inBuffer, float* outBuffer_L, float* outBuffer_R, int numSamples, float delayInMs, float gain){
-    
-    float offset = delayInMs * _sampleRate * 0.001;
-    int offset_int = truncf(offset);
-    float offset_frac = offset - (float)offset_int;
-    
-    int readIndex1, readIndex2;
+
+    delay.setDelayLength(delayInMs);
+    //delay->processBlock(inBuffer, outBuffer_L, numSamples);
     
     for(int sample = 0; sample < numSamples; sample++){
-        
-        //Delay
-        readIndex1 = writeIndex - offset;
-        readIndex2 = readIndex1 - 1;
-        while(readIndex1 < 0)
-            readIndex1 += delayLineLength;
-        while(readIndex2 < 0)
-            readIndex2 += delayLineLength;
 
-        float delayLineOutput = delayLine[readIndex1] * offset_frac + delayLine[readIndex2]* (1.0 - offset_frac);
-        
-        delayLine[writeIndex++] = inBuffer[sample];
-        if (writeIndex >= delayLineLength)
-            writeIndex -= delayLineLength;
-        
+        float delayLineOutput = delay.pullSample();
+        delay.pushSample(inBuffer[sample]);
 
         //Lowpass Filter 
         float v1 =  delayLineOutput - (a1 * z1);

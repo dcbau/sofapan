@@ -19,6 +19,8 @@ extern "C" {
 #include <stdlib.h>
 #include "math.h"
 #include "../JuceLibraryCode/JuceHeader.h"
+#include "ErrorHandling.h"
+
 
 #define ERR_MEM_ALLOC   1
 #define ERR_READFILE    2
@@ -95,7 +97,7 @@ public:
     SOFAData();
     ~SOFAData();
     
-    void initSofaData(const char* filePath, int sampleRate);
+    int initSofaData(const char* filePath, int sampleRate);
     
     /** Will directly return the length of the new resampled HRTF */
     int setSampleRate(int newSampleRate);

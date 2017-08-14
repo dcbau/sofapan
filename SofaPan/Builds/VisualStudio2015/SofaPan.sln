@@ -17,6 +17,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SofaPan", "SofaPan", "{983F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source", "Source", "{5128F99F-CF33-C86D-EFA2-728C0F47745A}"
 	ProjectSection(SolutionItems) = preProject
+		..\..\Source\ErrorHandling.h = ..\..\Source\ErrorHandling.h
 		..\..\Source\PluginProcessor.cpp = ..\..\Source\PluginProcessor.cpp
 		..\..\Source\PluginProcessor.h = ..\..\Source\PluginProcessor.h
 		..\..\Source\PluginEditor.cpp = ..\..\Source\PluginEditor.cpp
@@ -32,11 +33,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SOFA Data", "SOFA Data", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Signal Processing", "Signal Processing", "{C4222352-A6FD-0CA5-F955-BCD4DD66AFD5}"
 	ProjectSection(SolutionItems) = preProject
+		..\..\Source\CombFilter.h = ..\..\Source\CombFilter.h
+		..\..\Source\DelayingAllpass.h = ..\..\Source\DelayingAllpass.h
 		..\..\Source\Delayline.h = ..\..\Source\Delayline.h
 		..\..\Source\EarlyReflection.cpp = ..\..\Source\EarlyReflection.cpp
 		..\..\Source\EarlyReflection.h = ..\..\Source\EarlyReflection.h
 		..\..\Source\FilterEngine.cpp = ..\..\Source\FilterEngine.cpp
 		..\..\Source\FilterEngine.h = ..\..\Source\FilterEngine.h
+		..\..\Source\OnePoleLPF.h = ..\..\Source\OnePoleLPF.h
+		..\..\Source\Reverberator.h = ..\..\Source\Reverberator.h
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Components", "Components", "{800885F9-656D-0E04-E392-EE62F0FFD2F7}"

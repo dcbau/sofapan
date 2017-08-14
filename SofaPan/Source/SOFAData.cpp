@@ -34,14 +34,14 @@ SOFAData::~SOFAData(){
     }
 }
 
-void SOFAData::initSofaData(const char* filePath, int sampleRate)
+int SOFAData::initSofaData(const char* filePath, int sampleRate)
 {
 
     printf("\n Attempting to load SofaFile...");
     
     //This line makes sure that the init is not always performed when a new instance of the plugin is created
     if(filePath == currentFilePath && sampleRate == currentSampleRate)
-        return;
+        return 0;
     
     printf("\n Loading File");
 
@@ -84,7 +84,16 @@ void SOFAData::initSofaData(const char* filePath, int sampleRate)
     
     //Allocate and init FFTW
     float* fftInputBuffer = fftwf_alloc_real(lengthOfFFT);
+    if(fftInputBuffer == NULL){
+        ErrorHandling::reportError("SOFA File Loader", "Could not allocate memory for FFT Input Buffer", true);
+        return 1;
+    }
     fftwf_complex* fftOutputBuffer = fftwf_alloc_complex(lengthOfHRTF);
+    fftOutputBuffer = NULL;
+    if(fftOutputBuffer == NULL){
+        ErrorHandling::reportError("SOFA File Loader", "Could not allocate memory for FFT Output Buffer", true);
+        return 1;
+    }
     fftwf_plan FFT = fftwf_plan_dft_r2c_1d(lengthOfFFT, fftInputBuffer, fftOutputBuffer, FFTW_ESTIMATE);
     
     for(int i = 0; i < sofaMetadata.numMeasurements; i++){
@@ -124,6 +133,8 @@ void SOFAData::initSofaData(const char* filePath, int sampleRate)
     fftwf_free(fftInputBuffer);
     fftwf_free(fftOutputBuffer);
     fftwf_destroy_plan(FFT);
+    
+    return 0;
     
 }
 int SOFAData::getLengthOfHRIR(){
@@ -473,8 +484,11 @@ void SOFAData::errorHandling(int status) {
             break;
     }
     
+    ErrorMessage += String(". Try reloading the file");
     
-    AlertWindow::showNativeDialogBox("Binaural Renderer", ErrorMessage, false);
+    
+    ErrorHandling::reportError("SOFA File Loader", ErrorMessage, false);
+    
     
 
 }

@@ -15,7 +15,8 @@
 #include "string.h"
 #include <stdlib.h>
 #include "math.h"
-
+#include "Delayline.h"
+#include "ErrorHandling.h"
 
 #define RE 0
 #define IM 1
@@ -28,7 +29,7 @@
 class EarlyReflection{
     
 public:
-    EarlyReflection(fftwf_complex* hrtf, int lengthOfHRIR, int sampleRate);
+    EarlyReflection(fftwf_complex* hrtf, int lengthOfHRIR, int _sampleRate);
     ~EarlyReflection();
     
     void process(const float* inBuffer, float* outBuffer_L, float* outBuffer_R, int numSamples, float delayInMs, float gain);
@@ -38,7 +39,7 @@ public:
 private:
     fftwf_complex* hrtf_l;
     fftwf_complex* hrtf_r;
-    int _sampleRate;
+    int sampleRate;
 
     
     const int firLength;
@@ -64,11 +65,7 @@ private:
     
     int fifoIndex;
 
-    //delayline stuff
-    float* delayLine;
-    const int maxDelayTimeMs = 200;
-    int delayLineLength;
-    int writeIndex;
+    Delayline delay;
     
     //onepole lp
     float z1;

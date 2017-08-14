@@ -13,6 +13,7 @@
               splashScreenColour="Dark" buildStandalone="0" enableIAA="0">
   <MAINGROUP id="XmHYCT" name="SofaPan">
     <GROUP id="{044A0D15-8678-AA45-7263-8E06162C7D6C}" name="Source">
+      <FILE id="yoquz7" name="ErrorHandling.h" compile="0" resource="0" file="Source/ErrorHandling.h"/>
       <GROUP id="{4951F6A0-0FE2-193E-36C3-F82C3B52EE8C}" name="SOFA Data">
         <FILE id="x9gfwE" name="SOFAData.cpp" compile="1" resource="0" file="Source/SOFAData.cpp"/>
         <FILE id="XenoID" name="SOFAData.h" compile="0" resource="0" file="Source/SOFAData.h"/>
@@ -20,6 +21,9 @@
               file="Source/SofaPathSharedUpdater.h"/>
       </GROUP>
       <GROUP id="{5486C6E1-FC20-1B3E-70BF-F12BC7680A5B}" name="Signal Processing">
+        <FILE id="CNwtIM" name="CombFilter.h" compile="0" resource="0" file="Source/CombFilter.h"/>
+        <FILE id="isff8W" name="DelayingAllpass.h" compile="0" resource="0"
+              file="Source/DelayingAllpass.h"/>
         <FILE id="sCtrkL" name="Delayline.h" compile="0" resource="0" file="Source/Delayline.h"/>
         <FILE id="T6ZeY5" name="EarlyReflection.cpp" compile="1" resource="0"
               file="Source/EarlyReflection.cpp"/>
@@ -28,6 +32,8 @@
         <FILE id="WzrW7l" name="FilterEngine.cpp" compile="1" resource="0"
               file="Source/FilterEngine.cpp"/>
         <FILE id="WitAML" name="FilterEngine.h" compile="0" resource="0" file="Source/FilterEngine.h"/>
+        <FILE id="QJOR0S" name="OnePoleLPF.h" compile="0" resource="0" file="Source/OnePoleLPF.h"/>
+        <FILE id="l9GNXb" name="Reverberator.h" compile="0" resource="0" file="Source/Reverberator.h"/>
       </GROUP>
       <GROUP id="{2272682A-D310-8B4E-410D-BBB986B4B15E}" name="Components">
         <FILE id="V1UPIK" name="PlotHRIRComponent.h" compile="1" resource="0"

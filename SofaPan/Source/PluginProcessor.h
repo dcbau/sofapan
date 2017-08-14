@@ -16,7 +16,7 @@
 #include "fftw3.h"
 #include "SOFAData.h"
 #include "SofaPathSharedUpdater.h"
-
+#include "Reverberator.h"
 //Interface für SOFA File:
 extern "C" {
 #include <netcdf.h>
@@ -96,7 +96,6 @@ public:
     void setUsingGlobalSofaFile(bool useGlobal);
     bool getUsingGlobalSofaFile();
     
-    
 private:
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SofaPanAudioProcessor)
@@ -112,7 +111,7 @@ private:
     FilterEngine* Filter;
     
     std::vector<EarlyReflection*> earlyReflections;
-    
+    Reverberator reverb;
     
     SofaPathSharedUpdater* updater;
     
@@ -122,6 +121,7 @@ private:
     
     bool usingGlobalSofaFile = true;
     
+
 };
 
 

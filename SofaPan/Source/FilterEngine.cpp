@@ -36,6 +36,19 @@ FilterEngine::FilterEngine(SOFAData& sD)
     inverse_L = fftwf_plan_dft_c2r_1d(fftLength, complexBuffer, fftOutputBuffer_L, FFTW_ESTIMATE);
     inverse_R = fftwf_plan_dft_c2r_1d(fftLength, complexBuffer, fftOutputBuffer_R, FFTW_ESTIMATE);
     
+    if(inputBuffer == NULL ||
+       lastInputBuffer == NULL ||
+       outputBuffer_L == NULL ||
+       outputBuffer_R == NULL ||
+       fftInputBuffer == NULL ||
+       complexBuffer == NULL ||
+       src == NULL ||
+       fftOutputBuffer_L == NULL ||
+       fftOutputBuffer_R == NULL){
+        
+        ErrorHandling::reportError("HRTF Convolution Module", ERRMALLOC, true);
+    }
+    
     weightingCurve = (float*)malloc(firLength*sizeof(float));
     for(int i = 0; i < firLength; i++){
         float theta = M_PI * 0.5 * (float)i / (float)firLength;

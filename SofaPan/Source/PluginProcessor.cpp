@@ -13,6 +13,7 @@
 
 #include "FilterEngine.h"
 #include "EarlyReflection.h"
+
 #include "math.h"
 
 //==============================================================================
@@ -140,7 +141,7 @@ void SofaPanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
             earlyReflections[i]->prepareToPlay();
     }
 
-    
+    reverb.prepareToPlay((int)sampleRate);
     
 }
 
@@ -152,7 +153,8 @@ void SofaPanAudioProcessor::initData(String sofaFile){
     
     suspendProcessing(true);
     
-    HRTFs->initSofaData(pathToSOFAFile.toUTF8(), (int)sampleRate_f);
+    int status = HRTFs->initSofaData(pathToSOFAFile.toUTF8(), (int)sampleRate_f);
+        
     metadata_sofafile = HRTFs->getMetadata();
     
     updateSofaMetadataFlag = true;
@@ -166,7 +168,8 @@ void SofaPanAudioProcessor::initData(String sofaFile){
         earlyReflections[i] = new EarlyReflection(HRTFs->getHRTFforAngle(0.0, angles[i], 1.0), HRTFs->getLengthOfHRIR(), (int)sampleRate_f);
     }
     
-    suspendProcessing(false);
+    //If an critical error occured during sofa loading, turn this plugin to a brick 
+    if(!status) suspendProcessing(false);
 }
 
 void SofaPanAudioProcessor::releaseResources()
@@ -221,15 +224,27 @@ void SofaPanAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         buffer.clear (i, 0, buffer.getNumSamples());
     
     
-    AudioSampleBuffer reflectionInBuffer = AudioSampleBuffer(2, numberOfSamples);
+    AudioSampleBuffer reflectionInBuffer = AudioSampleBuffer(1, numberOfSamples);
     reflectionInBuffer.clear();
     reflectionInBuffer.copyFrom(0, 0, buffer.getReadPointer(0), numberOfSamples);
+    
+    AudioSampleBuffer reverbInBuffer = AudioSampleBuffer(1, numberOfSamples);
+    reverbInBuffer.clear();
+    reverbInBuffer.copyFrom(0, 0, buffer.getReadPointer(0), numberOfSamples);
+    
+    AudioSampleBuffer reverbOutBuffer = AudioSampleBuffer(2, numberOfSamples);
+    reverbOutBuffer.clear();
+    
     
     float* outBufferL = buffer.getWritePointer (0);
     float* outBufferR = buffer.getWritePointer (1);
     const float* inBuffer = buffer.getReadPointer(0);
     
     const float* inBufferRefl = reflectionInBuffer.getReadPointer(0);
+    const float* inBufferReverb = reverbInBuffer.getReadPointer(0);
+    float* outBufferReverbL = reverbOutBuffer.getWritePointer(0);
+    float* outBufferReverbR = reverbOutBuffer.getWritePointer(1);
+
     
     Filter->process(inBuffer, outBufferL, outBufferR, numberOfSamples, params);
 
@@ -294,6 +309,14 @@ void SofaPanAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         
         for(int i=0; i < 2; i++){
             earlyReflections[i]->process(inBufferRefl, outBufferL, outBufferR, numberOfSamples, delay[i], damp[i]);
+        }
+        
+        if(params.testSwitchParam->get()){
+        reverb.processBlockMS(inBufferReverb, outBufferReverbL, outBufferReverbR, numberOfSamples, params.testSwitchParam->get());
+        reverbOutBuffer.applyGain(0.05);
+        
+        buffer.addFrom(0, 0, reverbOutBuffer, 0, 0, numberOfSamples);
+        buffer.addFrom(1, 0, reverbOutBuffer, 1, 0, numberOfSamples);
         }
         
     }
@@ -421,3 +444,4 @@ void SofaPanAudioProcessor::setUsingGlobalSofaFile(bool useGlobal){
 bool SofaPanAudioProcessor::getUsingGlobalSofaFile(){
     return usingGlobalSofaFile;
 }
+
