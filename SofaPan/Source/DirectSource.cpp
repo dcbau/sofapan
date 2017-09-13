@@ -1,81 +1,117 @@
 /*
   ==============================================================================
 
-    FilterEngine.cpp
+    DirectSource.cpp
     Created: 27 Apr 2017 11:14:15am
     Author:  David Bau
 
   ==============================================================================
 */
 //
-#include "FilterEngine.h"
-#include "PluginProcessor.h"
+#include "DirectSource.h"
+//#include "PluginProcessor.h"
 
-FilterEngine::FilterEngine(SOFAData& sD)
-    : sofaData(sD), firLength(sD.getLengthOfHRIR())
+DirectSource::DirectSource()
+
 {
-    //Initialize Variables
-    fftLength = firLength * 2;
-    complexLength = fftLength / 2 + 1;
-    fftSampleScale = 1.0 / (float)fftLength;
+    inputBuffer = lastInputBuffer = outputBuffer_L = outputBuffer_R = fftInputBuffer = weightingCurve = fftOutputBuffer_L = fftOutputBuffer_R = NULL;
+    complexBuffer = src = NULL;
+    forward = inverse_L = inverse_R = NULL;
+    firLength = 0;
     
-    //Allocate Memory
-    inputBuffer = fftwf_alloc_real(firLength);
-    lastInputBuffer = fftwf_alloc_real(firLength);
-    outputBuffer_L = fftwf_alloc_real(firLength);
-    outputBuffer_R = fftwf_alloc_real(firLength);
+    
+}
 
-    fftInputBuffer = fftwf_alloc_real(fftLength);
-    complexBuffer = fftwf_alloc_complex(complexLength);
-    src = fftwf_alloc_complex(complexLength);
-    fftOutputBuffer_L = fftwf_alloc_real(fftLength);
-    fftOutputBuffer_R = fftwf_alloc_real(fftLength);
+DirectSource::~DirectSource(){
+    releaseResources();
+}
+
+int DirectSource::initWithSofaData(SOFAData *sD){
     
-    //Init FFTW Plans
-    forward = fftwf_plan_dft_r2c_1d(fftLength, fftInputBuffer, complexBuffer, FFTW_ESTIMATE);
-    inverse_L = fftwf_plan_dft_c2r_1d(fftLength, complexBuffer, fftOutputBuffer_L, FFTW_ESTIMATE);
-    inverse_R = fftwf_plan_dft_c2r_1d(fftLength, complexBuffer, fftOutputBuffer_R, FFTW_ESTIMATE);
+    sofaData = sD;
     
-    if(inputBuffer == NULL ||
-       lastInputBuffer == NULL ||
-       outputBuffer_L == NULL ||
-       outputBuffer_R == NULL ||
-       fftInputBuffer == NULL ||
-       complexBuffer == NULL ||
-       src == NULL ||
-       fftOutputBuffer_L == NULL ||
-       fftOutputBuffer_R == NULL){
+    if(firLength != sD->getLengthOfHRIR()){
+        releaseResources();
         
-        ErrorHandling::reportError("HRTF Convolution Module", ERRMALLOC, true);
-    }
-    
-    weightingCurve = (float*)malloc(firLength*sizeof(float));
-    for(int i = 0; i < firLength; i++){
-        float theta = M_PI * 0.5 * (float)i / (float)firLength;
-        weightingCurve[i] = cosf(theta)*cosf(theta);
+        firLength = sD->getLengthOfHRIR();
+        
+        //Initialize Variables
+        fftLength = firLength * 2;
+        complexLength = fftLength / 2 + 1;
+        fftSampleScale = 1.0 / (float)fftLength;
+        
+        //Allocate Memory
+        inputBuffer = fftwf_alloc_real(firLength);
+        lastInputBuffer = fftwf_alloc_real(firLength);
+        outputBuffer_L = fftwf_alloc_real(firLength);
+        outputBuffer_R = fftwf_alloc_real(firLength);
+        
+        fftInputBuffer = fftwf_alloc_real(fftLength);
+        complexBuffer = fftwf_alloc_complex(complexLength);
+        src = fftwf_alloc_complex(complexLength);
+        fftOutputBuffer_L = fftwf_alloc_real(fftLength);
+        fftOutputBuffer_R = fftwf_alloc_real(fftLength);
+        
+        //Init FFTW Plans
+        forward = fftwf_plan_dft_r2c_1d(fftLength, fftInputBuffer, complexBuffer, FFTW_ESTIMATE);
+        inverse_L = fftwf_plan_dft_c2r_1d(fftLength, complexBuffer, fftOutputBuffer_L, FFTW_ESTIMATE);
+        inverse_R = fftwf_plan_dft_c2r_1d(fftLength, complexBuffer, fftOutputBuffer_R, FFTW_ESTIMATE);
+        
+        weightingCurve = (float*)malloc(firLength*sizeof(float));
+        
+        if(inputBuffer == NULL ||
+           lastInputBuffer == NULL ||
+           outputBuffer_L == NULL ||
+           outputBuffer_R == NULL ||
+           fftInputBuffer == NULL ||
+           complexBuffer == NULL ||
+           src == NULL ||
+           fftOutputBuffer_L == NULL ||
+           fftOutputBuffer_R == NULL ||
+           weightingCurve == NULL){
+            
+            ErrorHandling::reportError("HRTF Convolution Module", ERRMALLOC, true);
+            return 1;
+        }
+        
+        for(int i = 0; i < firLength; i++){
+            float theta = M_PI * 0.5 * (float)i / (float)firLength;
+            weightingCurve[i] = cosf(theta)*cosf(theta);
+        }
+        
     }
     
     prepareToPlay();
+    
+    return 0;
+    
 }
 
-FilterEngine::~FilterEngine(){
-    fftwf_free(inputBuffer);
-    fftwf_free(lastInputBuffer);
-    fftwf_free(outputBuffer_L);
-    fftwf_free(outputBuffer_R);
-    fftwf_free(fftInputBuffer);
-    fftwf_free(complexBuffer);
-    fftwf_free(src);
-    fftwf_free(fftOutputBuffer_L);
-    fftwf_free(fftOutputBuffer_R);
-    fftwf_destroy_plan(forward);
-    fftwf_destroy_plan(inverse_L);
-    fftwf_destroy_plan(inverse_R);
-    free(weightingCurve);
 
+void DirectSource::releaseResources(){
+    if(inputBuffer!= NULL) fftwf_free(inputBuffer);
+    if(lastInputBuffer!= NULL) fftwf_free(lastInputBuffer);
+    if(outputBuffer_L!= NULL) fftwf_free(outputBuffer_L);
+    if(outputBuffer_R!= NULL) fftwf_free(outputBuffer_R);
+    if(fftInputBuffer!= NULL) fftwf_free(fftInputBuffer);
+    if(complexBuffer!= NULL) fftwf_free(complexBuffer);
+    if(src!= NULL) fftwf_free(src);
+    if(fftOutputBuffer_L!= NULL) fftwf_free(fftOutputBuffer_L);
+    if(fftOutputBuffer_R!= NULL) fftwf_free(fftOutputBuffer_R);
+    if(forward!= NULL) fftwf_destroy_plan(forward);
+    if(inverse_L!= NULL) fftwf_destroy_plan(inverse_L);
+    if(inverse_R!= NULL) fftwf_destroy_plan(inverse_R);
+    if(weightingCurve!= NULL) free(weightingCurve);
+    
+    inputBuffer = lastInputBuffer = outputBuffer_L = outputBuffer_R = fftInputBuffer = weightingCurve = fftOutputBuffer_L = fftOutputBuffer_R = NULL;
+    complexBuffer = src = NULL;
+    forward = inverse_L = inverse_R = NULL;
+    
 }
 
-void FilterEngine::prepareToPlay(){
+
+
+void DirectSource::prepareToPlay(){
     
     fifoIndex = 0;
     
@@ -85,15 +121,15 @@ void FilterEngine::prepareToPlay(){
         outputBuffer_R[i] = 0.0;
     }
     
-    previousHRTF_l = sofaData.getHRTFforAngle(0.0, 0.0, 1.0);
-    previousHRTF_r = sofaData.getHRTFforAngle(0.0, 0.0, 1.0);
+    previousHRTF_l = sofaData->getHRTFforAngle(0.0, 0.0, 1.0);
+    previousHRTF_r = sofaData->getHRTFforAngle(0.0, 0.0, 1.0);
 
     previousAzimuth = 0.0;
     previousElevation = 0.0;
     
 }
 
-void FilterEngine::process(const float* inBuffer, float* outBuffer_L, float* outBuffer_R, int numSamples, parameterStruct params){
+void DirectSource::process(const float* inBuffer, float* outBuffer_L, float* outBuffer_R, int numSamples, parameterStruct params){
     
     
     for(int sample = 0; sample < numSamples; sample++){
@@ -153,8 +189,8 @@ void FilterEngine::process(const float* inBuffer, float* outBuffer_L, float* out
             
             }
             
-            fftwf_complex* hrtf_l = sofaData.getHRTFforAngle(elevation, azimuth_l, distance);
-            fftwf_complex* hrtf_r = sofaData.getHRTFforAngle(elevation, azimuth_r, distance);
+            fftwf_complex* hrtf_l = sofaData->getHRTFforAngle(elevation, azimuth_l, distance);
+            fftwf_complex* hrtf_r = sofaData->getHRTFforAngle(elevation, azimuth_r, distance);
             
             fftwf_execute(forward);
             
@@ -216,7 +252,7 @@ void FilterEngine::process(const float* inBuffer, float* outBuffer_L, float* out
     
 }
 
-int FilterEngine::getComplexLength(){
+int DirectSource::getComplexLength(){
     return complexLength;
 }
 
@@ -227,7 +263,7 @@ int FilterEngine::getComplexLength(){
  (e.g. 0.09 for left ear, -0.09 for right ear)
  return value = new angle in radians
  */
-float FilterEngine::calculateNFAngleOffset(float angle, float r, float earPosition){
+float DirectSource::calculateNFAngleOffset(float angle, float r, float earPosition){
     
     float newAngle;
     

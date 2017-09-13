@@ -6,4 +6,4 @@
 */
 
 #include "AppConfig.h"
-#include <juce_cryptography/juce_cryptography.cpp>
+#include <juce_dsp/juce_dsp.mm>

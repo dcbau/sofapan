@@ -9,7 +9,7 @@
 */
 
 #pragma once
-
+#include  "ErrorHandling.h"
 #define MAXDELAYLENGTH 500
 
 class Delayline{
@@ -73,7 +73,7 @@ public:
     
     
     /** Pushes a single sample into delayline (FIFO). pullSample() can read out the delayline
-     @parameter Input sample for delayline */
+     @param Input sample for delayline */
     void pushSample(float inSample)
     {
         delayLine[writeIndex++] = inSample;
@@ -137,7 +137,7 @@ public:
             if(delayLine == NULL)
             {
                 delayLine = (float*)malloc(lengthInSamples * sizeof(float));
-                if(delayLine == NUll)
+                if(delayLine == NULL)
                     ErrorHandling::reportError("Delay Module", ERRMALLOC, true);
             }
             else

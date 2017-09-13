@@ -71,9 +71,11 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     bypassButton.addListener(this);
     addAndMakeVisible(&bypassButton);
     
-    testSwitchButton.setButtonText("Test Switch");
+    testSwitchButton.setButtonText("Mirror Source Model");
+    testSwitchButton.setComponentID("testSwitchButton");
     testSwitchButton.setColour(ToggleButton::textColourId, Colours::white);
     testSwitchButton.addListener(this);
+    testSwitchButton.addMouseListener(this, true);
     addAndMakeVisible(&testSwitchButton);
     
     useDistanceSimulationButton.setButtonText("Distance Simulation");
@@ -511,6 +513,15 @@ void SofaPanAudioProcessorEditor::mouseEnter(const MouseEvent &e){
         if(e.eventComponent->getComponentID() == "nfSimButton"){
             
             AttributedString text ("By activating this option, the effect of the source approaching the head will be simulated. \n The nearfield effects are occuring in the range 0.2m to 1m. \n Note that this option is only available in comination with the distance simulation");
+            text.setJustification (Justification::centred);
+            text.setColour(Colours::white);
+            popUpInfo->showAt(e.eventComponent, text, 10000, true, false);
+            
+        }
+        
+        if(e.eventComponent->getComponentID() == "testSwitchButton"){
+            
+            AttributedString text ("When in RoomSim mode, the modeling of early reflections can be set to the 'Image Source' model.\nThis model creates discrete early reflections as binaural sources with a geometrically computed source position. \nWhen this option is not active, a semi-static appoximation of four early reflections is used, where a blending of damping and delay between reflections from 4 directions (fixed binaural sources) is used");
             text.setJustification (Justification::centred);
             text.setColour(Colours::white);
             popUpInfo->showAt(e.eventComponent, text, 10000, true, false);

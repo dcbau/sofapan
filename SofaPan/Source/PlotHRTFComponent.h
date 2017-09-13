@@ -12,7 +12,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "fftw3.h"
-#include "sofaPanLookAndFeel.h"
+#include "GUI/sofaPanLookAndFeel.h"
 //==============================================================================
 /*
 */
@@ -74,8 +74,8 @@ public:
             spectrogram_l.clear();
             spectrogram_r.clear();
             float xPos, yPos;
-            const float dBmax = 24.0;
-            const float dBmin = -60.0;
+            const float dBmax = 6.0;//24.0;
+            const float dBmin = -40.0; //-60.0;
             const float dBrange = dBmax - dBmin;
             const float frequencyStep = (float)sampleRate / (float)fftSize;
 
@@ -189,6 +189,42 @@ public:
             phase_r[i] = atan2f(hrtf[i+size][1], hrtf[i+size][0]) / M_PI;
             
          }
+
+        /* Tryout für Wandabsorptions TF */
+//        float freqStep = (float)sampleRate / (float)size;
+//        
+//        float wood[7] = {0.18, 0.12, 0.1, 0.09, 0.08, 0.07, 0.07};
+//        float roughConcrete[7] = {0.02, 0.03, 0.03, 0.03, 0.04, 0.07, 0.07};
+//        float cottonCurtains[7] = {0.3, 0.45, 0.65, 0.56, 0.59, 0.71, 0.71};
+//        
+//        float* absorbtionCoeffs;
+//        String material = String("wood");
+//        if(material == "wood")
+//            absorbtionCoeffs = cottonCurtains;
+//            
+//        
+//        for(int i = 0; i< size; i++){
+//            float currentFrequency = i * freqStep;
+//            if(currentFrequency < 250)
+//                mag_l[i] = 1-absorbtionCoeffs[0];
+//            else if(currentFrequency < 500)
+//                mag_l[i] =  1-absorbtionCoeffs[1];
+//            else if(currentFrequency < 1000)
+//                mag_l[i] = 1-absorbtionCoeffs[2];
+//            else if(currentFrequency < 2000)
+//                mag_l[i] = 1-absorbtionCoeffs[3];
+//            else if(currentFrequency < 4000)
+//                mag_l[i] = 1-absorbtionCoeffs[4];
+//            else if(currentFrequency < 8000)
+//                mag_l[i] = 1-absorbtionCoeffs[5];
+//            else
+//                mag_l[i] = 1-absorbtionCoeffs[6];
+//            
+//            phase_l[i] = 1.0;
+//            
+//        }
+//        
+        
         sampleRate = _sampleRate;
         repaintFlag = true;
         repaint();

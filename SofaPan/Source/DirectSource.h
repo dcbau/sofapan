@@ -1,37 +1,40 @@
 /*
   ==============================================================================
 
-    FilterEngine.h
+    DirectSource.h
     Created: 27 Apr 2017 11:14:15am
     Author:  David Bau
 
   ==============================================================================
 */
 
-#ifndef FILTERENGINE_H_INCLUDED
-#define FILTERENGINE_H_INCLUDED
+#ifndef DirectSource_H_INCLUDED
+#define DirectSource_H_INCLUDED
 
 #include "SOFAData.h"
 #include "fftw3.h"
-#include "PluginProcessor.h"
+#include "ParameterStruct.h"
 
 #define RE 0
 #define IM 1
 
-class FilterEngine{
+
+class DirectSource{
 
 public:
-    FilterEngine(SOFAData& sD);
-    ~FilterEngine();
+    DirectSource();
+    ~DirectSource();
     
     void process(const float* inBuffer, float* outBuffer_L, float* outBuffer_R, int numSamples, parameterStruct params);
     void prepareToPlay();
     int getComplexLength();
     
-private:
-    SOFAData& sofaData;
+    int initWithSofaData(SOFAData* sD);
     
-    const int firLength;
+private:
+    SOFAData* sofaData;
+    
+    int firLength;
     int fftLength;
     int complexLength;
     float fftSampleScale;
@@ -61,9 +64,10 @@ private:
     
     float calculateNFAngleOffset(float angle, float r, float earPosition);
     
+    void releaseResources();
     
 };
 
 
 
-#endif  // FILTERENGINE_H_INCLUDED
+#endif  // DirectSource_H_INCLUDED

@@ -17,6 +17,10 @@
 #include "SOFAData.h"
 #include "SofaPathSharedUpdater.h"
 #include "Reverberator.h"
+#include "DirectSource.h"
+#include "ImageSource.h"
+#include "ParameterStruct.h"
+
 //Interface für SOFA File:
 extern "C" {
 #include <netcdf.h>
@@ -31,17 +35,9 @@ extern "C" {
 #endif
 
 
-typedef struct{
-    AudioParameterFloat* azimuthParam;
-    AudioParameterFloat* elevationParam;
-    AudioParameterFloat* distanceParam;
-    AudioParameterFloat* bypassParam;
-    AudioParameterBool* testSwitchParam;
-    AudioParameterBool* distanceSimulationParam;
-    AudioParameterBool* nearfieldSimulationParam;
-}parameterStruct;
 
-class FilterEngine;
+
+//class FilterEngine;
 class EarlyReflection;
 
 class SofaPanAudioProcessor  : public AudioProcessor, public InterprocessConnection
@@ -108,9 +104,13 @@ private:
     float sampleRate_f;
     
     SOFAData* HRTFs;
-    FilterEngine* Filter;
+    DirectSource directSource;
     
     std::vector<EarlyReflection*> earlyReflections;
+    
+    const int numReflections = 4;
+    ImageSource reflections[4];
+
     Reverberator reverb;
     
     SofaPathSharedUpdater* updater;
@@ -121,6 +121,8 @@ private:
     
     bool usingGlobalSofaFile = true;
     
+    int estimatedBlockSize;
+    AudioSampleBuffer reflectionInBuffer, reverbInBuffer, reverbOutBuffer;
 
 };
 

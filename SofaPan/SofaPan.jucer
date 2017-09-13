@@ -8,11 +8,13 @@
               pluginIsSynth="0" pluginWantsMidiIn="0" pluginProducesMidiOut="0"
               pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0" pluginAUExportPrefix="SofaPanAU"
               pluginRTASCategory="" aaxIdentifier="com.yourcompany.SofaPan"
-              pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="5.0.0"
+              pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="5.1.1"
               companyName="HSD" displaySplashScreen="1" reportAppUsage="0"
-              splashScreenColour="Dark" buildStandalone="0" enableIAA="0">
+              splashScreenColour="Dark" buildStandalone="0" enableIAA="0" cppLanguageStandard="14">
   <MAINGROUP id="XmHYCT" name="SofaPan">
     <GROUP id="{044A0D15-8678-AA45-7263-8E06162C7D6C}" name="Source">
+      <FILE id="ZLkxNp" name="ParameterStruct.h" compile="0" resource="0"
+            file="Source/ParameterStruct.h"/>
       <FILE id="yoquz7" name="ErrorHandling.h" compile="0" resource="0" file="Source/ErrorHandling.h"/>
       <GROUP id="{4951F6A0-0FE2-193E-36C3-F82C3B52EE8C}" name="SOFA Data">
         <FILE id="x9gfwE" name="SOFAData.cpp" compile="1" resource="0" file="Source/SOFAData.cpp"/>
@@ -21,6 +23,8 @@
               file="Source/SofaPathSharedUpdater.h"/>
       </GROUP>
       <GROUP id="{5486C6E1-FC20-1B3E-70BF-F12BC7680A5B}" name="Signal Processing">
+        <FILE id="Bk80lk" name="ImageSource.cpp" compile="1" resource="0" file="Source/ImageSource.cpp"/>
+        <FILE id="LPDUyA" name="ImageSource.h" compile="0" resource="0" file="Source/ImageSource.h"/>
         <FILE id="CNwtIM" name="CombFilter.h" compile="0" resource="0" file="Source/CombFilter.h"/>
         <FILE id="isff8W" name="DelayingAllpass.h" compile="0" resource="0"
               file="Source/DelayingAllpass.h"/>
@@ -29,9 +33,9 @@
               file="Source/EarlyReflection.cpp"/>
         <FILE id="zeToDt" name="EarlyReflection.h" compile="0" resource="0"
               file="Source/EarlyReflection.h"/>
-        <FILE id="WzrW7l" name="FilterEngine.cpp" compile="1" resource="0"
-              file="Source/FilterEngine.cpp"/>
-        <FILE id="WitAML" name="FilterEngine.h" compile="0" resource="0" file="Source/FilterEngine.h"/>
+        <FILE id="WzrW7l" name="DirectSource.cpp" compile="1" resource="0"
+              file="Source/DirectSource.cpp"/>
+        <FILE id="WitAML" name="DirectSource.h" compile="0" resource="0" file="Source/DirectSource.h"/>
         <FILE id="QJOR0S" name="OnePoleLPF.h" compile="0" resource="0" file="Source/OnePoleLPF.h"/>
         <FILE id="l9GNXb" name="Reverberator.h" compile="0" resource="0" file="Source/Reverberator.h"/>
       </GROUP>
@@ -73,7 +77,8 @@
   </MAINGROUP>
   <EXPORTFORMATS>
     <XCODE_MAC targetFolder="Builds/MacOSX" vst3Folder="/Users/David/GitRepos/vst3sdk"
-               externalLibraries="fftw3f&#10;netcdf">
+               externalLibraries="fftw3f&#10;netcdf" enableGNUExtensions="1"
+               keepCustomXcodeSchemes="1" useHeaderMap="1">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="SofaPan"
                        headerPath="../../../Dependencies/FFTW3/Mac&#10;../../../Dependencies/netCDF4/mac/include/"
@@ -89,15 +94,13 @@
         <MODULEPATH id="juce_data_structures" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_gui_basics" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_gui_extra" path="../../JUCE/modules"/>
-        <MODULEPATH id="juce_cryptography" path="../../JUCE/modules"/>
-        <MODULEPATH id="juce_video" path="../../JUCE/modules"/>
-        <MODULEPATH id="juce_opengl" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_audio_basics" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_audio_devices" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_audio_formats" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_audio_processors" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_audio_plugin_client" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_audio_utils" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_dsp" path="../../JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
     <VS2015 targetFolder="Builds/VisualStudio2015" vst3Folder="/Users/David/GitRepos/vst3sdk"
@@ -117,15 +120,13 @@
         <MODULEPATH id="juce_data_structures" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_gui_basics" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_gui_extra" path="../../JUCE/modules"/>
-        <MODULEPATH id="juce_cryptography" path="../../JUCE/modules"/>
-        <MODULEPATH id="juce_video" path="../../JUCE/modules"/>
-        <MODULEPATH id="juce_opengl" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_audio_basics" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_audio_devices" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_audio_formats" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_audio_processors" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_audio_plugin_client" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_audio_utils" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_dsp" path="../../JUCE/modules"/>
       </MODULEPATHS>
     </VS2015>
   </EXPORTFORMATS>
@@ -137,14 +138,12 @@
     <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0"/>
     <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0"/>
     <MODULE id="juce_core" showAllCode="1" useLocalCopy="0"/>
-    <MODULE id="juce_cryptography" showAllCode="1" useLocalCopy="0"/>
     <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_dsp" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
     <MODULE id="juce_events" showAllCode="1" useLocalCopy="0"/>
     <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0"/>
     <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0"/>
     <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0"/>
-    <MODULE id="juce_opengl" showAllCode="1" useLocalCopy="0"/>
-    <MODULE id="juce_video" showAllCode="1" useLocalCopy="0"/>
   </MODULES>
   <JUCEOPTIONS JUCE_QUICKTIME="disabled"/>
 </JUCERPROJECT>
