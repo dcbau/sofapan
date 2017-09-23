@@ -138,7 +138,8 @@ public:
     {
         g.drawImage(backgroundImage, getLocalBounds().toFloat());
         g.reduceClipRegion(plotBox.toNearestInt().withTrimmedTop(6).withTrimmedLeft(6).withTrimmedRight(3));
-        
+        const float oversampling = 1.5;
+
         if(repaintFlag){
             repaintFlag = false;
             if(IR_Left.size() == 0 || IR_Right.size()==0){
@@ -151,19 +152,25 @@ public:
             const int numSamples = IR_Left_Zoom.size();
             const float sampleStep = (float)numSamples / (float)boxWidth;
             float xPos, yPos;
-            const float oversampling = 1.5;
+            xPosOnsetR = xPosOnsetL = 0.0;
             waveform_l.startNewSubPath(plotBox.getX(), plotBox.getY() + plotBox.getHeight()*0.5*(zoomYFactor * IR_Left_Zoom[0] + 1));
             waveform_r.startNewSubPath(plotBox.getX(), plotBox.getY() + plotBox.getHeight()*0.5*(zoomYFactor * IR_Right_Zoom[0] + 1));
             for(int i = 1; i < boxWidth * oversampling; i++){
                 int sample = (int)truncf(float(i)/oversampling * sampleStep);
                 if(sample >= numSamples)  sample = numSamples-1;
                 xPos = float(i)/oversampling + plotBox.getX();
+                if(sample >= onsetIndex_L && xPosOnsetL == 0.0)
+                    xPosOnsetL = xPos;
+                if(sample >= onsetIndex_R && xPosOnsetR == 0.0)
+                    xPosOnsetR = xPos;
+                
                 yPos = plotBox.getY() + plotBox.getHeight() * 0.5 * (1 - zoomYFactor * IR_Left_Zoom[sample]);
                 waveform_l.lineTo(xPos, yPos);
                 yPos = plotBox.getY() + plotBox.getHeight() * 0.5 * (1 - zoomYFactor * IR_Right_Zoom[sample]);
                 waveform_r.lineTo(xPos, yPos);
 
             }
+            
         }
         //Left Channel
         g.setColour(Colour(0xffaaaa00));
@@ -171,7 +178,17 @@ public:
         //Right Channel
         g.setColour(Colour(0xff00aaaa));
         g.strokePath(waveform_r.createPathWithRoundedCorners(1.0), PathStrokeType(1.5));
-
+        
+//        //Draw Onset Markers
+//        g.setColour(Colours::red);
+//        g.drawVerticalLine(xPosOnsetL, plotBox.getY(), plotBox.getBottom());
+//        g.drawVerticalLine(xPosOnsetR, plotBox.getY(), plotBox.getBottom());
+//        
+//        float ITD = (onsetIndex_L - onsetIndex_R) * 1000.0 / (float)sampleRate;
+//        String text1 = String(ITD);
+//        text1 = shortenFloatString(text1, 1);
+//        text1.append("ms ITD", 6);
+//        g.drawText(text1, plotBox.getX() + 5, plotBox.getY() + 8, 70, 10, juce::Justification::left, true);
     }
     
     void resized() override
@@ -263,6 +280,32 @@ public:
             IR_Right[i] = _HRIR[i + size];
         }
         
+        
+//        //Detect Onset Threshold
+//        float maxValue_L = 0.0;
+//        float maxValue_R = 0.0;
+//        
+//        for(int i = 0; i< size; i++){
+//            if (fabs(IR_Left[i]) > maxValue_L)
+//                maxValue_L = fabs(IR_Left[i]);
+//            if (fabs(IR_Right[i]) > maxValue_R)
+//                maxValue_R = fabs(IR_Right[i]);
+//        }
+//        
+//        printf("\nMaxValue_L: %f", maxValue_L);
+//        maxValue_L *= 0.9;
+//        maxValue_R *= 0.9;
+//        onsetIndex_L = onsetIndex_R = 0;
+//        for(int i = 0; i< size; i++){
+//            if (fabs(IR_Left[i]) > maxValue_L && onsetIndex_L == 0)
+//                onsetIndex_L = i;
+//            if (fabs(IR_Right[i]) > maxValue_R && onsetIndex_R == 0)
+//                onsetIndex_R = i;
+//        }
+//        
+//        printf("\nOnsetIndexL: %d \nOnsetIndexR: %d", onsetIndex_L, onsetIndex_R);
+//        
+        
         //Remove zero-tail of long responses (minimum 128 samples remaining)
         if(size > 128){
             for(int i = 1; i < size - 128; i++){
@@ -274,6 +317,11 @@ public:
                 }
             }
         }
+        
+        
+
+        
+        
         IR_Left_Zoom = IR_Left;
         IR_Right_Zoom = IR_Right;
         
@@ -334,6 +382,15 @@ public:
         if(button == &zoomYButton5) setZoomY(3.5);
     }
     
+    String shortenFloatString(String _string, int decimalValues){
+        if(_string.containsChar('.'))
+            return _string.substring(0, _string.indexOfChar('.') + decimalValues + 1);
+        else{
+            _string.append(".00000000000", decimalValues + 1);
+            return _string;
+        }
+    }
+    
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PlotHRIRComponent)
 
@@ -363,11 +420,14 @@ private:
     
     Image backgroundImage;
     Path waveform_l, waveform_r;
-    
+    float xPosOnsetR, xPosOnsetL;
+
     
     SofaPanLookAndFeel sofaPanLookAndFeel;
     LookAndFeel_V4 defaultLookAndFeel;
     
     bool repaintFlag = false;
+    
+    int onsetIndex_L, onsetIndex_R;
     
 };

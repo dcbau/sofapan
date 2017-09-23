@@ -61,6 +61,7 @@ private:
     TextButton showSOFAMetadataButton;
     ToggleButton bypassButton;
     ToggleButton testSwitchButton;
+    ToggleButton mirrorSourceButton;
     ToggleButton useGlobalSofaFileButton;
     ToggleButton useDistanceSimulationButton;
     ToggleButton useNearfieldSimulationButton;

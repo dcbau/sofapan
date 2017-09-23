@@ -71,12 +71,17 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     bypassButton.addListener(this);
     addAndMakeVisible(&bypassButton);
     
-    testSwitchButton.setButtonText("Mirror Source Model");
-    testSwitchButton.setComponentID("testSwitchButton");
+    testSwitchButton.setButtonText("Test Button");
     testSwitchButton.setColour(ToggleButton::textColourId, Colours::white);
     testSwitchButton.addListener(this);
-    testSwitchButton.addMouseListener(this, true);
     addAndMakeVisible(&testSwitchButton);
+    
+    mirrorSourceButton.setButtonText("Mirror Source Model (Testing)");
+    mirrorSourceButton.setComponentID("mirrorSourceButton");
+    mirrorSourceButton.setColour(ToggleButton::textColourId, Colours::white);
+    mirrorSourceButton.addListener(this);
+    mirrorSourceButton.addMouseListener(this, true);
+    addAndMakeVisible(&mirrorSourceButton);
     
     useDistanceSimulationButton.setButtonText("Distance Simulation");
     useDistanceSimulationButton.setComponentID("distSimButton");
@@ -221,6 +226,7 @@ void SofaPanAudioProcessorEditor::timerCallback() {
 
     bypassButton.setToggleState((bool)getParameterValue("bypass"), NotificationType::dontSendNotification);
     testSwitchButton.setToggleState((bool)getParameterValue("test"), NotificationType::dontSendNotification);
+    mirrorSourceButton.setToggleState((bool)getParameterValue("mirrorSource"), NotificationType::dontSendNotification);
     useGlobalSofaFileButton.setToggleState(processor.getUsingGlobalSofaFile(), NotificationType::dontSendNotification);
 
     bool distanceSimActive = (bool)getParameterValue("dist_sim");
@@ -440,6 +446,9 @@ void SofaPanAudioProcessorEditor::buttonClicked(Button *button)
     if (button == &testSwitchButton)
         setParameterValue("test", testSwitchButton.getToggleState());
     
+    if (button == &mirrorSourceButton)
+        setParameterValue("mirrorSource", mirrorSourceButton.getToggleState());
+    
     if(button == &showSOFAMetadataButton)
         metadataView.setVisible(true);
     
@@ -519,7 +528,7 @@ void SofaPanAudioProcessorEditor::mouseEnter(const MouseEvent &e){
             
         }
         
-        if(e.eventComponent->getComponentID() == "testSwitchButton"){
+        if(e.eventComponent->getComponentID() == "mirrorSourceButton"){
             
             AttributedString text ("When in RoomSim mode, the modeling of early reflections can be set to the 'Image Source' model.\nThis model creates discrete early reflections as binaural sources with a geometrically computed source position. \nWhen this option is not active, a semi-static appoximation of four early reflections is used, where a blending of damping and delay between reflections from 4 directions (fixed binaural sources) is used");
             text.setJustification (Justification::centred);
@@ -550,7 +559,8 @@ void SofaPanAudioProcessorEditor::rearrange(){
     useGlobalSofaFileButton.setBounds(135, 10., 80, 30);
     useDistanceSimulationButton.setBounds(10, showSOFAMetadataButton.getBottom() + 30, 100, 30);
     useNearfieldSimulationButton.setBounds(20., useDistanceSimulationButton.getBottom(), 100., 30.);
-    testSwitchButton.setBounds(10., useNearfieldSimulationButton.getBottom() + 10, 100., 30.);
+    mirrorSourceButton.setBounds(10., useNearfieldSimulationButton.getBottom() + 10, 100., 30.);
+    testSwitchButton.setBounds(10., mirrorSourceButton.getBottom() + 10, 100., 30.);
 
     
     

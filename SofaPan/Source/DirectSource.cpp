@@ -26,9 +26,10 @@ DirectSource::~DirectSource(){
     releaseResources();
 }
 
-int DirectSource::initWithSofaData(SOFAData *sD){
+int DirectSource::initWithSofaData(SOFAData *sD, int _sampleRate){
     
     sofaData = sD;
+    sampleRate = _sampleRate;
     
     if(firLength != sD->getLengthOfHRIR()){
         releaseResources();
@@ -127,6 +128,13 @@ void DirectSource::prepareToPlay(){
     previousAzimuth = 0.0;
     previousElevation = 0.0;
     
+    ITDdelayL.specifyMaxDelayLength(50);
+    ITDdelayL.prepareToPlay(sampleRate);
+    ITDdelayR.specifyMaxDelayLength(50);
+    ITDdelayR.prepareToPlay(sampleRate);
+    delayL_ms = 0.0;
+    delayR_ms = 0.0;
+
 }
 
 void DirectSource::process(const float* inBuffer, float* outBuffer_L, float* outBuffer_R, int numSamples, parameterStruct params){
@@ -136,9 +144,20 @@ void DirectSource::process(const float* inBuffer, float* outBuffer_L, float* out
         
         inputBuffer[fifoIndex] = inBuffer[sample];
 
-        outBuffer_L[sample] = outputBuffer_L[fifoIndex];
-        outBuffer_R[sample] = outputBuffer_R[fifoIndex];
+        if(params.testSwitchParam->get()){
+            //Apply ITD delay to output signal
+            float delayLineOutputL = ITDdelayL.pullSample(delayL_ms);
+            ITDdelayL.pushSample(outputBuffer_L[fifoIndex]);
+            float delayLineOutputR = ITDdelayR.pullSample(delayR_ms);
+            ITDdelayR.pushSample(outputBuffer_R[fifoIndex]);
+            
+            outBuffer_L[sample] = delayLineOutputL;
+            outBuffer_R[sample] = delayLineOutputR;
 
+        }else{
+            outBuffer_L[sample] = outputBuffer_L[fifoIndex];
+            outBuffer_R[sample] = outputBuffer_R[fifoIndex];
+        }
 
         fifoIndex++;
         
@@ -188,9 +207,35 @@ void DirectSource::process(const float* inBuffer, float* outBuffer_L, float* out
 
             
             }
+            //update HRTF
+            fftwf_complex *hrtf_l, *hrtf_r;
+            if(params.testSwitchParam->get() ){
+                hrtf_l = sofaData->getMinPhaseHRTFforAngle(elevation, azimuth_l, distance);
+                hrtf_r = sofaData->getMinPhaseHRTFforAngle(elevation, azimuth_r, distance);
+            }else{
+                hrtf_l = sofaData->getHRTFforAngle(elevation, azimuth_l, distance);
+                hrtf_r = sofaData->getHRTFforAngle(elevation, azimuth_r, distance);
+            }
             
-            fftwf_complex* hrtf_l = sofaData->getHRTFforAngle(elevation, azimuth_l, distance);
-            fftwf_complex* hrtf_r = sofaData->getHRTFforAngle(elevation, azimuth_r, distance);
+            
+            //update ITD
+            //IMPORTANT!!!: this does not take the acoustic parallax effect in account!!! further investigation needed
+            //Negative Values represent a position to the left of the head (delay left is smaller), positive values for right of the head
+            if(params.testSwitchParam->get()){
+                float ITD = sofaData->getITDForAngle(elevation, azimuth, distance);
+                printf("\nITD = %f", ITD);
+
+                if(ITD > 0.0){
+                    delayL_ms = ITD;
+                    delayR_ms = 0.0;
+                }else{
+                    delayL_ms = 0.0;
+                    delayR_ms = fabs(ITD);
+                }
+            }else{
+                delayL_ms = delayR_ms =0.0;
+            }
+
             
             fftwf_execute(forward);
             

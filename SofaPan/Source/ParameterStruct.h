@@ -18,6 +18,7 @@ typedef struct{
     AudioParameterFloat* distanceParam;
     AudioParameterFloat* bypassParam;
     AudioParameterBool* testSwitchParam;
+    AudioParameterBool* mirrorSourceParam;
     AudioParameterBool* distanceSimulationParam;
     AudioParameterBool* nearfieldSimulationParam;
 }parameterStruct;

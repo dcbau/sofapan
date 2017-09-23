@@ -82,10 +82,20 @@ public:
     float Distance;
     int index;
     
-private:
+protected:
     float* HRIR;
     fftwf_complex* HRTF;
     
+};
+
+class Single_MinPhase_HRIR_Measurement: public Single_HRIR_Measurement {
+public:
+    Single_MinPhase_HRIR_Measurement(int lengthHRIR, int lengthHRTF): Single_HRIR_Measurement(lengthHRIR, lengthHRTF){
+    }
+    ~Single_MinPhase_HRIR_Measurement(){
+    }
+    
+    float ITD_ms;
 };
 
 
@@ -106,6 +116,8 @@ public:
      Get the closest HRTF for a given elevation & azimuth. The function will return a pointer to the TF-Values (complex numbers): the left TF first, followed directly by the right TF. The returned HRTF has a length of 2*(HRIRlength/2 + 1): [ L=N/2+1 | R=N/2+1 ].
      */
     fftwf_complex* getHRTFforAngle(float elevation, float azimuth, float radius);
+    fftwf_complex* getMinPhaseHRTFforAngle(float elevation, float azimuth, float radius);
+    float getITDForAngle(float elevation, float azimuth, float radius);
     float* getHRIRForAngle(float elevation, float azimuth, float radius);
 
     sofaMetadataStruct getMetadata();
@@ -127,6 +139,7 @@ private:
     int loadSofaFile(const char* filePath, int hostSampleRate);
     
     Single_HRIR_Measurement** loadedHRIRs;
+    Single_MinPhase_HRIR_Measurement** loadedMinPhaseHRIRs;
 
     void errorHandling(int status);
     String errorDesc;

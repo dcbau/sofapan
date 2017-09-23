@@ -14,6 +14,7 @@
 #include "SOFAData.h"
 #include "fftw3.h"
 #include "ParameterStruct.h"
+#include "Delayline.h"
 
 #define RE 0
 #define IM 1
@@ -29,10 +30,11 @@ public:
     void prepareToPlay();
     int getComplexLength();
     
-    int initWithSofaData(SOFAData* sD);
+    int initWithSofaData(SOFAData* sD, int _sampleRate);
     
 private:
     SOFAData* sofaData;
+    int sampleRate;
     
     int firLength;
     int fftLength;
@@ -65,6 +67,13 @@ private:
     float calculateNFAngleOffset(float angle, float r, float earPosition);
     
     void releaseResources();
+    
+    Delayline ITDdelayL;
+    Delayline ITDdelayR;
+    
+    float delayL_ms;
+    float delayR_ms;
+
     
 };
 

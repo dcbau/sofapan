@@ -25,7 +25,7 @@ public:
         mag_r.resize(0);
         phase_l.resize(0);
         phase_r.resize(0);
-
+        
         LookAndFeel::setDefaultLookAndFeel(&juceDefaultLookAndFeel);
 
         
@@ -52,6 +52,17 @@ public:
         magViewButton.setLookAndFeel(&juceDefaultLookAndFeel);
         magViewButton.addListener(this);
         addAndMakeVisible(magViewButton);
+        
+        unwrapPhaseButton.setButtonText("Unwrap Phase");
+        unwrapPhaseButton.setClickingTogglesState(true);
+        unwrapPhaseButton.setColour (TextButton::buttonColourId, Colours::lightgrey);
+        unwrapPhaseButton.setColour (TextButton::buttonOnColourId, sofaPanLookAndFeel.mainCyan);
+        unwrapPhaseButton.setColour (TextButton::textColourOffId, Colours::black);
+        unwrapPhaseButton.setToggleState(false, dontSendNotification);
+        unwrapPhaseButton.setLookAndFeel(&juceDefaultLookAndFeel);
+        unwrapPhaseButton.addListener(this);
+        addAndMakeVisible(unwrapPhaseButton);
+        unwrapPhaseButton.setVisible(false);
     }
 
     ~PlotHRTFComponent()
@@ -70,7 +81,8 @@ public:
             repaintFlag = false;
             if(mag_l.size() == 0 || mag_r.size()==0)
                 return;
-
+            
+            
             spectrogram_l.clear();
             spectrogram_r.clear();
             float xPos, yPos;
@@ -80,12 +92,17 @@ public:
             const float frequencyStep = (float)sampleRate / (float)fftSize;
 
             
-            //Left Channel
             spectrogram_l.startNewSubPath(plotBox.getX(), plotBox.getBottom());
-            spectrogram_l.lineTo(plotBox.getX(), plotBox.getY() - plotBox.getHeight() * (Decibels::gainToDecibels(mag_l[0])-dBmax) / dBrange);
-            //RightChannel
             spectrogram_r.startNewSubPath(plotBox.getX(), plotBox.getBottom());
-            spectrogram_r.lineTo(plotBox.getX(), plotBox.getY() - plotBox.getHeight() * (Decibels::gainToDecibels(mag_r[0])-dBmax) / dBrange);
+
+            if(togglePhaseView){
+                spectrogram_l.lineTo(plotBox.getX(), plotBox.getY() + plotBox.getHeight() * 0.5 * (1  -  phase_l[0]));
+                spectrogram_r.lineTo(plotBox.getX(), plotBox.getY() + plotBox.getHeight() * 0.5 * (1  -  phase_r[0]));
+            }else{
+                spectrogram_l.lineTo(plotBox.getX(), plotBox.getY() - plotBox.getHeight() * (Decibels::gainToDecibels(mag_l[0])-dBmax) / dBrange);
+                spectrogram_r.lineTo(plotBox.getX(), plotBox.getY() - plotBox.getHeight() * (Decibels::gainToDecibels(mag_r[0])-dBmax) / dBrange);
+            }
+
             
             float oldXPos = 0;
             for(int i = 1; i < mag_l.size(); i++){
@@ -122,6 +139,18 @@ public:
         g.setColour(Colour(0xff00aaaa));
         g.strokePath(spectrogram_r.createPathWithRoundedCorners(2.0), PathStrokeType(1.5));
 
+        if(togglePhaseView){
+            g.setFont(10.f);
+            g.setColour(Colours::black);
+            String text1 = String("-180deg");
+            String text2 = String("+180deg");
+            if(toggleUnwrapPhase){
+                int circles = maxUnwrappedPhase / 360;
+                text2 = String(String(circles) +" * 360 deg");
+            }
+            g.drawText(text1, plotBox.getX() + 5, plotBox.getY() + 8, 70, 10, juce::Justification::left, true);
+            g.drawText(text2, plotBox.getX() + 5, plotBox.getBottom()-10, 70, 10, juce::Justification::left, true);
+        }
         
         
         
@@ -135,7 +164,7 @@ public:
 
         magViewButton.setBounds(plotBox.getX()+10 , plotBox.getBottom()+2, 40., heightLowerPanel - 7.);
         phaseViewButton.setBounds(plotBox.getX()+50, plotBox.getBottom()+2, 40, heightLowerPanel - 7.);
-
+        unwrapPhaseButton.setBounds(plotBox.getX()+100 , plotBox.getBottom()+2, 40., heightLowerPanel - 7.);
         
         
         //Draw Background Image
@@ -180,6 +209,9 @@ public:
         phase_l.resize(size);
         phase_r.resize(size);
     
+        
+        
+        
         fftSize = (size - 1) * 2;
         float scale = 1.0;// 8.0 / fftSize;
         for(int i = 0; i< size; i++){
@@ -187,8 +219,11 @@ public:
             mag_r[i] = scale * (sqrtf(hrtf[i+size][0] * hrtf[i+size][0] + hrtf[i+size][1] * hrtf[i+size][1]));
             phase_l[i] = atan2f(hrtf[i][1], hrtf[i][0]) / M_PI;
             phase_r[i] = atan2f(hrtf[i+size][1], hrtf[i+size][0]) / M_PI;
-            
          }
+        
+        if(toggleUnwrapPhase)
+            unwrapPhase();
+
 
         /* Tryout für Wandabsorptions TF */
 //        float freqStep = (float)sampleRate / (float)size;
@@ -234,16 +269,78 @@ public:
         
         if(button == &magViewButton) togglePhaseView = false;
         if(button == &phaseViewButton) togglePhaseView = true;
+        
+        unwrapPhaseButton.setVisible(togglePhaseView);
+        
+        if(button == &unwrapPhaseButton) {
+            toggleUnwrapPhase = unwrapPhaseButton.getToggleState();
+            if(toggleUnwrapPhase)
+                unwrapPhase();
+            
+        }
+
         repaintFlag = true;
         repaint();
             
     }
+    
+    void unwrapPhase(){
+        
+        __SIZE_TYPE__ size = phase_l.size();
+
+        float phaseUnwrapped_l[size];
+        float phaseUnwrapped_r[size];
+        
+        for(int i = 0; i< size; i++){
+            phase_l[i] /= M_PI;
+            phase_r[i] /= M_PI;
+        }
+        
+        phaseUnwrapped_l[0] = phase_l[0];
+        float lastPhaseValue = phaseUnwrapped_l[0];
+        int multiply2Pi = 0;
+        float maxPhaseValue = 0.0;
+        
+        for(int i = 1; i < size; i++){
+            if(fabs(phase_l[i] + lastPhaseValue) < fabs(lastPhaseValue))
+                multiply2Pi++;
+            phaseUnwrapped_l[i] = phase_l[i] - 2.0 * M_PI * (float)multiply2Pi;
+            if(fabs(phaseUnwrapped_l[i]) > maxPhaseValue)
+                maxPhaseValue = fabs(phaseUnwrapped_l[i]);
+            
+            lastPhaseValue = phase_l[i];
+        }
+        
+        phaseUnwrapped_r[0] = phase_r[0];
+        lastPhaseValue = phase_r[0];
+        multiply2Pi = 0;
+        for(int i = 1; i < size; i++){
+            if(fabs(phase_r[i] + lastPhaseValue) < fabs(lastPhaseValue))
+                multiply2Pi++;
+            phaseUnwrapped_r[i] = phase_r[i] - 2.0 * M_PI * (float)multiply2Pi;
+            if(fabs(phaseUnwrapped_r[i]) > maxPhaseValue)
+                maxPhaseValue = fabs(phaseUnwrapped_r[i]);
+            
+            lastPhaseValue = phase_r[i];
+        }
+        
+        for(int i = 0; i< size; i++){
+            phase_l[i] = (phaseUnwrapped_l[i] / maxPhaseValue);
+            phase_r[i] = (phaseUnwrapped_r[i] / maxPhaseValue);
+        }
+        
+        maxUnwrappedPhase = trunc(maxPhaseValue * 360.0);
+    }
+    
+
+
     
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PlotHRTFComponent)
     
     std::vector<float> mag_l, mag_r;
     std::vector<float> phase_l, phase_r;
+
     int sampleRate;
     int fftSize;
     
@@ -255,8 +352,12 @@ private:
     
     TextButton phaseViewButton;
     TextButton magViewButton;
+    TextButton unwrapPhaseButton;
     bool togglePhaseView = false;
+    bool toggleUnwrapPhase = false;
+    int maxUnwrappedPhase;
     LookAndFeel_V4 juceDefaultLookAndFeel;
     SofaPanLookAndFeel sofaPanLookAndFeel;
+    
     
 };

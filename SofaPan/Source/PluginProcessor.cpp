@@ -32,6 +32,7 @@ SofaPanAudioProcessor::SofaPanAudioProcessor()
     addParameter(params.bypassParam = new AudioParameterFloat("bypass", "Bypass", 0.f, 1.f, 0.f));
     addParameter(params.elevationParam = new AudioParameterFloat("elevation", "Elevation", 0.f, 1.f, 0.5f));
     addParameter(params.distanceParam = new AudioParameterFloat("distance", "Distance", 0.f, 1.f, 0.5f));
+    addParameter(params.mirrorSourceParam = new AudioParameterBool("mirrorSource", "Mirror Source Model", false));
     addParameter(params.testSwitchParam = new AudioParameterBool("test", "Test Switch", false));
     addParameter(params.distanceSimulationParam = new AudioParameterBool("dist_sim", "Distance Simulation", false));
     addParameter(params.nearfieldSimulationParam = new AudioParameterBool("nearfield_sim", "Nearfield Simulation", false));
@@ -170,7 +171,7 @@ void SofaPanAudioProcessor::initData(String sofaFile){
     
     updateSofaMetadataFlag = true;
     
-    status += directSource.initWithSofaData(HRTFs);
+    status += directSource.initWithSofaData(HRTFs, (int)sampleRate_f);
     
     Line<float> wall[4];
     wall[0]= Line<float>(-5.0, 5.0, 5.0, 5.0); //Front
@@ -307,7 +308,7 @@ void SofaPanAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     
     if(params.distanceSimulationParam->get()){
         
-        if(params.testSwitchParam->get()){
+        if(params.mirrorSourceParam->get()){
             int order = 1;
             float azimuthRefl[numReflections];
             float distanceRefl[numReflections];
@@ -454,6 +455,22 @@ float* SofaPanAudioProcessor::getCurrentHRIR()
         distance = params.distanceParam->get();
     
     return HRTFs->getHRIRForAngle(elevation, azimuth, distance);
+}
+
+float SofaPanAudioProcessor::getCurrentITD()
+{
+    
+    if(HRTFs == NULL)
+        return NULL;
+    
+    float azimuth = params.azimuthParam->get() * 360.0;
+    float elevation = (params.elevationParam->get()-0.5) * 180.0;
+    
+    float distance = 1;
+    if(!(bool)params.distanceSimulationParam->get())
+        distance = params.distanceParam->get();
+    
+    return HRTFs->getITDForAngle(elevation, azimuth, distance);
 }
 
 int SofaPanAudioProcessor::getSampleRate()
