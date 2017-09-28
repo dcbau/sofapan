@@ -172,6 +172,16 @@ public:
             }
             
         }
+        //Draw Onset Markers
+        g.setColour(Colour(0x88aaaa00));
+        g.drawVerticalLine(xPosOnsetL, plotBox.getY(), plotBox.getBottom());
+        g.setColour(Colour(0x8800aaaa));
+        g.drawVerticalLine(xPosOnsetR, plotBox.getY(), plotBox.getBottom());
+        
+        g.setColour(Colours::black);
+        g.drawText(ITDdisplayText, plotBox.getRight() - 70, plotBox.getBottom() - 12, 70, 10, juce::Justification::left, true);
+        
+        
         //Left Channel
         g.setColour(Colour(0xffaaaa00));
         g.strokePath(waveform_l.createPathWithRoundedCorners(1.0), PathStrokeType(1.5));
@@ -179,16 +189,7 @@ public:
         g.setColour(Colour(0xff00aaaa));
         g.strokePath(waveform_r.createPathWithRoundedCorners(1.0), PathStrokeType(1.5));
         
-//        //Draw Onset Markers
-//        g.setColour(Colours::red);
-//        g.drawVerticalLine(xPosOnsetL, plotBox.getY(), plotBox.getBottom());
-//        g.drawVerticalLine(xPosOnsetR, plotBox.getY(), plotBox.getBottom());
-//        
-//        float ITD = (onsetIndex_L - onsetIndex_R) * 1000.0 / (float)sampleRate;
-//        String text1 = String(ITD);
-//        text1 = shortenFloatString(text1, 1);
-//        text1.append("ms ITD", 6);
-//        g.drawText(text1, plotBox.getX() + 5, plotBox.getY() + 8, 70, 10, juce::Justification::left, true);
+        
     }
     
     void resized() override
@@ -259,7 +260,7 @@ public:
     }
     
     /** Size is the length of one IR. The float vector hrir should contain the left AND the right IR, making the vector of length size*2 */
-    void drawHRIR(float* _HRIR, int size, int _sampleRate){
+    void drawHRIR(float* _HRIR, int size, int _sampleRate, ITDStruct ITD){
         
         
 
@@ -281,6 +282,48 @@ public:
         }
         
         
+
+        
+        
+        //Remove zero-tail of long responses (minimum 128 samples remaining)
+        if(size > 128){
+            for(int i = 1; i < size - 128; i++){
+                if(IR_Left[size - i] == 0.0 && IR_Right[size - i] == 0.0){
+                    IR_Left.pop_back();
+                    IR_Right.pop_back();
+                }else{
+                    break;
+                }
+            }
+        }
+        
+        //Insert ITD
+        const int preSpace = 5;
+        std::vector<float>::iterator it;
+//        if(ITDsamples > 0){
+//            onsetIndex_L = ITDsamples + preSpace;
+//            onsetIndex_R = preSpace;
+//        }else{
+//            onsetIndex_L = preSpace;
+//            onsetIndex_R = preSpace - ITDsamples;
+//        }
+        onsetIndex_L = ITD.onsetL_samples;
+        onsetIndex_R = ITD.onsetR_samples;
+        
+        it = IR_Left.begin();
+        IR_Left.insert ( it , onsetIndex_L, 0.0 );
+        IR_Left.resize(size);
+        
+        it = IR_Right.begin();
+        IR_Right.insert(it, onsetIndex_R, 0.0);
+        IR_Right.resize(size);
+        
+        ITDdisplayText = String(ITD.ITD_ms);
+        ITDdisplayText = shortenFloatString(ITDdisplayText, 1);
+        ITDdisplayText.append("ms ITD", 6);
+        
+//        //RESIZE BOTH VECTORS
+//        
 //        //Detect Onset Threshold
 //        float maxValue_L = 0.0;
 //        float maxValue_R = 0.0;
@@ -302,24 +345,17 @@ public:
 //            if (fabs(IR_Right[i]) > maxValue_R && onsetIndex_R == 0)
 //                onsetIndex_R = i;
 //        }
-//        
+        
 //        printf("\nOnsetIndexL: %d \nOnsetIndexR: %d", onsetIndex_L, onsetIndex_R);
-//        
-        
-        //Remove zero-tail of long responses (minimum 128 samples remaining)
-        if(size > 128){
-            for(int i = 1; i < size - 128; i++){
-                if(IR_Left[size - i] == 0.0 && IR_Right[size - i] == 0.0){
-                    IR_Left.pop_back();
-                    IR_Right.pop_back();
-                }else{
-                    break;
-                }
-            }
-        }
-        
-        
 
+//        //Map values (apprx logarithmic via square root) for better display
+//        float sign;
+//        for(int i = 0; i< size; i++){
+//            sign = IR_Left[i] < 0.0 ? -1.0 : 1.0;
+//            IR_Left[i] = sqrtf(fabsf(IR_Left[i])) * sign;
+//            sign = IR_Right[i] < 0.0 ? -1.0 : 1.0;
+//            IR_Right[i] = sqrtf(fabsf(IR_Right[i])) * sign;
+//        }
         
         
         IR_Left_Zoom = IR_Left;
@@ -429,5 +465,5 @@ private:
     bool repaintFlag = false;
     
     int onsetIndex_L, onsetIndex_R;
-    
+    String ITDdisplayText;
 };

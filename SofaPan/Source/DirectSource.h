@@ -18,7 +18,7 @@
 
 #define RE 0
 #define IM 1
-
+#define MAX_ITD 15
 
 class DirectSource{
 

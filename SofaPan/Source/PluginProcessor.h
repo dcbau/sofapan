@@ -87,7 +87,7 @@ public:
     bool updateSofaMetadataFlag;
     fftwf_complex* getCurrentHRTF();
     float* getCurrentHRIR();
-    float getCurrentITD();
+    ITDStruct getCurrentITD();
     int getSampleRate();
     int getComplexLength();
     void setUsingGlobalSofaFile(bool useGlobal);

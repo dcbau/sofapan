@@ -129,6 +129,8 @@ void ImageSource::prepareToPlay(int _sampleRate){
     
     delay.specifyMaxDelayLength(50);
     delay.prepareToPlay(sampleRate);
+//    delayR.specifyMaxDelayLength(50);
+//    delayR.prepareToPlay(sampleRate);
     
     previousHRTF = sofaData->getHRTFforAngle(0.0, 0.0, 1.0);
     

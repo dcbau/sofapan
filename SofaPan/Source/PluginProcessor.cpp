@@ -457,11 +457,14 @@ float* SofaPanAudioProcessor::getCurrentHRIR()
     return HRTFs->getHRIRForAngle(elevation, azimuth, distance);
 }
 
-float SofaPanAudioProcessor::getCurrentITD()
+ITDStruct SofaPanAudioProcessor::getCurrentITD()
 {
-    
+    ITDStruct nullStruct;
+    nullStruct.onsetL_samples = 0;
+    nullStruct.onsetR_samples = 0;
+    nullStruct.ITD_ms = 0;
     if(HRTFs == NULL)
-        return NULL;
+        return nullStruct;
     
     float azimuth = params.azimuthParam->get() * 360.0;
     float elevation = (params.elevationParam->get()-0.5) * 180.0;
@@ -472,6 +475,7 @@ float SofaPanAudioProcessor::getCurrentITD()
     
     return HRTFs->getITDForAngle(elevation, azimuth, distance);
 }
+
 
 int SofaPanAudioProcessor::getSampleRate()
 {

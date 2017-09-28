@@ -252,13 +252,11 @@ void SofaPanAudioProcessorEditor::timerCallback() {
     if(lastElevationValue!=elevationValue || lastAzimuthValue!=azimuthValue || lastDistanceValue!=distanceValue || processor.updateSofaMetadataFlag){
         //printf("\n\n 1. Trigger Repaint! \n");
         if(!roomsimLayout){
-            float* hrir = processor.getCurrentHRIR();
-            fftwf_complex* hrtf = processor.getCurrentHRTF();
             int complexLength = processor.getComplexLength();
             int firLength = complexLength - 1;
             int sampleRate = processor.getSampleRate();
-            plotHRIRView.drawHRIR(hrir, firLength, sampleRate);
-            plotHRTFView.drawHRTF(hrtf, complexLength, sampleRate);
+            plotHRIRView.drawHRIR(processor.getCurrentHRIR(), firLength, sampleRate, processor.getCurrentITD());
+            plotHRTFView.drawHRTF(processor.getCurrentHRTF(), complexLength, sampleRate);
         }
         panner2D_top.setDistanceAndAngle(distanceValue, azimuthValue, elevationValue);
         panner2D_rear.setDistanceAndAngle(distanceValue, azimuthValue, elevationValue);

@@ -65,7 +65,10 @@ private:
     void releaseResources();
     
     Delayline delay;
+    //Delayline delay;
     int sampleRate;
+    float ITDdelayL_ms;
+    float ITDdelayR_ms;
     
     const float speedOfSound = 343.2;
     const float meterToMs = 1000.0 / speedOfSound;

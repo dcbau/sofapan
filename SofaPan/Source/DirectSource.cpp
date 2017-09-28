@@ -128,9 +128,9 @@ void DirectSource::prepareToPlay(){
     previousAzimuth = 0.0;
     previousElevation = 0.0;
     
-    ITDdelayL.specifyMaxDelayLength(50);
+    ITDdelayL.specifyMaxDelayLength(MAX_ITD);
     ITDdelayL.prepareToPlay(sampleRate);
-    ITDdelayR.specifyMaxDelayLength(50);
+    ITDdelayR.specifyMaxDelayLength(MAX_ITD);
     ITDdelayR.prepareToPlay(sampleRate);
     delayL_ms = 0.0;
     delayR_ms = 0.0;
@@ -222,13 +222,13 @@ void DirectSource::process(const float* inBuffer, float* outBuffer_L, float* out
             //IMPORTANT!!!: this does not take the acoustic parallax effect in account!!! further investigation needed
             //Negative Values represent a position to the left of the head (delay left is smaller), positive values for right of the head
             if(params.testSwitchParam->get()){
-                float ITD = sofaData->getITDForAngle(elevation, azimuth, distance);
-                printf("\nITD = %f", ITD);
-
+                float ITD = sofaData->getITDForAngle(elevation, azimuth, distance).ITD_ms;
                 if(ITD > 0.0){
+                    if(ITD > MAX_ITD) ITD = MAX_ITD;
                     delayL_ms = ITD;
                     delayR_ms = 0.0;
                 }else{
+                    if(ITD < -MAX_ITD) ITD = -MAX_ITD;
                     delayL_ms = 0.0;
                     delayR_ms = fabs(ITD);
                 }

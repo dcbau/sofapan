@@ -145,7 +145,9 @@ int SOFAData::initSofaData(const char* filePath, int sampleRate)
         
         //Save ITD in ms
         //Negative Values represent a position to the left of the head (delay left is smaller), positive values for right of the head
-        loadedMinPhaseHRIRs[i]->ITD_ms = (onsetIndex_L - onsetIndex_R) * 1000.0 / sampleRate;
+        loadedMinPhaseHRIRs[i]->ITD.onsetL_samples = onsetIndex_L;
+        loadedMinPhaseHRIRs[i]->ITD.onsetR_samples = onsetIndex_R;
+        loadedMinPhaseHRIRs[i]->ITD.ITD_ms = (onsetIndex_L - onsetIndex_R) * 1000.0 / sampleRate;
         //Create the quasi minimumphase HRIR by shifting the onset position to the beginning
         for(int i = 0; i< lengthOfHRIR; i++){
             if ((i + onsetIndex_L) < lengthOfHRIR)
@@ -293,12 +295,12 @@ float* SOFAData::getHRIRForAngle(float elevation, float azimuth, float radius){
             best_id = i;
         }
     }
-    return loadedHRIRs[best_id]->getHRIR();
+    return loadedMinPhaseHRIRs[best_id]->getHRIR();
     
     
 }
 
-float SOFAData::getITDForAngle(float elevation, float azimuth, float radius){
+ITDStruct SOFAData::getITDForAngle(float elevation, float azimuth, float radius){
     int best_id = 0;
     
     float delta;
@@ -312,7 +314,7 @@ float SOFAData::getITDForAngle(float elevation, float azimuth, float radius){
             best_id = i;
         }
     }
-    return loadedMinPhaseHRIRs[best_id]->ITD_ms;
+    return loadedMinPhaseHRIRs[best_id]->ITD;
     
     
 }
@@ -448,6 +450,26 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
         free(SourcePosition);
         return ERR_READFILE;
     };
+
+    
+    int ReceiverPosition_id;
+    if ((status = nc_inq_varid(ncid, "ReceiverPosition", &ReceiverPosition_id)))
+        return ERR_READFILE;
+    float* ReceiverPosition =  NULL;
+    ReceiverPosition = (float*)malloc(sizeof(float) * 3 * dimR_len); //Allocate Memory for Sourcepositions of each Measurement
+    if(ReceiverPosition == NULL)
+        return ERR_MEM_ALLOC;
+    if ((status = nc_get_var_float(ncid, ReceiverPosition_id, ReceiverPosition)))// Store Sourceposition Data to Array
+    {
+        free(SourcePosition);
+        free(ReceiverPosition);
+        return ERR_READFILE;
+    };
+
+    float radius1 = ReceiverPosition[1]; // y-koordinate des ersten Receivers (L)
+    float radius2 = ReceiverPosition[4]; // y-koordinate des zweiten Receivers (R)
+    sofaMetadata.headRadius = (fabsf(radius1) + fabsf(radius2)) / 2.0;
+    printf("Head Radius: %f", sofaMetadata.headRadius);
     
     //Get Impluse Responses
     float *DataIR = NULL;
@@ -457,6 +479,7 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
     if ((status = nc_get_var_float(ncid, DataIR_id, DataIR))) //Read and write Data IR to variable Data IR
     {
         free(SourcePosition);
+        free(ReceiverPosition);
         free(DataIR);
         return ERR_READFILE;
     };
@@ -537,7 +560,7 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
     free(IR_Right_Interpolated);
     
     
-    
+    free(ReceiverPosition);
     free(SourcePosition);
     free(DataIR);
     nc_close(ncid);

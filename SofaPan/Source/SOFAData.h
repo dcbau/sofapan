@@ -46,6 +46,7 @@ typedef struct{
     float maxDistance;
     bool hasMultipleDistances;
     float receiverPosition[2];
+    float headRadius;
     
     int numberOfGlobalAttributes;
     //char** globalAttributeNames;
@@ -56,6 +57,12 @@ typedef struct{
     
     
 } sofaMetadataStruct;
+
+
+typedef struct{
+    int onsetL_samples, onsetR_samples;
+    float ITD_ms;
+} ITDStruct;
 
 
 class Single_HRIR_Measurement {
@@ -95,7 +102,8 @@ public:
     ~Single_MinPhase_HRIR_Measurement(){
     }
     
-    float ITD_ms;
+    //float ITD_ms;
+    ITDStruct ITD;
 };
 
 
@@ -117,7 +125,7 @@ public:
      */
     fftwf_complex* getHRTFforAngle(float elevation, float azimuth, float radius);
     fftwf_complex* getMinPhaseHRTFforAngle(float elevation, float azimuth, float radius);
-    float getITDForAngle(float elevation, float azimuth, float radius);
+    ITDStruct getITDForAngle(float elevation, float azimuth, float radius);
     float* getHRIRForAngle(float elevation, float azimuth, float radius);
 
     sofaMetadataStruct getMetadata();
