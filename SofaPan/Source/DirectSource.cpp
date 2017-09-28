@@ -222,7 +222,15 @@ void DirectSource::process(const float* inBuffer, float* outBuffer_L, float* out
             //IMPORTANT!!!: this does not take the acoustic parallax effect in account!!! further investigation needed
             //Negative Values represent a position to the left of the head (delay left is smaller), positive values for right of the head
             if(params.testSwitchParam->get()){
-                float ITD = sofaData->getITDForAngle(elevation, azimuth, distance).ITD_ms;
+                float ITD, ITDnf;// = sofaData->getITDForAngle(elevation, azimuth, distance).ITD_ms;
+                float r = sofaData->getMetadata().headRadius;
+                float c = 340.29;
+                //calculate lateral angle as demanded for woodworths formula (-> where medianplane is fundamental plane of spherical coordinate system)
+                float omegaLateral = asinf(sinf(M_PI * azimuth / 180.0) * cosf(M_PI * elevation / 180.0));
+                //Apply woodworths formula
+                ITD = 1000 * (r /c) * (sinf(omegaLateral) + omegaLateral);
+                ITDnf = 1000 * (r /c) * 2 * omegaLateral;
+                printf("\n Woodworths ITD: %.3fms,   ITDnf: %.3fms", ITD, ITDnf);
                 if(ITD > 0.0){
                     if(ITD > MAX_ITD) ITD = MAX_ITD;
                     delayL_ms = ITD;
@@ -232,6 +240,10 @@ void DirectSource::process(const float* inBuffer, float* outBuffer_L, float* out
                     delayL_ms = 0.0;
                     delayR_ms = fabs(ITD);
                 }
+                
+                
+                
+                
             }else{
                 delayL_ms = delayR_ms =0.0;
             }
