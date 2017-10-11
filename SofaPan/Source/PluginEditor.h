@@ -59,9 +59,10 @@ private:
     Slider panner_dist;
     TextButton loadSOFAButton;
     TextButton showSOFAMetadataButton;
-    ToggleButton bypassButton;
     ToggleButton testSwitchButton;
-    ToggleButton mirrorSourceButton;
+    ToggleButton ITDadjustButton;
+    TextButton mirrorSourceReflectionsButton;
+    TextButton semiStaticReflectionsButton;
     ToggleButton useGlobalSofaFileButton;
     ToggleButton useDistanceSimulationButton;
     ToggleButton useNearfieldSimulationButton;
@@ -69,7 +70,7 @@ private:
     TextButton useLayoutSimplePanningButton;
     TextButton useLayoutRoomsimButton;
     
-    const String sofaMetadataID = String("Listener Short Name: \nMeasurements: \nSamples per IR: \nSOFA Convention: \nData Type: \nElevation: \nDistance:");
+    const String sofaMetadataID = String("Listener Short Name: \nEar Distance: \nMeasurements: \nSamples per IR: \nSOFA Convention: \nData Type: \nElevation: \nDistance:");
     
     String sofaMetadataValue;
     

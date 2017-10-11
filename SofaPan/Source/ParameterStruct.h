@@ -21,4 +21,5 @@ typedef struct{
     AudioParameterBool* mirrorSourceParam;
     AudioParameterBool* distanceSimulationParam;
     AudioParameterBool* nearfieldSimulationParam;
+    AudioParameterBool* ITDAdjustParam;
 }parameterStruct;

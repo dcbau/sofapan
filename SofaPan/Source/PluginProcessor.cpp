@@ -32,11 +32,11 @@ SofaPanAudioProcessor::SofaPanAudioProcessor()
     addParameter(params.bypassParam = new AudioParameterFloat("bypass", "Bypass", 0.f, 1.f, 0.f));
     addParameter(params.elevationParam = new AudioParameterFloat("elevation", "Elevation", 0.f, 1.f, 0.5f));
     addParameter(params.distanceParam = new AudioParameterFloat("distance", "Distance", 0.f, 1.f, 0.5f));
-    addParameter(params.mirrorSourceParam = new AudioParameterBool("mirrorSource", "Mirror Source Model", false));
+    addParameter(params.mirrorSourceParam = new AudioParameterBool("mirrorSource", "Mirror Source Model", true));
     addParameter(params.testSwitchParam = new AudioParameterBool("test", "Test Switch", false));
     addParameter(params.distanceSimulationParam = new AudioParameterBool("dist_sim", "Distance Simulation", false));
     addParameter(params.nearfieldSimulationParam = new AudioParameterBool("nearfield_sim", "Nearfield Simulation", false));
-
+    addParameter(params.ITDAdjustParam = new AudioParameterBool("ITDadjust", "ITD Adjustment", false));
     
     HRTFs = new SOFAData();
 

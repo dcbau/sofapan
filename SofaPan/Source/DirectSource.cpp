@@ -144,7 +144,7 @@ void DirectSource::process(const float* inBuffer, float* outBuffer_L, float* out
         
         inputBuffer[fifoIndex] = inBuffer[sample];
 
-        if(params.testSwitchParam->get()){
+        if(params.ITDAdjustParam->get()){
             //Apply ITD delay to output signal
             float delayLineOutputL = ITDdelayL.pullSample(delayL_ms);
             ITDdelayL.pushSample(outputBuffer_L[fifoIndex]);
@@ -209,7 +209,7 @@ void DirectSource::process(const float* inBuffer, float* outBuffer_L, float* out
             }
             //update HRTF
             fftwf_complex *hrtf_l, *hrtf_r;
-            if(params.testSwitchParam->get() ){
+            if(params.ITDAdjustParam->get() ){
                 hrtf_l = sofaData->getMinPhaseHRTFforAngle(elevation, azimuth_l, distance);
                 hrtf_r = sofaData->getMinPhaseHRTFforAngle(elevation, azimuth_r, distance);
             }else{
@@ -221,7 +221,7 @@ void DirectSource::process(const float* inBuffer, float* outBuffer_L, float* out
             //update ITD
             //IMPORTANT!!!: this does not take the acoustic parallax effect in account!!! further investigation needed
             //Negative Values represent a position to the left of the head (delay left is smaller), positive values for right of the head
-            if(params.testSwitchParam->get()){
+            if(params.ITDAdjustParam->get()){
                 float ITD, ITDnf;// = sofaData->getITDForAngle(elevation, azimuth, distance).ITD_ms;
                 float r = sofaData->getMetadata().headRadius;
                 float c = 340.29;

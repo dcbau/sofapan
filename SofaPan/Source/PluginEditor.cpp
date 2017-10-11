@@ -64,24 +64,46 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     loadSOFAButton.setButtonText ("Load HRTF");
     loadSOFAButton.setComponentID("3");
     loadSOFAButton.addListener(this);
+    loadSOFAButton.setLookAndFeel(&juceDefaultLookAndFeel);
+    loadSOFAButton.setColour (TextButton::buttonColourId, sofaPanLookAndFeel.mainCyan);
+    loadSOFAButton.setColour (TextButton::textColourOffId, Colours::white);
+    loadSOFAButton.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
     addAndMakeVisible(&loadSOFAButton);
-    
-    bypassButton.setButtonText("Bypass");
-    bypassButton.setColour(ToggleButton::textColourId, Colours::white);
-    bypassButton.addListener(this);
-    addAndMakeVisible(&bypassButton);
-    
+
     testSwitchButton.setButtonText("Test Button");
     testSwitchButton.setColour(ToggleButton::textColourId, Colours::white);
     testSwitchButton.addListener(this);
-    addAndMakeVisible(&testSwitchButton);
+    //addAndMakeVisible(&testSwitchButton);
     
-    mirrorSourceButton.setButtonText("Mirror Source Model (Testing)");
-    mirrorSourceButton.setComponentID("mirrorSourceButton");
-    mirrorSourceButton.setColour(ToggleButton::textColourId, Colours::white);
-    mirrorSourceButton.addListener(this);
-    mirrorSourceButton.addMouseListener(this, true);
-    addAndMakeVisible(&mirrorSourceButton);
+    mirrorSourceReflectionsButton.setButtonText("Mirror Source");
+    mirrorSourceReflectionsButton.setComponentID("mirrorSourceButton");
+    mirrorSourceReflectionsButton.setLookAndFeel(&juceDefaultLookAndFeel);
+    mirrorSourceReflectionsButton.setClickingTogglesState(true);
+    mirrorSourceReflectionsButton.setToggleState(true, juce::dontSendNotification);
+    mirrorSourceReflectionsButton.setColour(ToggleButton::textColourId, Colours::white);
+    mirrorSourceReflectionsButton.addListener(this);
+    mirrorSourceReflectionsButton.addMouseListener(this, true);
+    mirrorSourceReflectionsButton.setColour (TextButton::buttonColourId, Colours::lightgrey);
+    mirrorSourceReflectionsButton.setColour (TextButton::buttonOnColourId, sofaPanLookAndFeel.mainCyan);
+    mirrorSourceReflectionsButton.setColour (TextButton::textColourOffId, Colours::grey);
+    mirrorSourceReflectionsButton.setRadioGroupId(9174);
+    mirrorSourceReflectionsButton.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
+    addAndMakeVisible(&mirrorSourceReflectionsButton);
+    
+    semiStaticReflectionsButton.setButtonText("Semi Static");
+    semiStaticReflectionsButton.setComponentID("semiStaticButton");
+    semiStaticReflectionsButton.setLookAndFeel(&juceDefaultLookAndFeel);
+    semiStaticReflectionsButton.setClickingTogglesState(true);
+    semiStaticReflectionsButton.setToggleState(false, juce::dontSendNotification);
+    semiStaticReflectionsButton.setColour(ToggleButton::textColourId, Colours::white);
+    semiStaticReflectionsButton.addListener(this);
+    semiStaticReflectionsButton.addMouseListener(this, true);
+    semiStaticReflectionsButton.setColour (TextButton::buttonColourId, Colours::lightgrey);
+    semiStaticReflectionsButton.setColour (TextButton::buttonOnColourId, sofaPanLookAndFeel.mainCyan);
+    semiStaticReflectionsButton.setColour (TextButton::textColourOffId, Colours::grey);
+    semiStaticReflectionsButton.setRadioGroupId(9174);
+    semiStaticReflectionsButton.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
+    addAndMakeVisible(&semiStaticReflectionsButton);
     
     useDistanceSimulationButton.setButtonText("Distance Simulation");
     useDistanceSimulationButton.setComponentID("distSimButton");
@@ -98,6 +120,12 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     useNearfieldSimulationButton.addMouseListener(this, true);
     addAndMakeVisible(&useNearfieldSimulationButton);
     useNearfieldSimulationButton.setToggleState(true, NotificationType::sendNotification);
+    
+    ITDadjustButton.setButtonText("ITD Adjustment");
+    ITDadjustButton.setColour(ToggleButton::textColourId, Colours::white);
+    ITDadjustButton.addListener(this);
+    addAndMakeVisible(&ITDadjustButton);
+    
     
     useGlobalSofaFileButton.setButtonText("Global SOFA File");
     useGlobalSofaFileButton.setComponentID("globalSofaButton");
@@ -150,6 +178,10 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     
     showSOFAMetadataButton.setButtonText("Show More Information");
     showSOFAMetadataButton.addListener(this);
+    showSOFAMetadataButton.setLookAndFeel(&juceDefaultLookAndFeel);
+    showSOFAMetadataButton.setColour (TextButton::buttonColourId, sofaPanLookAndFeel.mainCyan);
+    showSOFAMetadataButton.setColour (TextButton::textColourOffId, Colours::white);
+    showSOFAMetadataButton.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
     addAndMakeVisible(&showSOFAMetadataButton);
     addAndMakeVisible(&metadataView);
     metadataView.setVisible(false);
@@ -210,8 +242,8 @@ void SofaPanAudioProcessorEditor::paint (Graphics& g)
     // sofa metadata short info
     g.setColour(Colours::white);
     g.setFont(Font(11));
-    g.drawFittedText(sofaMetadataID, 10, 130, 100, 100, Justification::topLeft, 3);
-    g.drawFittedText(sofaMetadataValue, 110, 130, 300, 100, Justification::topLeft, 3);
+    g.drawFittedText(sofaMetadataID, 10, 60, 100, 100, Justification::topLeft, 3);
+    g.drawFittedText(sofaMetadataValue, 110, 60, 300, 100, Justification::topLeft, 3);
     
 }
 
@@ -224,9 +256,10 @@ void SofaPanAudioProcessorEditor::resized()
 // This timer periodically checks whether any of the filter's parameters have changed...
 void SofaPanAudioProcessorEditor::timerCallback() {
 
-    bypassButton.setToggleState((bool)getParameterValue("bypass"), NotificationType::dontSendNotification);
+    ITDadjustButton.setToggleState((bool)getParameterValue("ITDadjust"), NotificationType::dontSendNotification);
     testSwitchButton.setToggleState((bool)getParameterValue("test"), NotificationType::dontSendNotification);
-    mirrorSourceButton.setToggleState((bool)getParameterValue("mirrorSource"), NotificationType::dontSendNotification);
+    mirrorSourceReflectionsButton.setToggleState((bool)getParameterValue("mirrorSource"), NotificationType::dontSendNotification);
+    semiStaticReflectionsButton.setToggleState(!(bool)getParameterValue("mirrorSource"), NotificationType::dontSendNotification);
     useGlobalSofaFileButton.setToggleState(processor.getUsingGlobalSofaFile(), NotificationType::dontSendNotification);
 
     bool distanceSimActive = (bool)getParameterValue("dist_sim");
@@ -277,6 +310,8 @@ void SofaPanAudioProcessorEditor::timerCallback() {
         String sofaConvections_Note = String(processor.metadata_sofafile.SOFAConventions);
         String dataType_Note = String(processor.metadata_sofafile.dataType);
         String listenerShortName_Note = String(processor.metadata_sofafile.listenerShortName);
+        String earDistanceNote = String(processor.metadata_sofafile.headRadius * 200);
+        earDistanceNote.append(" cm", 3);
         float eleMin = processor.metadata_sofafile.minElevation;
         float eleMax = processor.metadata_sofafile.maxElevation;
         String elevationRange_Note;
@@ -321,8 +356,10 @@ void SofaPanAudioProcessorEditor::timerCallback() {
             panner_dist.setRange(distMin, distMax);
             panner_dist.setEnabled(false);
         }
+    
         
         sofaMetadataValue = String(listenerShortName_Note + "\n" +
+                                   earDistanceNote + "\n" +
                                    numMeasurement_Note + "\n" +
                                    numSamples_Note + "\n" +
                                    sofaConvections_Note + "\n" +
@@ -438,14 +475,14 @@ void SofaPanAudioProcessorEditor::buttonClicked(Button *button)
         }
     }
     
-    if (button == &bypassButton)
-        setParameterValue("bypass", bypassButton.getToggleState());
+    if (button == &ITDadjustButton)
+        setParameterValue("ITDadjust", ITDadjustButton.getToggleState());
     
     if (button == &testSwitchButton)
         setParameterValue("test", testSwitchButton.getToggleState());
     
-    if (button == &mirrorSourceButton)
-        setParameterValue("mirrorSource", mirrorSourceButton.getToggleState());
+    if (button == &mirrorSourceReflectionsButton || button == &semiStaticReflectionsButton)
+        setParameterValue("mirrorSource", mirrorSourceReflectionsButton.getToggleState());
     
     if(button == &showSOFAMetadataButton)
         metadataView.setVisible(true);
@@ -493,6 +530,7 @@ void SofaPanAudioProcessorEditor::buttonClicked(Button *button)
         setParameterValue("nearfield_sim", false);
 
     }
+    
     
 
 }
@@ -545,22 +583,28 @@ void SofaPanAudioProcessorEditor::mouseExit(const MouseEvent &e){
 }
 
 void SofaPanAudioProcessorEditor::rearrange(){
-
-    
-    loadSOFAButton.setBounds(-5., 10., 150., 30.);
-    showSOFAMetadataButton.setBounds(-8, 230, 200, 30);
-    showTooltipsButton.setBounds(100, getLocalBounds().getBottom() - 30, 100, 30);
     
     metadataView.setBounds(getLocalBounds().reduced(20));
-    
-    bypassButton.setBounds(10., 50., 150., 30.);
-    useGlobalSofaFileButton.setBounds(135, 10., 80, 30);
-    useDistanceSimulationButton.setBounds(10, showSOFAMetadataButton.getBottom() + 30, 100, 30);
-    useNearfieldSimulationButton.setBounds(20., useDistanceSimulationButton.getBottom(), 100., 30.);
-    mirrorSourceButton.setBounds(10., useNearfieldSimulationButton.getBottom() + 10, 100., 30.);
-    testSwitchButton.setBounds(10., mirrorSourceButton.getBottom() + 10, 100., 30.);
+
+    loadSOFAButton.setBounds(10., 10., 130., 30.);
+    useGlobalSofaFileButton.setBounds(loadSOFAButton.getBounds().getRight() + 10, 10., 80, 30);
+    //bypassButton.setBounds(10., 50., 150., 30.);
 
     
+    showSOFAMetadataButton.setBounds(10., 160, 160, 30);
+    Rectangle<int> distanceSimControlBox = Rectangle<int>(10, showSOFAMetadataButton.getBottom() + 20,220, 90);
+    useDistanceSimulationButton.setBounds(distanceSimControlBox.getX() + 10, distanceSimControlBox.getY() + 10, 100, 30);
+    useNearfieldSimulationButton.setBounds(20., useDistanceSimulationButton.getBottom(), 100., 30.);
+    mirrorSourceReflectionsButton.setBounds(useDistanceSimulationButton.getRight()+10, useDistanceSimulationButton.getY() + 5, 45., 20.);
+    semiStaticReflectionsButton.setBounds(mirrorSourceReflectionsButton.getBounds().withX(mirrorSourceReflectionsButton.getRight()));
+    
+    Rectangle<int> ITDAdjustControlBox = Rectangle<int>(distanceSimControlBox.withY(distanceSimControlBox.getBottom() + 10));
+    ITDadjustButton.setBounds(ITDAdjustControlBox.getX() + 10, ITDAdjustControlBox.getY() + 10, 130., 30.);
+    
+    //testSwitchButton.setBounds(10., mirrorSourceReflectionsButton.getBottom() + 10, 100., 30.);
+
+    showTooltipsButton.setBounds(100, getLocalBounds().getBottom() - 30, 100, 30);
+
     
     
     int panner_size;
@@ -636,6 +680,15 @@ void SofaPanAudioProcessorEditor::rearrange(){
     g.fillRect(mainControlBox);
     g.setColour(Colours::grey);
     g.drawRect(mainControlBox);
+    
+    g.setColour(Colour(0xFF2A2A2A));
+    g.fillRect(distanceSimControlBox);
+    g.fillRect(ITDAdjustControlBox);
+    g.setColour(Colours::grey);
+    g.drawRect(distanceSimControlBox);
+    g.drawRect(ITDAdjustControlBox);
+
+    
     g.setColour(Colours::white);
     
     if(!roomsimLayout){
