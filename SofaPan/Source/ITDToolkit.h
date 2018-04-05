@@ -12,6 +12,9 @@
 
 #define MAX_ITD 1
 
+#define M_PI 3.14159265358979323846
+
+
 class ITDToolkit{
 public:
     

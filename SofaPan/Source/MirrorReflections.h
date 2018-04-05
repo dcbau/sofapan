@@ -160,7 +160,7 @@ public:
         data.overwriteOutputBuffer = false;
         data.customHeadRadius = params.individualHeadDiameter->get() / 200.0;
 
-        soundSourceData firstOrderReflections[numUsedReflections];
+        soundSourceData* firstOrderReflections = new soundSourceData[numUsedReflections];
 
         //convert refPos to xyz coords point
         float el_rad = data.elevation * d2r;

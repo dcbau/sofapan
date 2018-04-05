@@ -11,9 +11,9 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
-#include "sofaPanLookAndFeel.h"
-#include "HeadTopHexData.h"
-#include "HeadRearHexData.h"
+#include "GUI/sofaPanLookAndFeel.h"
+#include "GUI/HeadTopHexData.h"
+#include "GUI/HeadRearHexData.h"
 #include "PluginEditor.h"
 
 //==============================================================================
@@ -60,7 +60,7 @@ public:
         if(!isRearView)
             createPipe("1234", 10);
         else{
-            sleep(1);
+            //sleep(1);
             connectToPipe("1234", 10);
         }
 

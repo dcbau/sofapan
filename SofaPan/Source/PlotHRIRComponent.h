@@ -11,7 +11,7 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
-#include "sofaPanLookAndFeel.h"
+#include "GUI/sofaPanLookAndFeel.h"
 
 
 //==============================================================================

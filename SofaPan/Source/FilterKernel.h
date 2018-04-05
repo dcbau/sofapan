@@ -18,6 +18,9 @@
 #define RE 0
 #define IM 1
 
+#define M_PI 3.14159265358979323846
+
+
 
 class FilterKernel{
 public:

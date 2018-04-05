@@ -136,7 +136,7 @@ public:
     /** The initalization routine can be called prior to the minphase transformation. But it will be called by the transformation itself if needed
      @param The length of the HRTF (Length of Impulse Response + 1)
      */
-    int init(int _lengthOfHRTF){
+    void init(int _lengthOfHRTF){
         
         releaseResources();
         

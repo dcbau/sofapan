@@ -10,6 +10,9 @@
 
 #pragma once
 
+#define M_PI 3.14159265358979323846
+
+
 class NFSimToolkit{
 public:
     //Nearfield Simulation: Increasing IID effect

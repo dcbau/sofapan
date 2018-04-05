@@ -383,7 +383,7 @@ int SOFAData::searchHRTF(float elevation, float azimuth, float radius){
 
 void SOFAData::getHRTFsForInterpolation(float** resultsMag, float** resultsPhase, float* distances, float elevation, float azimuth, float radius, int numDesiredHRTFs){
     
-    int id[numDesiredHRTFs];
+    int *id = new int[numDesiredHRTFs];
     radius = 1.0;
     searchClosestHRTFs(id, distances, numDesiredHRTFs, elevation, azimuth, radius);
     
@@ -520,8 +520,11 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
     int numberOfAttributes;
     nc_inq(ncid, NULL, NULL, &numberOfAttributes, NULL);
     
-    char name_of_att[NC_MAX_NAME + 1][numberOfAttributes];
-    char* attributes[numberOfAttributes];
+	char* name_of_att[NC_MAX_NAME + 1];
+	for (int i = 0; i <= NC_MAX_NAME; ++i) {
+		name_of_att[i] = new char[numberOfAttributes];
+	}
+    char** attributes = new char*[numberOfAttributes];
     
     sofaMetadata.globalAttributeNames.resize(0);
     sofaMetadata.globalAttributeValues.resize(0);
@@ -532,7 +535,7 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
         size_t attlength;
         nc_inq_attlen(ncid, NC_GLOBAL, name_of_att[i], &attlength);
         
-        char att[attlength + 1];
+        char* att = new char[attlength + 1];
         nc_get_att(ncid, NC_GLOBAL, name_of_att[i], &att);
         att[attlength] = '\0';
         attributes[i] = att;
@@ -921,7 +924,7 @@ String SOFAData::getSOFAGlobalAttribute(const char* attribute_ID, int ncid){
     
     
     //get value if possible
-    char att[att_length + 1];
+    char* att = new char[att_length + 1];
     if(nc_get_att(ncid, NC_GLOBAL, attribute_ID, &att))
         return String("- Unknown - ");
     

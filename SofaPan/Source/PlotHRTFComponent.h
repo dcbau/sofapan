@@ -288,10 +288,10 @@ public:
     
     void unwrapPhase(){
         
-        __SIZE_TYPE__ size = phase_l.size();
+        size_t size = phase_l.size();
 
-        float phaseUnwrapped_l[size];
-        float phaseUnwrapped_r[size];
+        float* phaseUnwrapped_l = new float[size];
+        float* phaseUnwrapped_r = new float[size];
         
         for(int i = 0; i< size; i++){
             phase_l[i] /= M_PI;

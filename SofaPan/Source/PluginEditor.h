@@ -19,13 +19,13 @@
 #include "PlotHRIRComponent.h"
 #include "RoomPannerComponent.h"
 
-#include "sofaPanLookAndFeel.h"
-#include "azimuthSliderLookAndFeel.h"
-#include "elevationSliderLookAndFeel.h"
-#include "LogoHexData.h"
-#include "HeadTopHexData.h"
-#include "HeadSideHexData.h"
-#include "SpeakerHexData.h"
+#include "GUI/sofaPanLookAndFeel.h"
+#include "GUI/azimuthSliderLookAndFeel.h"
+#include "GUI/elevationSliderLookAndFeel.h"
+#include "GUI/LogoHexData.h"
+#include "GUI/HeadTopHexData.h"
+#include "GUI/HeadSideHexData.h"
+#include "GUI/SpeakerHexData.h"
 
 //#define roomsimLayout 1
 #define REVSLIDERACTIVE 1

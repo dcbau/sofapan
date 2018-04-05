@@ -113,22 +113,22 @@ private:
     int sampleRate;
     float rt60 = 1.0; //inital 1s
     CombFilter comb[8];
-    const float combDelay[8] = {31.71, 37.11, 40.23, 44.14, 30.47, 33.98, 41.41, 42.58};
+    const float combDelay[8] = {31.71f, 37.11f, 40.23f, 44.14f, 30.47f, 33.98f, 41.41f, 42.58f};
 //    const float combDelay[8] = {31.71, 37.11, 40.23, 44.14, 30.47, 33.98, 41.41, 42.58};
 
     float combFBGain[8];
-    float combLPFGain[8] = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
+    float combLPFGain[8] = {0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f};
     
     DelayingAllpass allpass[4];
-    const float apFBGain[4] = {0.7, -0.7, -0.6, 0.6};
-    const float apDelay[4] = {13.28, 23.13, 9.38, 11};
+    const float apFBGain[4] = {0.7f, -0.7f, -0.6f, 0.6f};
+    const float apDelay[4] = {13.28f, 23.13f, 9.38f, 11.f};
     
     Delayline preDelay;
     const float preDelayMs = 5.0;
     
     StupidOnePoleLPF dampingFilter[3];
     //1: input Damping, 2+3: output damping
-    const float dampingGain[3] = {0.55, 0.75, 0.8};
+    const float dampingGain[3] = {0.55f, 0.75f, 0.8f};
     
 //    const float revGain = 0.05;
     

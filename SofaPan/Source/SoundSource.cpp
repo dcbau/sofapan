@@ -312,7 +312,7 @@ void SoundSource::interpolation(int leftOrRight){
     float w1, w2, w3, w4;
     float mag, phase;
 
-    float w[interpolationOrder];
+	float *w = new float[interpolationOrder];
     
     float weightSum = 0.0;
     for(int k = 0; k < interpolationOrder; k++)

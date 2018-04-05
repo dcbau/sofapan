@@ -29,6 +29,9 @@ extern "C" {
 #define ERR_OPENFILE    4
 #define ERR_NOTSUP      5
 
+#define M_PI 3.14159265358979323846
+
+
 
 
 enum {
