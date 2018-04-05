@@ -10,9 +10,6 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-
-#include "EarlyReflection.h"
-
 #include "math.h"
 
 //==============================================================================
@@ -32,18 +29,18 @@ SofaPanAudioProcessor::SofaPanAudioProcessor()
     addParameter(params.bypassParam = new AudioParameterFloat("bypass", "Bypass", 0.f, 1.f, 0.f));
     addParameter(params.elevationParam = new AudioParameterFloat("elevation", "Elevation", 0.f, 1.f, 0.5f));
     addParameter(params.distanceParam = new AudioParameterFloat("distance", "Distance", 0.f, 1.f, 0.5f));
-    addParameter(params.mirrorSourceParam = new AudioParameterBool("mirrorSource", "Mirror Source Model", true));
-    addParameter(params.testSwitchParam = new AudioParameterBool("test", "Test Switch", false));
     addParameter(params.distanceSimulationParam = new AudioParameterBool("dist_sim", "Distance Simulation", false));
     addParameter(params.nearfieldSimulationParam = new AudioParameterBool("nearfield_sim", "Nearfield Simulation", false));
     addParameter(params.ITDAdjustParam = new AudioParameterBool("ITDadjust", "ITD Adjustment", false));
-    
+    addParameter(params.individualHeadDiameter = new AudioParameterFloat("individualHeadDiameter", "Individual Head Diameter", 14.0, 20.0, 17.0));
+    addParameter(params.reverbParam1 = new AudioParameterFloat("reverbParam1", "Reverb Param 1", 0.f, 1.f , 0.5));
+    addParameter(params.reverbParam2 = new AudioParameterFloat("reverbParam2", "Reverb Param 2", 0.f, 1.f , 0.5));
+    if(ENABLE_TESTBUTTON)
+        addParameter(params.testSwitchParam = new AudioParameterBool("test", "Test Switch", false));
+    if(ENABLE_SEMISTATICS)
+        addParameter(params.mirrorSourceParam = new AudioParameterBool("mirrorSource", "Mirror Source Model", false));
     HRTFs = new SOFAData();
 
-    earlyReflections.resize(4);
-    for(int i = 0; i < earlyReflections.size(); i++)
-        earlyReflections[i] = NULL;
-    
     sampleRate_f = 0;
     
     updateSofaMetadataFlag = false;
@@ -51,9 +48,8 @@ SofaPanAudioProcessor::SofaPanAudioProcessor()
     updater = &SofaPathSharedUpdater::instance();
     String connectionID = updater->createConnection();
     connectToPipe(connectionID, 10);
-    
-    
-    
+    estimatedBlockSize = 0;
+
 }
 
 SofaPanAudioProcessor::~SofaPanAudioProcessor()
@@ -61,10 +57,6 @@ SofaPanAudioProcessor::~SofaPanAudioProcessor()
     
     delete HRTFs;
     HRTFs = NULL;
-    for(int i=0; i < earlyReflections.size(); i++){
-        if(earlyReflections[i] != NULL) delete earlyReflections[i];
-        earlyReflections[i] = NULL;
-    }
     updater->removeConnection(getPipe()->getName());
     
 }
@@ -136,24 +128,25 @@ void SofaPanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
                 pathToSOFAFile = currentGlobalSofaFile;
         }
         initData(pathToSOFAFile);
-    }else{
-        directSource.prepareToPlay();
-        for(int i = 0; i < numReflections; i++){
-            reflections[i].prepareToPlay(sampleRate);
-        }
-        for(int i=0; i < earlyReflections.size(); i++)
-            earlyReflections[i]->prepareToPlay();
     }
     
-    estimatedBlockSize = samplesPerBlock;
+
     reflectionInBuffer = AudioSampleBuffer(1, estimatedBlockSize);
+    reflectionOutBuffer = AudioSampleBuffer(2, estimatedBlockSize);
     reverbInBuffer = AudioSampleBuffer(1, estimatedBlockSize);
     reverbOutBuffer = AudioSampleBuffer(2, estimatedBlockSize);
+    
     reflectionInBuffer.clear();
+    reflectionOutBuffer.clear();
+
     reverbInBuffer.clear();
     reverbOutBuffer.clear();
 
     reverb.prepareToPlay((int)sampleRate);
+    directSource.prepareToPlay();
+    semistaticRefl.prepareToPlay();
+    mirrorRefl.prepareToPlay((int)sampleRate);
+    
     
 }
 
@@ -171,29 +164,17 @@ void SofaPanAudioProcessor::initData(String sofaFile){
     
     updateSofaMetadataFlag = true;
     
-    status += directSource.initWithSofaData(HRTFs, (int)sampleRate_f);
     
-    Line<float> wall[4];
-    wall[0]= Line<float>(-5.0, 5.0, 5.0, 5.0); //Front
-    wall[1]= Line<float>(5.0, 5.0, 5.0, -5.0); //Right
-    wall[2]= Line<float>(5.0, -5.0, -5.0, -5.0); //Back
-    wall[3]= Line<float>(-5.0, -5.0, -5.0, 5.0); //Left
+    status = directSource.initWithSofaData(HRTFs, (int)sampleRate_f, 1);
+    status += semistaticRefl.init(HRTFs, roomSize, (int)sampleRate_f);
+    status += mirrorRefl.initWithSofaData(HRTFs, roomSize, (int)sampleRate_f);
+    
 
-    for(int i = 0; i < numReflections; i++){
-        status += reflections[i].initWithSofaData(HRTFs, (int)sampleRate_f, wall[i], 1);
-    }
-    
-    const float angles[4] = {90, 270, 0, 180}; //right, left, front, back
-    for(int i=0; i < earlyReflections.size(); i++){
-        if(earlyReflections[i] != NULL) {
-            delete earlyReflections[i];
-            earlyReflections[i] = NULL;
-        }
-        earlyReflections[i] = new EarlyReflection(HRTFs->getHRTFforAngle(0.0, angles[i], 1.0), HRTFs->getLengthOfHRIR(), (int)sampleRate_f);
-    }
     
     //If an critical error occured during sofa loading, turn this plugin to a brick 
     if(!status) suspendProcessing(false);
+    
+    //printf("Processing Suspenden: %d", proce)
 }
 
 void SofaPanAudioProcessor::releaseResources()
@@ -231,6 +212,7 @@ bool SofaPanAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) 
 
 void SofaPanAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
+    
     const int totalNumInputChannels  = getTotalNumInputChannels();
     const int totalNumOutputChannels = getTotalNumOutputChannels();
     
@@ -251,9 +233,11 @@ void SofaPanAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     if(estimatedBlockSize != numberOfSamples){
         estimatedBlockSize = numberOfSamples;
         reflectionInBuffer.setSize(reflectionInBuffer.getNumChannels(), estimatedBlockSize);
+        reflectionOutBuffer.setSize(reflectionOutBuffer.getNumChannels(), estimatedBlockSize);
         reverbInBuffer.setSize(reverbInBuffer.getNumChannels(), estimatedBlockSize);
         reverbOutBuffer.setSize(reverbOutBuffer.getNumChannels(), estimatedBlockSize);
         reflectionInBuffer.clear();
+        reflectionOutBuffer.clear();
         reverbInBuffer.clear();
         reverbOutBuffer.clear();
     }
@@ -261,118 +245,59 @@ void SofaPanAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     reflectionInBuffer.copyFrom(0, 0, buffer.getReadPointer(0), numberOfSamples);
     reverbInBuffer.copyFrom(0, 0, buffer.getReadPointer(0), numberOfSamples);
 
-    
+    const float* inBuffer = buffer.getReadPointer(0);
     float* outBufferL = buffer.getWritePointer (0);
     float* outBufferR = buffer.getWritePointer (1);
-    const float* inBuffer = buffer.getReadPointer(0);
     
     const float* inBufferRefl = reflectionInBuffer.getReadPointer(0);
+    float* outBufferRefl_L = reflectionOutBuffer.getWritePointer(0);
+    float* outBufferRefl_R= reflectionOutBuffer.getWritePointer(1);
+
     const float* inBufferReverb = reverbInBuffer.getReadPointer(0);
     float* outBufferReverbL = reverbOutBuffer.getWritePointer(0);
     float* outBufferReverbR = reverbOutBuffer.getWritePointer(1);
 
-    
-    directSource.process(inBuffer, outBufferL, outBufferR, numberOfSamples, params);
-
-    //buffer.clear();
-    float gain = 1.0;
-    if(params.distanceSimulationParam->get() || metadata_sofafile.hasMultipleDistances){
-        if(params.distanceParam->get() > 0.1)
-             gain = 1 / params.distanceParam->get();
-        buffer.applyGain(gain);
-        
-        
-        //Nearfield Simulation: Increasing IID effect
-        float distance = params.distanceParam->get();
-        if(params.nearfieldSimulationParam->get() && distance < 1.0 && distance > 0.2){
-        
-            //alpha_az determines how much the increasing IID effect will be applied, because it is dependent on the azimuth angle
-            float alpha_az = powf( sinf(  params.azimuthParam->get() * 2.0 * M_PI  ), 3 ); //Running from 0 -> 1 -> 0 -> -1 -> 0 for a full circle. The ^3 results in a steeper sine-function, so that the effect will be less present in the areas around 0° or 180°, but emphasized for angles 90° or 270°, where the source is cleary more present to one ear, while the head masks the other ear
-            
-            //alpha_el weakens the effect, if the source is elevated above or below the head, because shadowing of the head will be less present. It is 1 for zero elevation and moves towards zero for +90° and -90°
-            float alpha_el = cosf(params.elevationParam->get() * 2.0 * M_PI);
-        
-            float normGain = 7.8 * (1.0 - distance) * (1.0 - distance); //will run exponentially from +0db to ~+5db when distance goes from 1m to 0.2m
-        
-            float IID_gain_l = Decibels::decibelsToGain(   (normGain * -alpha_az * alpha_el)  ); // 0db -> 0...-5db -> 0db -> 0..5db
-            float IID_gain_r = Decibels::decibelsToGain(  normGain * alpha_az * alpha_el); // 0db -> 0...5db -> 0db -> 0..-5db
-        
-            buffer.applyGain(0, 0, numberOfSamples, IID_gain_l);
-            buffer.applyGain(1, 0, numberOfSamples, IID_gain_r);
-        }
-
-
-    }
-    
+    soundSourceData data;
+    data.azimuth = params.azimuthParam->get() * 360.0;
+    data.elevation = (params.elevationParam->get()-0.5) * 180.0;
+    data.distance = params.distanceParam->get();
+    data.ITDAdjust = params.ITDAdjustParam->get();
+    data.nfSimulation = params.nearfieldSimulationParam->get();
+    data.overwriteOutputBuffer = true;
+    if(ENABLE_TESTBUTTON)
+        data.test = params.testSwitchParam->get();
+    data.customHeadRadius = params.individualHeadDiameter->get() / 200.0;
+    directSource.process(inBuffer, outBufferL, outBufferR, numberOfSamples, data);
 
     
     if(params.distanceSimulationParam->get()){
-        
-        if(params.mirrorSourceParam->get()){
-            int order = 1;
-            float azimuthRefl[numReflections];
-            float distanceRefl[numReflections];
-            
-            float xPos, yPos;
-            const float roomRadius = 5.0;
-            float xSource = sinf(params.azimuthParam->get() * M_PI / 180.0) * cosf(params.elevationParam->get() * M_PI / 180.0) * params.distanceParam->get();
-            float ySource = cosf(params.azimuthParam->get() * M_PI / 180.0) * cosf(params.elevationParam->get() * M_PI / 180.0) * params.distanceParam->get();
-            
-            Point<float> origin = Point<float>(0.0, 0.0);
-            float azimuth = 2.0* M_PI * params.azimuthParam->get();
-            float distance = params.distanceParam->get();
-            Point<float> sourcePos = origin.getPointOnCircumference(distance, azimuth);
-            sourcePos.y *= -1.0;
-            printf("\n SOURCE Azimuth: %.2f, Distance: %.2f", azimuth, distance);
-            printf("\n SOURCE X: %.2f, Y: %.2f", sourcePos.getX(), sourcePos.getY());
-                                                
-            for(int i = 0; i < numReflections; i++){
-                reflections[i].process(inBufferRefl, outBufferL, outBufferR, numberOfSamples, sourcePos);
-            }
-        }else{
-        
-            float alpha_s = sinf(params.azimuthParam->get() * 2.0 * M_PI); //Running from 0 -> 1 -> 0 -> -1 -> 0 for a full circle
-            float alpha_c = cosf(params.azimuthParam->get() * 2.0 * M_PI); //Running from 1 -> 0 -> -1 -> 0 -> 1 for a full circle
-            float delay[4], damp[4];
-            
-            float distance = 1.0;
-            if(params.distanceSimulationParam || metadata_sofafile.hasMultipleDistances){
-                distance = params.distanceParam->get();
-            }
-            //clip distance, to avoid negative delay values. More a dirty solution, because in the edges of a 10x10m room, where the distance is larger than 5m, there is no change in the reflections anymore. This might be neglible, because the reflections are only an approximation anyway
-            if(distance > 5.0){
-                distance = 5.0;
-            }
-            const float roomRadius = 5; //10x10m room
-            const float speedOfSound = 343.2;
-            const float meterToMs = 1000.0 / speedOfSound;
-            delay[0] = meterToMs * ((2.0 * roomRadius - distance) - alpha_s * distance);
-            delay[1] = meterToMs * ((2.0 * roomRadius - distance) + alpha_s * distance);
-            delay[1] = meterToMs * ((2.0 * roomRadius - distance) - alpha_c * distance);
-            delay[1] = meterToMs * ((2.0 * roomRadius - distance) + alpha_c * distance);
 
-            damp[0] = 1.0/(2*roomRadius-alpha_s * distance);
-            damp[1] = 1.0/(2*roomRadius+alpha_s * distance);
-            damp[2] = 1.0/(2*roomRadius-alpha_c * distance);
-            damp[3] = 1.0/(2*roomRadius+alpha_c * distance);
-            
-            for(int i=0; i < 2; i++){
-                earlyReflections[i]->process(inBufferRefl, outBufferL, outBufferR, numberOfSamples, delay[i], damp[i]);
-            }
+        if(ENABLE_SEMISTATICS){
+            if(params.mirrorSourceParam->get())
+                mirrorRefl.process(inBufferRefl, outBufferRefl_L, outBufferRefl_R, numberOfSamples, params);
+            else
+                semistaticRefl.process(inBufferRefl, outBufferRefl_L, outBufferRefl_R, numberOfSamples, params);
+
+        }else{
+            mirrorRefl.process(inBufferRefl, outBufferRefl_L, outBufferRefl_R, numberOfSamples, params);
         }
+
+    
+        reverb.processBlockMS(inBufferReverb, outBufferReverbL, outBufferReverbR, numberOfSamples, params);
+
+        buffer.addFrom(0, 0, reflectionOutBuffer, 0, 0, numberOfSamples);
+        buffer.addFrom(1, 0, reflectionOutBuffer, 1, 0, numberOfSamples);
         
-        
-        reverb.processBlockMS(inBufferReverb, outBufferReverbL, outBufferReverbR, numberOfSamples, params.testSwitchParam->get());
-        reverbOutBuffer.applyGain(0.05);
+        //buffer.clear();
         
         buffer.addFrom(0, 0, reverbOutBuffer, 0, 0, numberOfSamples);
         buffer.addFrom(1, 0, reverbOutBuffer, 1, 0, numberOfSamples);
-        
-        
+
+
     }
     
-    buffer.applyGain(0.25);
-
+    //buffer.applyGain(0.25);
+    
 
 }
 
@@ -413,7 +338,8 @@ AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 void SofaPanAudioProcessor::setSOFAFilePath(String sofaString)
 {
     pathToSOFAFile = sofaString;
-    initData(pathToSOFAFile);
+    if(estimatedBlockSize != 0) //to avoid inits before prepareToPlay was called
+        initData(pathToSOFAFile);
     
     if(usingGlobalSofaFile){
         MemoryBlock message;
@@ -438,7 +364,7 @@ fftwf_complex* SofaPanAudioProcessor::getCurrentHRTF()
     if(!(bool)params.distanceSimulationParam->get())
         distance = params.distanceParam->get();
     
-    return HRTFs->getHRTFforAngle(elevation, azimuth, distance);
+    return HRTFs->getHRTFforAngle(elevation, azimuth, distance, hrir_type_original);
 }
 
 float* SofaPanAudioProcessor::getCurrentHRIR()
@@ -454,7 +380,7 @@ float* SofaPanAudioProcessor::getCurrentHRIR()
     if(!(bool)params.distanceSimulationParam->get())
         distance = params.distanceParam->get();
     
-    return HRTFs->getHRIRForAngle(elevation, azimuth, distance);
+    return HRTFs->getHRIRforAngle(elevation, azimuth, distance, hrir_type_minPhase);
 }
 
 ITDStruct SofaPanAudioProcessor::getCurrentITD()
@@ -476,24 +402,53 @@ ITDStruct SofaPanAudioProcessor::getCurrentITD()
     return HRTFs->getITDForAngle(elevation, azimuth, distance);
 }
 
+float* SofaPanAudioProcessor::getCurrentMagSpectrum()
+{
+    
+    if(HRTFs == NULL)
+        return NULL;
+    
+    float azimuth = params.azimuthParam->get() * 360.0;
+    float elevation = (params.elevationParam->get()-0.5) * 180.0;
+    
+    float distance = 1;
+    if(!(bool)params.distanceSimulationParam->get())
+        distance = params.distanceParam->get();
+    
+    return HRTFs->getInterpolatedMagSpectrumForAngle(elevation, azimuth, distance);
+}
+
+float* SofaPanAudioProcessor::getCurrentPhaseSpectrum()
+{
+    
+    if(HRTFs == NULL)
+        return NULL;
+    
+    float azimuth = params.azimuthParam->get() * 360.0;
+    float elevation = (params.elevationParam->get()-0.5) * 180.0;
+    
+    float distance = 1;
+    if(!(bool)params.distanceSimulationParam->get())
+        distance = params.distanceParam->get();
+    
+    return HRTFs->getPhaseSpectrumForAngle(elevation, azimuth, distance, hrtf_type_minPhase);
+}
+
+
 
 int SofaPanAudioProcessor::getSampleRate()
 {
     return (int)sampleRate_f;
 }
 
-int SofaPanAudioProcessor::getComplexLength()
-{
-    return directSource.getComplexLength();
-}
 
 void SofaPanAudioProcessor::messageReceived (const MemoryBlock &message){
     
     if(usingGlobalSofaFile){
         String newFilePath = message.toString();
-        printf("\n%s: Set New File Path: %s", getPipe()->getName().toRawUTF8(), newFilePath.toRawUTF8());
-    
-        initData(newFilePath);
+        //printf("\n%s: Set New File Path: %s", getPipe()->getName().toRawUTF8(), newFilePath.toRawUTF8());
+        if(estimatedBlockSize != 0) //to avoid inits before prepareToPlay was called
+            initData(newFilePath);
     }
     
 }
@@ -503,7 +458,8 @@ void SofaPanAudioProcessor::setUsingGlobalSofaFile(bool useGlobal){
         String path = updater->requestCurrentFilePath();
         if(path.length() > 1 && path!=pathToSOFAFile){
             pathToSOFAFile = path;
-            initData(pathToSOFAFile);
+            if(estimatedBlockSize != 0) //to avoid inits before prepareToPlay was called
+                initData(pathToSOFAFile);
         }
         usingGlobalSofaFile = true;
     }else{

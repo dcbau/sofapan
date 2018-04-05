@@ -28,11 +28,13 @@
 #include "SpeakerHexData.h"
 
 //#define roomsimLayout 1
-
+#define REVSLIDERACTIVE 1
+#define ENABLE_SEMISTATICS 0
+#define ENABLE_TESTBUTTON 0
 //==============================================================================
 /**
 */
-class SofaPanAudioProcessorEditor  : public AudioProcessorEditor, public Slider::Listener, public Button::Listener, private Timer
+class SofaPanAudioProcessorEditor  : public AudioProcessorEditor, public Slider::Listener, public Button::Listener, private Timer, private OSCReceiver, private OSCReceiver::ListenerWithOSCAddress<OSCReceiver::MessageLoopCallback>
 {
 public:
     SofaPanAudioProcessorEditor (SofaPanAudioProcessor&);
@@ -57,18 +59,28 @@ private:
     Slider panner_az;
     Slider panner_el;
     Slider panner_dist;
+#if REVSLIDERACTIVE
+    Slider reverbSlider1;
+    Slider reverbSlider2;
+    Label reverbLabel1;
+    Label reverbLabel2;
+#endif
     TextButton loadSOFAButton;
     TextButton showSOFAMetadataButton;
-    ToggleButton testSwitchButton;
+    //ToggleButton testSwitchButton;
     ToggleButton ITDadjustButton;
+    Slider headRadiusSlider;
+#if ENABLE_SEMISTATICS
     TextButton mirrorSourceReflectionsButton;
     TextButton semiStaticReflectionsButton;
+#endif
     ToggleButton useGlobalSofaFileButton;
     ToggleButton useDistanceSimulationButton;
     ToggleButton useNearfieldSimulationButton;
     ToggleButton showTooltipsButton;
     TextButton useLayoutSimplePanningButton;
     TextButton useLayoutRoomsimButton;
+
     
     const String sofaMetadataID = String("Listener Short Name: \nEar Distance: \nMeasurements: \nSamples per IR: \nSOFA Convention: \nData Type: \nElevation: \nDistance:");
     
@@ -85,6 +97,7 @@ private:
     
     void sliderDragStarted(Slider* slider) override;
     void sliderDragEnded(Slider* slider) override;
+    
 
     SofaMetadataView metadataView;
     PlotHRTFComponent plotHRTFView;
@@ -114,6 +127,10 @@ private:
     bool roomsimLayout = 0;
     void rearrange();
     
+    
+    //OSC stuff
+    void oscMessageReceived(const OSCMessage& message) override;
+    OSCSender oscSender;
     
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SofaPanAudioProcessorEditor)

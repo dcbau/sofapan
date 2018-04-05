@@ -14,33 +14,36 @@
 #include "DelayingAllpass.h"
 #include "Delayline.h"
 #include "OnePoleLPF.h"
+#include "ParameterStruct.h"
 
 class Reverberator{
 public:
     Reverberator(){}
     ~Reverberator(){}
     
-    /** Mono */
-    void processBlockM(const float* inBuffer, float* outBuffer, int numSamples){
-        
 
-    }
     /** Mono Input, Stereo Output*/
-    void processBlockMS(const float* inBuffer, float* outBuffer_L, float* outBuffer_R, int numSamples, bool testSwitch){
+    void processBlockMS(const float* inBuffer, float* outBuffer_L, float* outBuffer_R, int numSamples, parameterStruct params){
         
-//        if(testSwitch){
-//            dampingFilter[0].setLPFGain(0.65);
-//            dampingFilter[1].setLPFGain(0.5);
-//            dampingFilter[2].setLPFGain(0.5);
-//        }else{
-//            dampingFilter[0].setLPFGain(0.65);
-//            dampingFilter[1].setLPFGain(0.6);
-//            dampingFilter[2].setLPFGain(0.6);
-//        }
+        float reverbLevel = params.reverbParam1->get() * 36.0 - 48;
+        float reverbTime = params.reverbParam2->get() * 1.9 + 0.1;
+        //printf("\n Reverb Level: %f, Decay Time: %f", reverbLevel, rt60);
+
+        if(rt60 != reverbTime){
+            rt60 = reverbTime;
+            configCombGains(rt60);
+        }
         
+        float revGain = Decibels::decibelsToGain(reverbLevel);
+        
+        for(int i = 0; i < numSamples; i++){
+            outBuffer_L[i] = inBuffer[i] * revGain;
+        }
+
         
         //Predelay
-        preDelay.processBlock(inBuffer, outBuffer_L, numSamples);
+        preDelay.processBlock(outBuffer_L, outBuffer_L, numSamples);
+
         
         //Input Diffusion
         dampingFilter[0].processBlock(outBuffer_L, outBuffer_L, numSamples);
@@ -76,18 +79,15 @@ public:
     void prepareToPlay(int _sampleRate){
         sampleRate = _sampleRate;
         
-        //calc comb gain based on rt60
-        for(int i = 0; i < 8; i++){
-            combFBGain[i] = calculateCombGain(combDelay[i], rt60);
-        }
+
         //setup combs
         for(int i = 0; i < 8; i++){
             comb[i].prepareToPlay(sampleRate);
-            comb[i].setDelayAndFeedback(combDelay[i], combFBGain[i]);
-            comb[i].setLPFGain(combLPFGain[i]);
             comb[i].setAddOutput(true);
-
         }
+        
+        //calc comb gain based on rt60
+        configCombGains(rt60);
         
         //setup allps
         for(int i = 0; i < 4; i++){
@@ -111,11 +111,13 @@ public:
     }
 private:
     int sampleRate;
-    const float rt60 = 0.7;
+    float rt60 = 1.0; //inital 1s
     CombFilter comb[8];
     const float combDelay[8] = {31.71, 37.11, 40.23, 44.14, 30.47, 33.98, 41.41, 42.58};
+//    const float combDelay[8] = {31.71, 37.11, 40.23, 44.14, 30.47, 33.98, 41.41, 42.58};
+
     float combFBGain[8];
-    float combLPFGain[8] = {0.0, 0.0, 0., 0., 0.0, 0.0, 0., 0.};
+    float combLPFGain[8] = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
     
     DelayingAllpass allpass[4];
     const float apFBGain[4] = {0.7, -0.7, -0.6, 0.6};
@@ -124,12 +126,23 @@ private:
     Delayline preDelay;
     const float preDelayMs = 5.0;
     
-    OnePoleLPF dampingFilter[3];
-    const float dampingGain[3] = {0.65, 0.8, 0.8};
+    StupidOnePoleLPF dampingFilter[3];
+    //1: input Damping, 2+3: output damping
+    const float dampingGain[3] = {0.55, 0.75, 0.8};
     
-    float calculateCombGain(float delayTimeMs, float rt)
+//    const float revGain = 0.05;
+    
+    
+    
+    void configCombGains(float rt)
     {
-        return powf(0.001, 0.001*delayTimeMs / rt); //schroeder
+        for(int i = 0; i < 8; i++)
+        {
+            combFBGain[i] = powf(0.001, 0.001*combDelay[i] / rt); //schroeder
+            comb[i].setDelayAndFeedback(combDelay[i], combFBGain[i]);
+            
+            comb[i].setLPFGain(combLPFGain[i]);
+        }
     }
 
     /* Able to handle buffer sizes up to 4096. No elegant solution, but works and is better than dynamically allocating memory in processBlock */

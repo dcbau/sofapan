@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<JUCERPROJECT id="yWvU65" name="SofaPanRemote" displaySplashScreen="0" reportAppUsage="1"
+              splashScreenColour="Dark" projectType="guiapp" version="1.0.0"
+              bundleIdentifier="com.yourcompany.SofaPanRemote" includeBinaryInAppConfig="1"
+              cppLanguageStandard="11" jucerVersion="5.1.2">
+  <MAINGROUP id="sg1O7Z" name="SofaPanRemote">
+    <GROUP id="{BDC114C2-A6E3-74F1-6EC7-B0758F237A50}" name="Source">
+      <FILE id="Gr74rY" name="HeadRearHexData.h" compile="0" resource="0"
+            file="/Users/David/GitRepos/sofapan/SofaPan/Source/GUI/HeadRearHexData.h"/>
+      <FILE id="BGaiak" name="HeadTopHexData.h" compile="0" resource="0"
+            file="/Users/David/GitRepos/sofapan/SofaPan/Source/GUI/HeadTopHexData.h"/>
+      <FILE id="DEoUFF" name="LogoHexData.h" compile="0" resource="0" file="/Users/David/GitRepos/sofapan/SofaPan/Source/GUI/LogoHexData.h"/>
+      <FILE id="f3VlmH" name="RoomPannerComponent.h" compile="0" resource="0"
+            file="Source/RoomPannerComponent.h"/>
+      <FILE id="Okr6dq" name="MainComponent.cpp" compile="1" resource="0"
+            file="Source/MainComponent.cpp"/>
+      <FILE id="uvFlzR" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
+      <FILE id="vfVp8Z" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+    </GROUP>
+  </MAINGROUP>
+  <EXPORTFORMATS>
+    <XCODE_IPHONE targetFolder="Builds/iOS" iosScreenOrientation="portraitlandscape">
+      <CONFIGURATIONS>
+        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="SofaPanRemote"/>
+        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="SofaPanRemote"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_core" path="../../../../../../../Users/David/GitRepos/JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../../../../../../../Users/David/GitRepos/JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../../../../../../Users/David/GitRepos/JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../../../../../../Users/David/GitRepos/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../../../../../../Users/David/GitRepos/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../../../../../../Users/David/GitRepos/JUCE/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../../../../../../Users/David/GitRepos/JUCE/modules"/>
+        <MODULEPATH id="juce_video" path="../../../../../../../Users/David/GitRepos/JUCE/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../../../../../../Users/David/GitRepos/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../../../../../../Users/David/GitRepos/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../../../../../../Users/David/GitRepos/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../../../../../../Users/David/GitRepos/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../../../../../../Users/David/GitRepos/JUCE/modules"/>
+        <MODULEPATH id="juce_osc" path="../../../../../../../Users/David/GitRepos/JUCE/modules"/>
+      </MODULEPATHS>
+    </XCODE_IPHONE>
+    <ANDROIDSTUDIO targetFolder="Builds/Android">
+      <CONFIGURATIONS>
+        <CONFIGURATION name="Debug" androidArchitectures="armeabi x86" isDebug="1" optimisation="1"
+                       targetName="SofaPanRemote"/>
+        <CONFIGURATION name="Release" androidArchitectures="" isDebug="0" optimisation="3"
+                       targetName="SofaPanRemote"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_core" path="../../../../../../../Users/David/GitRepos/JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../../../../../../../Users/David/GitRepos/JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../../../../../../Users/David/GitRepos/JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../../../../../../Users/David/GitRepos/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../../../../../../Users/David/GitRepos/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../../../../../../Users/David/GitRepos/JUCE/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../../../../../../Users/David/GitRepos/JUCE/modules"/>
+        <MODULEPATH id="juce_video" path="../../../../../../../Users/David/GitRepos/JUCE/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../../../../../../Users/David/GitRepos/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../../../../../../Users/David/GitRepos/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../../../../../../Users/David/GitRepos/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../../../../../../Users/David/GitRepos/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../../../../../../Users/David/GitRepos/JUCE/modules"/>
+        <MODULEPATH id="juce_osc" path="../../../../../../../Users/David/GitRepos/JUCE/modules"/>
+      </MODULEPATHS>
+    </ANDROIDSTUDIO>
+  </EXPORTFORMATS>
+  <MODULES>
+    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_cryptography" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_opengl" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_osc" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_video" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+  </MODULES>
+  <JUCEOPTIONS/>
+</JUCERPROJECT>

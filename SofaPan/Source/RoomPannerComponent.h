@@ -20,10 +20,10 @@
 /*
 */
 
-#define ROOMRADIUS 5.0
+//#define ROOMRADIUS 5.0
 
 /* The nonuniformscale is a solution to the problem, that the nearfield area (<1m) is more interesting than the farfield and should be adjustable with more precision. So the 2D plane is split into two areas: the area till half the radius of the plane represents the nearfield up to 1m. The second area (from half to the full radius) covers the rest of the room (1m to the desired room size) */
-#define NONUNIFORMSCALE true
+#define NONUNIFORMSCALE false
 
 
 static struct {
@@ -75,6 +75,7 @@ public:
         Rectangle<float> bounds = getLocalBounds().toFloat();
         const float boarderSize = 4.0;
         Rectangle<float> boarderBox = bounds.reduced(boarderSize / 2.0, boarderSize/2.0);
+        float one_m = bounds.getWidth() / (2*ROOMRADIUS);
 
         g.fillAll (Colours::transparentWhite);   // clear the background
         g.setColour (Colours::grey);
@@ -87,22 +88,36 @@ public:
         if(!isRearView){
             g.drawDashedLine(Line<float>(Point<float>(boarderBox.getCentreX(), boarderBox.getY()), boarderBox.getCentre()), dashes, 2, 1, 1);
             g.drawDashedLine(Line<float>(Point<float>(boarderBox.getCentreX(), boarderBox.getBottom()), boarderBox.getCentre()), dashes, 2, 1, 1);
+        }else{
+            g.drawHorizontalLine(one_m * (ROOMRADIUS + HEADHEIGHT), bounds.getX(), bounds.getRight());
+            //Body
+            g.drawLine(bounds.getCentreX(), bounds.getCentreY(), bounds.getCentreX(), one_m * (ROOMRADIUS + 1.2));
+            //Legs
+            g.drawLine(bounds.getCentreX(), one_m * (ROOMRADIUS + 1.2), bounds.getCentreX()-one_m*0.4, one_m * (ROOMRADIUS + HEADHEIGHT));
+            g.drawLine(bounds.getCentreX(), one_m * (ROOMRADIUS + 1.2), bounds.getCentreX()+one_m*0.4, one_m * (ROOMRADIUS + HEADHEIGHT));
+            //Arms
+            g.drawLine(bounds.getCentreX(), one_m * (ROOMRADIUS + 0.6), bounds.getCentreX()-one_m*0.4, one_m * (ROOMRADIUS + 0.8));
+            g.drawLine(bounds.getCentreX(), one_m * (ROOMRADIUS + 0.6), bounds.getCentreX()+one_m*0.4, one_m * (ROOMRADIUS + 0.8));
         }
         g.setColour(Colours::darkgrey);
         g.drawRoundedRectangle (boarderBox.reduced(2, 2).translated(1, 1), 10.0,  5.0); //inner shadow
         g.setColour (sofaPanLookAndFeel.mainCyan);
         g.drawRoundedRectangle (boarderBox, 10.0,  5.0);
         
+        //Draw Nearfield Circle
         Path p = Path();
-        p.addEllipse(bounds.getWidth()/4.0, bounds.getWidth()/4.0,  bounds.getWidth()/2.0, bounds.getHeight()/2.0);
+        p.addEllipse(one_m * (ROOMRADIUS-1), one_m * (ROOMRADIUS-1), one_m*2, one_m*2);
         PathStrokeType stroke(.5);
         const float dash[2] = {2.0, 5.0};
         stroke.createDashedStroke(p, p, dash, 2);
         g.strokePath(p, stroke);
         
         g.setColour(Colours::black);
-        g.drawFittedText("1m", bounds.getWidth()*0.75 - 7, bounds.getHeight()*0.5, 14, 10, Justification::centred, 1);
+        g.drawFittedText("1m", one_m*(ROOMRADIUS+1), bounds.getHeight()*0.5, 14, 10, Justification::centred, 1);
         
+        
+        
+        //Draw SoundSource (& Head Image)
         const int imageSize = boarderBox.getWidth() / 7;
         float scaleFor3DEffect;
         if(isRearView){
@@ -119,18 +134,22 @@ public:
             if(scaleFor3DEffect > 0 ){
                 g.drawImage(headRearImage, boarderBox.getCentreX()-imageSize/2, boarderBox.getCentreY()-imageSize/2 - 1, imageSize, imageSize, 0, 0, 200, 200);
                 g.fillRoundedRectangle(source, sourceSize/3.);
+                g.drawEllipse(source.expanded(8.0 + scaleFor3DEffect), 1);
             }else{
                 g.fillRoundedRectangle(source, sourceSize/3.);
+                g.drawEllipse(source.expanded(8.0 + scaleFor3DEffect), 1);
                 g.drawImage(headRearImage, boarderBox.getCentreX()-imageSize/2, boarderBox.getCentreY()-imageSize/2 - 1, imageSize, imageSize, 0, 0, 200, 200);
             }
         }else{
             if(scaleFor3DEffect > 0 ){
                 g.drawImage(headTopImage, boarderBox.getCentreX()-imageSize/2, boarderBox.getCentreY()-imageSize/2 - 1, imageSize, imageSize, 0, 0, 200, 200);
                 g.fillRoundedRectangle(source, sourceSize/3.);
+                g.drawEllipse(source.expanded(8.0 + scaleFor3DEffect), 1);
                 
                 
             }else{
                 g.fillRoundedRectangle(source, sourceSize/3.);
+                g.drawEllipse(source.expanded(8.0 + scaleFor3DEffect), 1);
                 g.drawImage(headTopImage, boarderBox.getCentreX()-imageSize/2, boarderBox.getCentreY()-imageSize/2 - 1, imageSize, imageSize, 0, 0, 200, 200);
                 
             }
@@ -188,7 +207,7 @@ public:
     
     void coordsToPixel(){
         
-        float distance;
+        float distance = spherical.distance;
         if(NONUNIFORMSCALE){
             const float d = spherical.distance;
             const float r = ROOMRADIUS;
@@ -227,6 +246,18 @@ public:
         if(isRearView && !hasElevation)
             pixel.y = getHeight() / 2.0;
         
+        if(isRearView){
+            int h = getLocalBounds().getHeight();
+            int floor;
+            if(NONUNIFORMSCALE){
+                floor = 0.75 * h + ((HEADHEIGHT-1.0) / (ROOMRADIUS - 1.0)) * 0.25 * h;
+            }else{
+                floor = h * (ROOMRADIUS + HEADHEIGHT - 0.1) / (2*ROOMRADIUS);
+            }
+            
+            if(pixel.y > floor) pixel.y = floor;
+        }
+        
         if(pixel.x > box.getRight())    pixel.x = box.getRight();
         if(pixel.x < 4.0)   pixel.x = 4.0;
         if(pixel.y > box.getBottom())   pixel.y = box.getBottom();
@@ -234,7 +265,7 @@ public:
 
         pixelToCoords();
         
-        //clipping if distance is too far
+        //clipping if distance is too close
         if(spherical.distance < 0.2) {
             spherical.distance = 0.2;
             coordsToPixel();
@@ -246,6 +277,9 @@ public:
         setParameterValue("distance", spherical.distance);
         
         repaint();
+        
+        float z = spherical.distance * sinf(spherical.elevation * M_PI / 180.);
+        //printf("\n Z: %f", z);
         MemoryBlock emptyMessage = MemoryBlock(8, true);// = new MemoryBlock
         sendMessage(emptyMessage);
     }
@@ -298,12 +332,12 @@ public:
     
     
     void connectionMade() override{
-        printf("SUPER!!!");
+        //printf("SUPER!!!");
     }
     void connectionLost() override{
     }
     void messageReceived (const MemoryBlock &message) override{
-        printf(isRearView ? "Message Received Side \n" : "Message Received Top \n");
+        //printf(isRearView ? "Message Received Side \n" : "Message Received Top \n");
         coordsToPixel();
         repaint();
     }

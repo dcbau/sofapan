@@ -17,9 +17,13 @@
 #include "SOFAData.h"
 #include "SofaPathSharedUpdater.h"
 #include "Reverberator.h"
-#include "DirectSource.h"
-#include "ImageSource.h"
+#include "SoundSource.h"
 #include "ParameterStruct.h"
+#include "SemistaticReflections.h"
+#include "MirrorReflections.h"
+#include "BiquadCascade.h"
+#include "SVF.h"
+
 
 //Interface für SOFA File:
 extern "C" {
@@ -34,7 +38,8 @@ extern "C" {
 #define SOFA_DEFAULT_PATH "/Users/David/Documents/FH/Master-Thesis/SOFA\ Files/FHKoeln/Nearfield\ 2016/NFHRIR_L2702_SOFA/HRIR_L2702_NF100.sofa"
 #endif
 
-
+#define ROOMRADIUS 5.0
+#define HEADHEIGHT 1.7
 
 
 //class FilterEngine;
@@ -85,11 +90,16 @@ public:
     sofaMetadataStruct metadata_sofafile;
     void initData(String sofaFile);
     bool updateSofaMetadataFlag;
+    
     fftwf_complex* getCurrentHRTF();
     float* getCurrentHRIR();
     ITDStruct getCurrentITD();
+    float* getCurrentMagSpectrum();
+    float* getCurrentPhaseSpectrum();
+
+    int getLengthOfHRIR(){return (HRTFs == NULL ?  0 :  HRTFs->getLengthOfHRIR());}
+    
     int getSampleRate();
-    int getComplexLength();
     void setUsingGlobalSofaFile(bool useGlobal);
     bool getUsingGlobalSofaFile();
     
@@ -105,12 +115,12 @@ private:
     float sampleRate_f;
     
     SOFAData* HRTFs;
-    DirectSource directSource;
+    SoundSource directSource;
     
-    std::vector<EarlyReflection*> earlyReflections;
+    //std::vector<EarlyReflection*> earlyReflections;
+    SemistaticReflections semistaticRefl;
+    MirrorReflections mirrorRefl;
     
-    const int numReflections = 4;
-    ImageSource reflections[4];
 
     Reverberator reverb;
     
@@ -123,8 +133,10 @@ private:
     bool usingGlobalSofaFile = true;
     
     int estimatedBlockSize;
-    AudioSampleBuffer reflectionInBuffer, reverbInBuffer, reverbOutBuffer;
 
+    AudioSampleBuffer reflectionInBuffer, reflectionOutBuffer, reverbInBuffer, reverbOutBuffer;
+
+    const float roomSize = 2 * ROOMRADIUS;
 };
 
 

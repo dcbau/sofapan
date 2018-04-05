@@ -13,6 +13,7 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "fftw3.h"
 #include "GUI/sofaPanLookAndFeel.h"
+#include "math.h"
 //==============================================================================
 /*
 */
@@ -202,7 +203,7 @@ public:
     }
     
     /** Size is the length of one TF. The complex vector hrtf should contain the left AND the right TF, making the vector of length size*2 */
-    void drawHRTF(fftwf_complex* hrtf, int size, int _sampleRate){
+    void drawHRTF(float* magnitude, float* phase, int size, int _sampleRate){
         
         mag_l.resize(size);
         mag_r.resize(size);
@@ -211,14 +212,15 @@ public:
     
         
         
+        //printf("\n SIZE= %d", size);
         
         fftSize = (size - 1) * 2;
         float scale = 1.0;// 8.0 / fftSize;
         for(int i = 0; i< size; i++){
-            mag_l[i] = scale * (sqrtf(hrtf[i][0] * hrtf[i][0] + hrtf[i][1] * hrtf[i][1]));
-            mag_r[i] = scale * (sqrtf(hrtf[i+size][0] * hrtf[i+size][0] + hrtf[i+size][1] * hrtf[i+size][1]));
-            phase_l[i] = atan2f(hrtf[i][1], hrtf[i][0]) / M_PI;
-            phase_r[i] = atan2f(hrtf[i+size][1], hrtf[i+size][0]) / M_PI;
+            mag_l[i] = magnitude[i];
+            mag_r[i] = magnitude[i + size];
+            phase_l[i] = phase[i] / M_PI;
+            phase_r[i] = phase[i + size] / M_PI;
          }
         
         if(toggleUnwrapPhase)

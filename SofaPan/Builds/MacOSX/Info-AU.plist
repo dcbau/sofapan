@@ -31,7 +31,7 @@
         <key>name</key>
         <string>HSD: SofaPan</string>
         <key>description</key>
-        <string>SofaPan</string>
+        <string></string>
         <key>factoryFunction</key>
         <string>SofaPanAUFactory</string>
         <key>manufacturer</key>

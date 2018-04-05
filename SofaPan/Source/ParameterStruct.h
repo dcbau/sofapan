@@ -22,4 +22,9 @@ typedef struct{
     AudioParameterBool* distanceSimulationParam;
     AudioParameterBool* nearfieldSimulationParam;
     AudioParameterBool* ITDAdjustParam;
+    AudioParameterFloat* individualHeadDiameter;
+    AudioParameterFloat* reverbParam1;
+    AudioParameterFloat* reverbParam2;
 }parameterStruct;
+
+

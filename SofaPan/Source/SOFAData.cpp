@@ -1,14 +1,14 @@
 /*
-  ==============================================================================
+ ==============================================================================
+ 
+ SOFAData.cpp
+ Created: 4 Apr 2017 11:47:12am
+ Author:  David Bau
+ 
+ ==============================================================================
+ */
 
-    SOFAData.cpp
-    Created: 4 Apr 2017 11:47:12am
-    Author:  David Bau
-
-  ==============================================================================
-*/
-
-#include "SOFAData.h"
+#include "SofaData.h"
 
 
 int getIRLengthForNewSampleRate(int IR_Length, int original_SR, int new_SR);
@@ -18,10 +18,10 @@ int sampleRateConversion(float* inBuffer, float* outBuffer, int n_inBuffer, int 
 SOFAData::SOFAData(){
     
     loadedHRIRs = NULL;
-    loadedMinPhaseHRIRs = NULL;
     currentFilePath = NULL;
     currentSampleRate = 0;
-
+    
+    interpolatedReturnMagSpectrum = NULL;
     
 }
 
@@ -33,11 +33,14 @@ SOFAData::~SOFAData(){
         }
         free(loadedHRIRs);
     }
+    
+    if(interpolatedReturnMagSpectrum != NULL)
+        free(interpolatedReturnMagSpectrum);
 }
 
 int SOFAData::initSofaData(const char* filePath, int sampleRate)
 {
-
+    
     printf("\n Attempting to load SofaFile...");
     
     //This line makes sure that the init is not always performed when a new instance of the plugin is created
@@ -45,7 +48,7 @@ int SOFAData::initSofaData(const char* filePath, int sampleRate)
         return 0;
     
     printf("\n Loading File");
-
+    
     
     if(loadedHRIRs != NULL){
         for(int i = 0; i < sofaMetadata.numMeasurements; i++){
@@ -53,12 +56,9 @@ int SOFAData::initSofaData(const char* filePath, int sampleRate)
         }
         free(loadedHRIRs);
     }
-    if(loadedMinPhaseHRIRs != NULL){
-        for(int i = 0; i < sofaMetadata.numMeasurements; i++){
-            delete loadedMinPhaseHRIRs[i];
-        }
-        free(loadedMinPhaseHRIRs);
-    }
+
+    
+    
     
     // LOAD SOFA FILE
     int status = loadSofaFile(filePath, sampleRate);
@@ -68,103 +68,61 @@ int SOFAData::initSofaData(const char* filePath, int sampleRate)
     }
     
     
-    //Normalisation, because some institutions provide integer or too high sample values
+    
+    
+    //Normalisation for very high amplitudes, because some sofa files provide integer or too high sample values
     float maxValue = 0.0;
-    for(int i = 0; i < sofaMetadata.numMeasurements; i++){
-        for(int j = 0; j < lengthOfHRIR * 2; j++){
+    for(int i = 0; i < sofaMetadata.numMeasurements; i++)
+    {
+        for(int j = 0; j < lengthOfHRIR * 2; j++)
+        {
             if (fabs(loadedHRIRs[i]->getHRIR()[j]) > maxValue)
                 maxValue = fabs(loadedHRIRs[i]->getHRIR()[j]);
         }
     }
     
-    float normalisation = 1.0;
-    if(maxValue > 100){
-        normalisation = 1.0/maxValue;
-
-    }
+    float normalisation = maxValue > 100 ? 1.0 / maxValue : 1.0;
     
-    for(int i = 0; i < sofaMetadata.numMeasurements; i++){
-        for(int j = 0; j < lengthOfHRIR * 2; j++){
+    for(int i = 0; i < sofaMetadata.numMeasurements; i++)
+    {
+        for(int j = 0; j < lengthOfHRIR * 2; j++)
             loadedHRIRs[i]->getHRIR()[j] *= normalisation;
-        }
     }
     
     
+
     
-    //Create and Copy new HRTF Array
-    loadedMinPhaseHRIRs = (Single_MinPhase_HRIR_Measurement**)malloc(sofaMetadata.numMeasurements * sizeof(Single_MinPhase_HRIR_Measurement));
-    if(loadedMinPhaseHRIRs != NULL){
-        for (int i = 0; i < sofaMetadata.numMeasurements; i++) {
-            Single_MinPhase_HRIR_Measurement *measurement_object = new Single_MinPhase_HRIR_Measurement(lengthOfHRIR, lengthOfHRTF);
-            for(int j = 0; j < lengthOfHRIR*2; j++){
-                measurement_object->getHRIR()[j] = loadedHRIRs[i]->getHRIR()[j];
-            }
-            measurement_object->setValues(loadedHRIRs[i]->Azimuth, loadedHRIRs[i]->Elevation, loadedHRIRs[i]->Distance);
-            measurement_object->index = i;
-            loadedMinPhaseHRIRs[i] = measurement_object;
-        };
-    }
     
-    //Detect Onset Threshold
-    float* currentHRIR;
-    int onsetIndex_L, onsetIndex_R;
+    
+    MinPhaseGenerator mpg;    
     
     for(int i = 0; i < sofaMetadata.numMeasurements; i++){
-        currentHRIR = loadedMinPhaseHRIRs[i]->getHRIR();
         
-        //Determine maximum amplitude
-        float maxValue_L = 0.0;
-        float maxValue_R = 0.0;
-        for(int i = 0; i< lengthOfHRIR; i++){
-            if (fabs(currentHRIR[i]) > maxValue_L)
-                maxValue_L = fabs(currentHRIR[i]);
-            if (fabs(currentHRIR[i+lengthOfHRIR]) > maxValue_R)
-                maxValue_R = fabs(currentHRIR[i+lengthOfHRIR]);
-        }
+        //Create and Copy original HRIR for the pseudo minimum phase HRIRs
+        for(int j = 0; j < lengthOfHRIR*2; j++)
+            loadedHRIRs[i]->getHRIRPseudoMinPhase()[j] = loadedHRIRs[i]->getHRIR()[j];
         
-        //Determine Onset Threshold
-        maxValue_L *= 0.5;
-        maxValue_R *= 0.5;
-        
-        //Determine Onset Positions
-        onsetIndex_L = onsetIndex_R = 0;
-        for(int i = 0; i< lengthOfHRIR; i++){
-            if (fabs(currentHRIR[i]) > maxValue_L && onsetIndex_L == 0)
-                onsetIndex_L = i;
-            if (fabs(currentHRIR[i+lengthOfHRIR]) > maxValue_R && onsetIndex_R == 0)
-                onsetIndex_R = i;
-        }
-        
-        
-//        onsetIndex_L -= 10;
-//        onsetIndex_R -= 10;
-//        if(onsetIndex_L < 0)
-//            onsetIndex_L = 0;
-//        if(onsetIndex_R < 0)
-//            onsetIndex_R = 0;
+        //Detect Onset Threshold and make Pseudo Minimum Phase HRIRs
+        loadedHRIRs[i]->ITD.onsetL_samples = mpg.makePseudoMinPhaseFilter(loadedHRIRs[i]->getHRIRPseudoMinPhase()               , lengthOfHRIR, 0.5);
+        loadedHRIRs[i]->ITD.onsetR_samples = mpg.makePseudoMinPhaseFilter(loadedHRIRs[i]->getHRIRPseudoMinPhase() + lengthOfHRIR, lengthOfHRIR, 0.5);
         
         //Save ITD in ms
         //Negative Values represent a position to the left of the head (delay left is smaller), positive values for right of the head
-        loadedMinPhaseHRIRs[i]->ITD.onsetL_samples = onsetIndex_L;
-        loadedMinPhaseHRIRs[i]->ITD.onsetR_samples = onsetIndex_R;
-        loadedMinPhaseHRIRs[i]->ITD.ITD_ms = (onsetIndex_L - onsetIndex_R) * 1000.0 / sampleRate;
-        //Create the quasi minimumphase HRIR by shifting the onset position to the beginning
-        for(int i = 0; i< lengthOfHRIR; i++){
-            if ((i + onsetIndex_L) < lengthOfHRIR)
-                currentHRIR[i] = currentHRIR[i + onsetIndex_L];
-            else
-                currentHRIR[i] = 0.0;
-            
-            if ((i + onsetIndex_R) < lengthOfHRIR)
-                currentHRIR[i+lengthOfHRIR] = currentHRIR[i + lengthOfHRIR + onsetIndex_R];
-            else
-                currentHRIR[i+lengthOfHRIR] = 0.0;
-            
-                
-        }
+        loadedHRIRs[i]->ITD.ITD_ms = (loadedHRIRs[i]->ITD.onsetL_samples - loadedHRIRs[i]->ITD.onsetR_samples) * 1000.0 / sampleRate;
+        
+        
+        
+        
+        //Make the real Minphase HRIRs
+        mpg.makeMinPhaseFilter(loadedHRIRs[i]->getHRIR()               , loadedHRIRs[i]->getHRIRMinPhase()               , lengthOfHRIR);
+        mpg.makeMinPhaseFilter(loadedHRIRs[i]->getHRIR() + lengthOfHRIR, loadedHRIRs[i]->getHRIRMinPhase() + lengthOfHRIR, lengthOfHRIR);
+
         
     }
-
+    
+    
+    //BEGIN THE TRANSFORMATION!
+    
     //Allocate and init FFTW
     float* fftInputBuffer = fftwf_alloc_real(lengthOfFFT);
     if(fftInputBuffer == NULL){
@@ -178,7 +136,16 @@ int SOFAData::initSofaData(const char* filePath, int sampleRate)
     }
     fftwf_plan FFT = fftwf_plan_dft_r2c_1d(lengthOfFFT, fftInputBuffer, fftOutputBuffer, FFTW_ESTIMATE);
     
+ 
+    
+    
     for(int i = 0; i < sofaMetadata.numMeasurements; i++){
+        
+        
+        
+        // 1 Normal Version
+        
+        
         // LEFT
         
         //Write IR into inputBuffer and do zeropadding
@@ -195,47 +162,131 @@ int SOFAData::initSofaData(const char* filePath, int sampleRate)
             loadedHRIRs[i]->getHRTF()[j][0] = fftOutputBuffer[j][0]; //RE
             loadedHRIRs[i]->getHRTF()[j][1] = fftOutputBuffer[j][1]; //IM
         }
+        //Save Spectrum for plotting
+        for(int k = 0; k < lengthOfHRTF; k++){
+            loadedHRIRs[i]->getMagSpectrum()[k] = (sqrtf(fftOutputBuffer[k][0] * fftOutputBuffer[k][0] + fftOutputBuffer[k][1] * fftOutputBuffer[k][1]));
+            loadedHRIRs[i]->getPhaseSpectrum()[k] = atan2f(fftOutputBuffer[k][1], fftOutputBuffer[k][0]);// / M_PI;
+        }
         
         // RIGHT
         
+        //Write IR into inputBuffer and do zeropadding
         for(int k = 0; k < lengthOfHRIR; k++){
             fftInputBuffer[k] = loadedHRIRs[i]->getHRIR()[k + lengthOfHRIR];
             fftInputBuffer[k+lengthOfHRIR] = 0.0;
         }
-        
+        //Do FFT HRIR->HRTF
         fftwf_execute(FFT);
         
+        //Save TF
         for(int j = 0; j < lengthOfHRTF; j++){
             loadedHRIRs[i]->getHRTF()[j+lengthOfHRTF][0] = fftOutputBuffer[j][0]; //RE
             loadedHRIRs[i]->getHRTF()[j+lengthOfHRTF][1] = fftOutputBuffer[j][1]; //IM
         }
         
-        //And again for the MinPhase Version!
+        //Save Spectrum for plotting
+        for(int k = 0; k < lengthOfHRTF; k++){
+            loadedHRIRs[i]->getMagSpectrum()[k + lengthOfHRTF] = (sqrtf(fftOutputBuffer[k][0] * fftOutputBuffer[k][0] + fftOutputBuffer[k][1] * fftOutputBuffer[k][1]));
+            loadedHRIRs[i]->getPhaseSpectrum()[k + lengthOfHRTF] = atan2f(fftOutputBuffer[k][1], fftOutputBuffer[k][0]);// / M_PI;
+        }
+        
+        
+        
+        
+        
+        
+        
+        // 2 Pseudo Minimum Phase Version
+        
+        // LEFT
+        
+        //Write IR into inputBuffer and do zeropadding
         for(int k = 0; k < lengthOfHRIR; k++){
-            fftInputBuffer[k] = loadedMinPhaseHRIRs[i]->getHRIR()[k];
+            fftInputBuffer[k] = loadedHRIRs[i]->getHRIRPseudoMinPhase()[k];
             fftInputBuffer[k+lengthOfHRIR] = 0.0;
         }
+        //Do FFT HRIR->HRTF
         fftwf_execute(FFT);
+
+        //Save TF
         for(int j = 0; j < lengthOfHRTF; j++){
-            loadedMinPhaseHRIRs[i]->getHRTF()[j][0] = fftOutputBuffer[j][0]; //RE
-            loadedMinPhaseHRIRs[i]->getHRTF()[j][1] = fftOutputBuffer[j][1]; //IM
+            loadedHRIRs[i]->getHRTFPseudoMinPhase()[j][0] = fftOutputBuffer[j][0]; //RE
+            loadedHRIRs[i]->getHRTFPseudoMinPhase()[j][1] = fftOutputBuffer[j][1]; //IM
         }
+
+        // RIGHT
+        
+        //Write IR into inputBuffer and do zeropadding
         for(int k = 0; k < lengthOfHRIR; k++){
-            fftInputBuffer[k] = loadedMinPhaseHRIRs[i]->getHRIR()[k + lengthOfHRIR];
+            fftInputBuffer[k] = loadedHRIRs[i]->getHRIRPseudoMinPhase()[k + lengthOfHRIR];
             fftInputBuffer[k+lengthOfHRIR] = 0.0;
         }
+        
+        //Do FFT HRIR->HRTF
         fftwf_execute(FFT);
+        
+        //Save TF
         for(int j = 0; j < lengthOfHRTF; j++){
-            loadedMinPhaseHRIRs[i]->getHRTF()[j+lengthOfHRTF][0] = fftOutputBuffer[j][0]; //RE
-            loadedMinPhaseHRIRs[i]->getHRTF()[j+lengthOfHRTF][1] = fftOutputBuffer[j][1]; //IM
+            loadedHRIRs[i]->getHRTFPseudoMinPhase()[j+lengthOfHRTF][0] = fftOutputBuffer[j][0]; //RE
+            loadedHRIRs[i]->getHRTFPseudoMinPhase()[j+lengthOfHRTF][1] = fftOutputBuffer[j][1]; //IM
         }
+        
+        
+        
+        
+        
+        
+        // 3 Minimum Phase Version
+        
+        // LEFT
+        
+        //Write IR into inputBuffer and do zeropadding
+        for(int k = 0; k < lengthOfHRIR; k++){
+            fftInputBuffer[k] = loadedHRIRs[i]->getHRIRMinPhase()[k];
+            fftInputBuffer[k+lengthOfHRIR] = 0.0;
+        }
+        //Do FFT HRIR->HRTF
+        fftwf_execute(FFT);
+        
+        //Save TF
+        for(int j = 0; j < lengthOfHRTF; j++){
+            loadedHRIRs[i]->getHRTFMinPhase()[j][0] = fftOutputBuffer[j][0]; //RE
+            loadedHRIRs[i]->getHRTFMinPhase()[j][1] = fftOutputBuffer[j][1]; //IM
+        }
+        
+        // RIGHT
+        
+        //Write IR into inputBuffer and do zeropadding
+        for(int k = 0; k < lengthOfHRIR; k++){
+            fftInputBuffer[k] = loadedHRIRs[i]->getHRIRMinPhase()[k + lengthOfHRIR];
+            fftInputBuffer[k+lengthOfHRIR] = 0.0;
+        }
+        
+        //Do FFT HRIR->HRTF
+        fftwf_execute(FFT);
+        
+        //Save TF
+        for(int j = 0; j < lengthOfHRTF; j++){
+            loadedHRIRs[i]->getHRTFMinPhase()[j+lengthOfHRTF][0] = fftOutputBuffer[j][0]; //RE
+            loadedHRIRs[i]->getHRTFMinPhase()[j+lengthOfHRTF][1] = fftOutputBuffer[j][1]; //IM
+        }
+
+        
+        for(int k = 0; k < lengthOfHRTF * 2; k++){
+            loadedHRIRs[i]->getPhaseSpectrumMinPhase()[k] = atan2f(loadedHRIRs[i]->getHRTFMinPhase()[k][1], loadedHRIRs[i]->getHRTFMinPhase()[k][0]);// / M_PI;
+        }
+
         
     }
     
     fftwf_free(fftInputBuffer);
     fftwf_free(fftOutputBuffer);
     fftwf_destroy_plan(FFT);
+ 
     
+    
+    interpolatedReturnMagSpectrum = (float*)malloc(lengthOfHRTF * 2 * sizeof(float));
+
     
     return 0;
     
@@ -245,92 +296,218 @@ int SOFAData::getLengthOfHRIR(){
 }
 
 
-fftwf_complex* SOFAData::getHRTFforAngle(float elevation, float azimuth, float radius){
- 
-    int best_id = 0;
+
+
+void SOFAData::searchClosestHRTFs(int* results, float* distances, int desiredClosestPoints, float elevation, float azimuth, float radius){
+    
+    for(int i = 0; i < desiredClosestPoints; i++)
+        results[i] = 0;
+    
+    //transform spherical coordinates to cartesian coordinates
+    float x = radius * cosf(elevation * d2r) * cosf(azimuth * d2r);
+    float y = radius * cosf(elevation * d2r) * sinf(azimuth * d2r);
+    float z = radius * sinf(elevation * d2r);
+    
     
     float delta;
-    float min_delta = 1000;
-    for(int i = 0; i < sofaMetadata.numMeasurements; i++){
-        delta = fabs(loadedMinPhaseHRIRs[i]->Elevation - elevation)
-        + fabs(loadedMinPhaseHRIRs[i]->Azimuth - azimuth)
-        + fabs(loadedMinPhaseHRIRs[i]->Distance - radius);
-        if(delta < min_delta){
-            min_delta = delta ;
-            best_id = i;
+    for(int i = 0; i < desiredClosestPoints; i++)
+        distances[i] = 1000.0; //start with a random but very high value
+    
+    // Walk through every measurement and compare its position coordinates with the coordinates we are looking for
+    for(int i = 0; i < sofaMetadata.numMeasurements; i++)
+    {
+        
+        float dx = x - loadedHRIRs[i]->x;
+        float dy = y - loadedHRIRs[i]->y;
+        float dz = z - loadedHRIRs[i]->z;
+        
+        delta = sqrtf(dx*dx + dy*dy + dz*dz);
+        
+        //check if distance delta is smaller than one of the closest points
+        for(int n = 0; n < desiredClosestPoints; n++)
+        {
+            if( delta < distances[n] )
+            {
+                //shift other vaues
+                for(int m = desiredClosestPoints - 1; m > n; m--)
+                {
+                    distances[m] = distances[m - 1];
+                    results[m] = results[m - 1];
+                }
+                
+                distances[n] = delta;
+                results[n] = i;
+                
+                break;
+            }
         }
+        
     }
-    return loadedHRIRs[best_id]->getHRTF();
+    
 }
 
-fftwf_complex* SOFAData::getMinPhaseHRTFforAngle(float elevation, float azimuth, float radius){
+//same algorithm as above, but only one closest position is returned
+int SOFAData::searchHRTF(float elevation, float azimuth, float radius){
     
     int best_id = 0;
+    
+    
+    float x = radius * cosf(elevation * d2r) * cosf(azimuth * d2r);
+    float y = radius * cosf(elevation * d2r) * sinf(azimuth * d2r);
+    float z = radius * sinf(elevation * d2r);
     
     float delta;
     float min_delta = 1000;
     for(int i = 0; i < sofaMetadata.numMeasurements; i++){
-        delta = fabs(loadedMinPhaseHRIRs[i]->Elevation - elevation)
-        + fabs(loadedMinPhaseHRIRs[i]->Azimuth - azimuth)
-        + fabs(loadedMinPhaseHRIRs[i]->Distance - radius);
+        
+        float dx = x - loadedHRIRs[i]->x;
+        float dy = y - loadedHRIRs[i]->y;
+        float dz = z - loadedHRIRs[i]->z;
+        
+        delta = dx*dx + dy*dy + dz*dz;
+        
         if(delta < min_delta){
             min_delta = delta ;
             best_id = i;
         }
+        
     }
-    return loadedMinPhaseHRIRs[best_id]->getHRTF();
+    
+    return best_id;
+    
 }
 
-float* SOFAData::getHRIRForAngle(float elevation, float azimuth, float radius){
-    int best_id = 0;
+
+
+
+
+void SOFAData::getHRTFsForInterpolation(float** resultsMag, float** resultsPhase, float* distances, float elevation, float azimuth, float radius, int numDesiredHRTFs){
     
-    float delta;
-    float min_delta = 1000;
-    for(int i = 0; i < sofaMetadata.numMeasurements; i++){
-        delta = fabs(loadedMinPhaseHRIRs[i]->Elevation - elevation)
-        + fabs(loadedMinPhaseHRIRs[i]->Azimuth - azimuth)
-        + fabs(loadedMinPhaseHRIRs[i]->Distance - radius);
-        if(delta < min_delta){
-            min_delta = delta ;
-            best_id = i;
-        }
+    int id[numDesiredHRTFs];
+    radius = 1.0;
+    searchClosestHRTFs(id, distances, numDesiredHRTFs, elevation, azimuth, radius);
+    
+    
+    for(int i = 0; i < numDesiredHRTFs; i++){
+        resultsMag[i] = loadedHRIRs[id[i]]->getMagSpectrum();
+        resultsPhase[i] = loadedHRIRs[id[i]]->getPhaseSpectrumMinPhase();
     }
-    return loadedMinPhaseHRIRs[best_id]->getHRIR();
+
+}
+
+
+fftwf_complex* SOFAData::getHRTFforAngle(float elevation, float azimuth, float radius, int version){
     
+    int id = searchHRTF(elevation, azimuth, radius);
     
+    switch(version){
+        case hrtf_type_original:
+            return loadedHRIRs[id]->getHRTF();
+        case hrtf_type_pseudoMinPhase:
+            return loadedHRIRs[id]->getHRTFPseudoMinPhase();
+        case hrtf_type_minPhase:
+            return loadedHRIRs[id]->getHRTFMinPhase();
+        default:
+            return NULL;
+    }
+            
+}
+
+float* SOFAData::getHRIRforAngle(float elevation, float azimuth, float radius, int version){
+    
+    int id = searchHRTF(elevation, azimuth, radius);
+    
+    switch(version){
+        case hrtf_type_original:
+            return loadedHRIRs[id]->getHRIR();
+        case hrtf_type_pseudoMinPhase:
+            return loadedHRIRs[id]->getHRIRPseudoMinPhase();
+        case hrtf_type_minPhase:
+            return loadedHRIRs[id]->getHRIRMinPhase();
+        default:
+            return NULL;
+    }
 }
 
 ITDStruct SOFAData::getITDForAngle(float elevation, float azimuth, float radius){
-    int best_id = 0;
     
-    float delta;
-    float min_delta = 1000;
-    for(int i = 0; i < sofaMetadata.numMeasurements; i++){
-        delta = fabs(loadedMinPhaseHRIRs[i]->Elevation - elevation)
-        + fabs(loadedMinPhaseHRIRs[i]->Azimuth - azimuth)
-        + fabs(loadedMinPhaseHRIRs[i]->Distance - radius);
-        if(delta < min_delta){
-            min_delta = delta ;
-            best_id = i;
-        }
-    }
-    return loadedMinPhaseHRIRs[best_id]->ITD;
-    
-    
+    int id = searchHRTF(elevation, azimuth, radius);
+    return loadedHRIRs[id]->ITD;
 }
+
+
+// This function is not used by the interpolation for the renderer, but for displaying it in the PlotHRTFComponent Class
+float* SOFAData::getInterpolatedMagSpectrumForAngle(float elevation, float azimuth, float radius){
+    
+    
+    if(elevation == last_elevation && azimuth == last_azimuth && radius == last_radius)
+        return interpolatedReturnMagSpectrum;
+    
+    last_radius = radius;
+    last_azimuth = azimuth;
+    last_elevation = elevation;
+    
+    int id[3];
+    float d[3];
+    searchClosestHRTFs(id, d, 3, elevation, azimuth, radius);
+    
+    float* hrtf1 = loadedHRIRs[id[0]]->getMagSpectrum();
+    float* hrtf2 = loadedHRIRs[id[1]]->getMagSpectrum();
+    float* hrtf3 = loadedHRIRs[id[2]]->getMagSpectrum();
+
+    float w1, w2, w3;
+    
+    //if one distance is zero, no interpolation is done at all
+    if(d[0] == 0 ||d[1] == 0 ||d[2] == 0 ){
+        w1 = d[0] == 0 ? 1 : 0;
+        w2 = d[1] == 0 ? 1 : 0;
+        w3 = d[2] == 0 ? 1 : 0;
+    }else{
+        w1 = 1.0 / d[0];
+        w2 = 1.0 / d[1];
+        w3 = 1.0 / d[2];
+    }
+    
+    for(int i = 0; i < lengthOfHRTF * 2; i++){
+        interpolatedReturnMagSpectrum[i] = (hrtf1[i] * w1 + hrtf2[i] * w2 + hrtf3[i] * w3) / (w1 + w2 + w3);
+        //interpolatedReturnMagSpectrum[i + lengthOfHRTF] = loadedHRIRs[id1]->getMagSpectrum()[i];
+    }
+    
+    return interpolatedReturnMagSpectrum;
+
+}
+
+float* SOFAData::getPhaseSpectrumForAngle(float elevation, float azimuth, float radius, int version){
+    
+    
+    int id = searchHRTF(elevation, azimuth, radius);
+    switch (version) {
+        case hrtf_type_original:
+            return loadedHRIRs[id]->getPhaseSpectrum();
+        case hrtf_type_minPhase:
+            return loadedHRIRs[id]->getPhaseSpectrumMinPhase();
+        default:
+            return NULL;
+            
+    }
+}
+
+
 
 int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
     
     /* Some things are defined as variables in the SOFA-Convention, but are assumed here for the sake of simplicity:
-     - Data.SamplingRate.Units is always "hertz"
+     - Data.SamplingRate:Units is always "hertz"
      - Data.Delay is Zero, the TOA information is contained in the FIRs
      - Data.IR has always three dimensions
      - Data.IR has two receivers = two ears
      
      Furthermore, by now the only accepted DataType is "FIR" and SOFAConvention is "SimpleFreeFieldHRIR"
-    */
+     */
     
-    //open File in read mode (NC_NOWRITE) and get netcdf-ID of Sofa-File
+    
+    
+    //Step 1: Open File in read mode (NC_NOWRITE) and get netcdf-ID of Sofa-File
     int  status;               /* error status */
     int  ncid;                 /* netCDF ID */
     if ((status = nc_open(filePath, NC_NOWRITE, &ncid)))
@@ -338,6 +515,8 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
     
     
     
+    
+    //Step 2: Get GLOBAL attributes
     int numberOfAttributes;
     nc_inq(ncid, NULL, NULL, &numberOfAttributes, NULL);
     
@@ -363,10 +542,10 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
         
     }
     
+    sofaMetadata.listenerShortName = getSOFAGlobalAttribute("ListenerShortName", ncid);
+
     
-    
-    
-    /* -- check if attribute "SOFAConventions" is "SimpleFreeFieldHRIR": -- */
+    /* -- check if attribute "SOFAConventions" is "SimpleFreeFieldHRIR" -- abort if not*/
     String sofa_conv = getSOFAGlobalAttribute("SOFAConventions", ncid);
     if(sofa_conv.compare("SimpleFreeFieldHRIR")){
         nc_close(ncid);
@@ -374,13 +553,14 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
     }
     sofaMetadata.SOFAConventions = sofa_conv;
     
+    /* -- check if attribute "DataType" is "FIR" -- abort if not */
     String data_type = getSOFAGlobalAttribute("DataType", ncid);
     if(data_type.compare("FIR")){
         nc_close(ncid);
         return ERR_NOTSUP;
     }
     sofaMetadata.dataType = data_type;
-
+    
     //Get Sampling Rate
     int SamplingRate, SamplingRate_id;
     status = nc_inq_varid(ncid, "Data.SamplingRate", &SamplingRate_id);
@@ -393,15 +573,9 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
     sofaMetadata.sampleRate = SamplingRate;
     
     
-    //Get various Metadata
-    sofaMetadata.listenerShortName = getSOFAGlobalAttribute("ListenerShortName", ncid);
-    /*
-     .
-     .  more to be added
-     .
-     */
-
     
+    
+    //Step 3: Get needed Dimensions
     
     //Get netcdf-ID of IR Data
     int DataIR_id;
@@ -410,6 +584,7 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
     
     //Get Dimensions of Data IR
     int DataIR_dimidsp[MAX_VAR_DIMS];
+
     size_t dimM_len;//Number of Measurements
     size_t dimR_len;//Number of Receivers, in case of two ears dimR_len=2
     size_t dimN_len;//Number of DataSamples describing each Measurement
@@ -422,7 +597,7 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
         return ERR_READFILE;
     if ((status = nc_inq_dimlen(ncid, DataIR_dimidsp[2], &dimN_len)))
         return ERR_READFILE;
-
+    
     sofaMetadata.numSamples = dimN_len; //Store Value in Struct metadata_struct
     sofaMetadata.numMeasurements = dimM_len;
     sofaMetadata.numReceivers = dimR_len;
@@ -431,13 +606,16 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
     int receiver_for_R = 0;
     int receiver_for_L = 1;
     
+    
+    //Step 4:
     //now that the sampleRate of the SOFA, the host sample rate and the length N is known, the length of the interpolated HRTF can be calculated
     lengthOfHRIR = getIRLengthForNewSampleRate(dimN_len, sofaMetadata.sampleRate, hostSampleRate);
     lengthOfFFT = 2 * lengthOfHRIR;
     lengthOfHRTF = (lengthOfFFT * 0.5) + 1;
     
     
-    //Get Source Positions (Azimuth, Elevation, Distance)
+    
+    //Step 5: Get Source Positions (Azimuth, Elevation, Distance)
     int SourcePosition_id;
     if ((status = nc_inq_varid(ncid, "SourcePosition", &SourcePosition_id)))
         return ERR_READFILE;
@@ -450,8 +628,10 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
         free(SourcePosition);
         return ERR_READFILE;
     };
-
     
+    
+    
+    //Step 6: Get Ear Positions
     int ReceiverPosition_id;
     if ((status = nc_inq_varid(ncid, "ReceiverPosition", &ReceiverPosition_id)))
         return ERR_READFILE;
@@ -465,13 +645,16 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
         free(ReceiverPosition);
         return ERR_READFILE;
     };
-
+    
     float radius1 = ReceiverPosition[1]; // y-koordinate des ersten Receivers (L)
     float radius2 = ReceiverPosition[4]; // y-koordinate des zweiten Receivers (R)
     sofaMetadata.headRadius = (fabsf(radius1) + fabsf(radius2)) / 2.0;
-    printf("Head Radius: %f", sofaMetadata.headRadius);
     
-    //Get Impluse Responses
+    
+    
+    
+    
+    //Step 7: Get Impulse Responses
     float *DataIR = NULL;
     DataIR = (float*)malloc(dimM_len * dimR_len * dimN_len * sizeof(float));
     if(DataIR == NULL)
@@ -500,12 +683,15 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
         free(DataIR);
         return ERR_MEM_ALLOC;
     }
-
+    
     
     sofaMetadata.minElevation = 0.0;
     sofaMetadata.maxElevation = 0.0;
     sofaMetadata.minDistance = 1000.0;
     sofaMetadata.maxDistance = 0.0;
+    
+    std::vector<float>differentDistances;
+    differentDistances.resize(0);
     
     int i = 0, j = 0, l = 0, x = 0;
     float *IR_Left = (float *)malloc(dimN_len * sizeof(float));
@@ -514,11 +700,27 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
     float *IR_Right_Interpolated = (float *)malloc(lengthOfHRIR * sizeof(float));
     
     for (i = 0; i < dimM_len; i++) {
-        
+
         if(SourcePosition[l+1] < sofaMetadata.minElevation) sofaMetadata.minElevation = SourcePosition[l+1];
         if(SourcePosition[l+1] > sofaMetadata.maxElevation) sofaMetadata.maxElevation = SourcePosition[l+1];
         if(SourcePosition[l+2] < sofaMetadata.minDistance) sofaMetadata.minDistance = SourcePosition[l+2];
         if(SourcePosition[l+2] > sofaMetadata.maxDistance) sofaMetadata.maxDistance = SourcePosition[l+2];
+        
+//
+        bool distanceAlreadyExists = false;
+        for(int n = 0; n < (int)differentDistances.size(); n++)
+        {
+            if(SourcePosition[l+2] == differentDistances[n])
+            {
+                distanceAlreadyExists = true;
+            }
+        }
+        if(!distanceAlreadyExists)
+        {
+            float newDistance = SourcePosition[l+2];
+            differentDistances.push_back(newDistance);
+        }
+        
         
         Single_HRIR_Measurement *measurement_object = new Single_HRIR_Measurement(lengthOfHRIR, lengthOfHRTF);
         //Temporary storage of HRIR-Data
@@ -542,7 +744,7 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
         
         
         float wrappedSourceposition = fmodf((SourcePosition[l] + 360.0), 360.0);
-
+        
         measurement_object->setValues(wrappedSourceposition, SourcePosition[l + 1], SourcePosition[l + 2]);
         measurement_object->index = i;
         loadedHRIRs[i] = measurement_object;
@@ -552,8 +754,11 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
         l += 3;
     };
     
-    sofaMetadata.hasMultipleDistances = sofaMetadata.maxDistance != sofaMetadata.minDistance ? true : false;
-    
+    sofaMetadata.numDifferentDistances = differentDistances.size();
+
+    sofaMetadata.hasMultipleDistances = sofaMetadata.minDistance != sofaMetadata.maxDistance  ? true : false;
+    sofaMetadata.hasElevation = sofaMetadata.maxElevation != sofaMetadata.minElevation ? true : false;
+
     free(IR_Left);
     free(IR_Right);
     free(IR_Left_Interpolated);
@@ -564,10 +769,10 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
     free(SourcePosition);
     free(DataIR);
     nc_close(ncid);
-
+    
     //SOFAFile_loaded_flag = 1;
     return 0;
-
+    
 }
 
 
@@ -582,6 +787,11 @@ sofaMetadataStruct SOFAData::getMetadata(){
 
 int sampleRateConversion(float* inBuffer, float* outBuffer, int n_inBuffer, int n_outBuffer, int originalSampleRate, int newSampleRate){
     
+//    for(int i = 0; i < n_outBuffer; i++){
+//        outBuffer[i] = inBuffer[i];
+//    }
+//
+//    return 0;
     
     float frequenzFaktor = (float)originalSampleRate / (float)newSampleRate;
     float f_index = 0.0f;
@@ -651,13 +861,13 @@ void SOFAData::errorHandling(int status) {
     ErrorHandling::reportError("SOFA File Loader", ErrorMessage, false);
     
     
-
+    
 }
-//
-//
-//
-void SOFAData::createPassThrough_FIR(int _sampleRate){
 
+
+//This is needed if no sofa file can be loaded, as a backup solution. It mimics a loaded sofa file with only one measurement - a pass through fir filter
+void SOFAData::createPassThrough_FIR(int _sampleRate){
+    
     const int passThroughLength = 512;
     sofaMetadata.sampleRate = _sampleRate;
     sofaMetadata.numMeasurements = 1;
@@ -665,17 +875,17 @@ void SOFAData::createPassThrough_FIR(int _sampleRate){
     sofaMetadata.dataType = String ("FIR");
     sofaMetadata.SOFAConventions = String ("Nope");
     sofaMetadata.listenerShortName = String ("Nope");
-
+    
     sofaMetadata.minElevation =0.0;
     sofaMetadata.maxElevation =0.0;
-
+    
     lengthOfHRIR = passThroughLength;
     lengthOfFFT = 2 * lengthOfHRIR;
     lengthOfHRTF = (lengthOfFFT * 0.5) + 1;
- 
+    
     loadedHRIRs = (Single_HRIR_Measurement**)malloc(1 * sizeof(Single_HRIR_Measurement));
     Single_HRIR_Measurement *measurement_object = new Single_HRIR_Measurement(lengthOfHRIR, lengthOfHRTF);
-
+    
     float *IR_Left = (float *)malloc(passThroughLength * sizeof(float));
     float *IR_Right = (float *)malloc(passThroughLength * sizeof(float));
     
@@ -691,7 +901,7 @@ void SOFAData::createPassThrough_FIR(int _sampleRate){
         measurement_object->getHRIR()[i] = IR_Left[i];
         measurement_object->getHRIR()[i+lengthOfHRIR] = IR_Right[i];
     }
-
+    
     measurement_object->setValues(0.0, 0.0 , 0.0);
     measurement_object->index = 0;
     loadedHRIRs[0] = measurement_object;
@@ -704,11 +914,11 @@ String SOFAData::getSOFAGlobalAttribute(const char* attribute_ID, int ncid){
     size_t att_length = 0;
     
     //get length if possible
-
-
+    
+    
     if(nc_inq_attlen(ncid, NC_GLOBAL, attribute_ID, &att_length))
         return String("- Unknown - ");
-
+    
     
     //get value if possible
     char att[att_length + 1];
@@ -720,3 +930,4 @@ String SOFAData::getSOFAGlobalAttribute(const char* attribute_ID, int ncid){
     
     return String(att);
 }
+

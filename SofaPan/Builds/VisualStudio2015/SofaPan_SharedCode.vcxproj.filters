@@ -2,8 +2,14 @@
 
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Filter Include="SofaPan\Source\Helpers">
+      <UniqueIdentifier>{02A92CF4-49AF-69E9-1FE8-F0405B7DCD27}</UniqueIdentifier>
+    </Filter>
     <Filter Include="SofaPan\Source\SOFA Data">
       <UniqueIdentifier>{028D976E-33EA-1CD3-FA84-59947F955CAA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SofaPan\Source\Signal Processing\DSP Helpers">
+      <UniqueIdentifier>{081C89F6-95CB-B679-1355-5855438A2161}</UniqueIdentifier>
     </Filter>
     <Filter Include="SofaPan\Source\Signal Processing">
       <UniqueIdentifier>{C0771A85-F51E-5B07-973C-BC42B9009B62}</UniqueIdentifier>
@@ -380,6 +386,12 @@
     <Filter Include="Juce Modules\juce_gui_extra">
       <UniqueIdentifier>{8EC9572F-3CCA-E930-74B6-CB6139DE0E17}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Juce Modules\juce_osc\osc">
+      <UniqueIdentifier>{3D19F603-7985-B222-DFDA-9B83329ACA9D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Juce Modules\juce_osc">
+      <UniqueIdentifier>{1A62F82C-C14A-E14A-94DE-8A27E0F8A090}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Juce Modules">
       <UniqueIdentifier>{422C46B7-0467-2DB0-BF3C-16DFCAFD69AC}</UniqueIdentifier>
     </Filter>
@@ -388,16 +400,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source\SOFAData.cpp">
+    <ClCompile Include="..\..\Source\SofaData.cpp">
       <Filter>SofaPan\Source\SOFA Data</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\ImageSource.cpp">
+    <ClCompile Include="..\..\Source\FilterKernel.cpp">
+      <Filter>SofaPan\Source\Signal Processing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\SoundSource.cpp">
       <Filter>SofaPan\Source\Signal Processing</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\EarlyReflection.cpp">
-      <Filter>SofaPan\Source\Signal Processing</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source\DirectSource.cpp">
       <Filter>SofaPan\Source\Signal Processing</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\PluginProcessor.cpp">
@@ -1312,6 +1324,9 @@
     <ClCompile Include="..\..\..\..\JUCE\modules\juce_dsp\processors\juce_IIRFilter.cpp">
       <Filter>Juce Modules\juce_dsp\processors</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\JUCE\modules\juce_dsp\processors\juce_Oversampling.cpp">
+      <Filter>Juce Modules\juce_dsp\processors</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\..\JUCE\modules\juce_dsp\juce_dsp.cpp">
       <Filter>Juce Modules\juce_dsp</Filter>
     </ClCompile>
@@ -1834,6 +1849,15 @@
     <ClCompile Include="..\..\..\..\JUCE\modules\juce_gui_basics\layout\juce_FlexBox.cpp">
       <Filter>Juce Modules\juce_gui_basics\layout</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\JUCE\modules\juce_gui_basics\layout\juce_Grid.cpp">
+      <Filter>Juce Modules\juce_gui_basics\layout</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\JUCE\modules\juce_gui_basics\layout\juce_GridItem.cpp">
+      <Filter>Juce Modules\juce_gui_basics\layout</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\JUCE\modules\juce_gui_basics\layout\juce_GridUnitTests.cpp">
+      <Filter>Juce Modules\juce_gui_basics\layout</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\..\JUCE\modules\juce_gui_basics\layout\juce_GroupComponent.cpp">
       <Filter>Juce Modules\juce_gui_basics\layout</Filter>
     </ClCompile>
@@ -2173,6 +2197,33 @@
     <ClCompile Include="..\..\..\..\JUCE\modules\juce_gui_extra\juce_gui_extra.mm">
       <Filter>Juce Modules\juce_gui_extra</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\JUCE\modules\juce_osc\osc\juce_OSCAddress.cpp">
+      <Filter>Juce Modules\juce_osc\osc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\JUCE\modules\juce_osc\osc\juce_OSCArgument.cpp">
+      <Filter>Juce Modules\juce_osc\osc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\JUCE\modules\juce_osc\osc\juce_OSCBundle.cpp">
+      <Filter>Juce Modules\juce_osc\osc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\JUCE\modules\juce_osc\osc\juce_OSCMessage.cpp">
+      <Filter>Juce Modules\juce_osc\osc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\JUCE\modules\juce_osc\osc\juce_OSCReceiver.cpp">
+      <Filter>Juce Modules\juce_osc\osc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\JUCE\modules\juce_osc\osc\juce_OSCSender.cpp">
+      <Filter>Juce Modules\juce_osc\osc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\JUCE\modules\juce_osc\osc\juce_OSCTimeTag.cpp">
+      <Filter>Juce Modules\juce_osc\osc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\JUCE\modules\juce_osc\osc\juce_OSCTypes.cpp">
+      <Filter>Juce Modules\juce_osc\osc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\JUCE\modules\juce_osc\juce_osc.cpp">
+      <Filter>Juce Modules\juce_osc</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\JuceLibraryCode\include_juce_audio_basics.cpp">
       <Filter>Juce Library Code</Filter>
     </ClCompile>
@@ -2212,42 +2263,75 @@
     <ClCompile Include="..\..\JuceLibraryCode\include_juce_gui_extra.cpp">
       <Filter>Juce Library Code</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\JuceLibraryCode\include_juce_osc.cpp">
+      <Filter>Juce Library Code</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\CircularAngleSmoother.h">
+      <Filter>SofaPan\Source\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\MinPhaseGenerator.h">
+      <Filter>SofaPan\Source\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\UpdateRateLimiter.h">
+      <Filter>SofaPan\Source\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\NFSimToolkit.h">
+      <Filter>SofaPan\Source\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\ITDToolkit.h">
+      <Filter>SofaPan\Source\Helpers</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\ParameterStruct.h">
-      <Filter>SofaPan\Source</Filter>
+      <Filter>SofaPan\Source\Helpers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\ErrorHandling.h">
-      <Filter>SofaPan\Source</Filter>
+      <Filter>SofaPan\Source\Helpers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\SOFAData.h">
+    <ClInclude Include="..\..\Source\SofaData.h">
       <Filter>SofaPan\Source\SOFA Data</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\SofaPathSharedUpdater.h">
       <Filter>SofaPan\Source\SOFA Data</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\ImageSource.h">
-      <Filter>SofaPan\Source\Signal Processing</Filter>
+    <ClInclude Include="..\..\Source\SVF.h">
+      <Filter>SofaPan\Source\Signal Processing\DSP Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\BiquadCascade.h">
+      <Filter>SofaPan\Source\Signal Processing\DSP Helpers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\CombFilter.h">
-      <Filter>SofaPan\Source\Signal Processing</Filter>
+      <Filter>SofaPan\Source\Signal Processing\DSP Helpers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\DelayingAllpass.h">
-      <Filter>SofaPan\Source\Signal Processing</Filter>
+      <Filter>SofaPan\Source\Signal Processing\DSP Helpers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Delayline.h">
+      <Filter>SofaPan\Source\Signal Processing\DSP Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\OnePoleLPF.h">
+      <Filter>SofaPan\Source\Signal Processing\DSP Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Biquad.h">
+      <Filter>SofaPan\Source\Signal Processing\DSP Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\FilterKernel.h">
+      <Filter>SofaPan\Source\Signal Processing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\SoundSource.h">
+      <Filter>SofaPan\Source\Signal Processing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\SemistaticReflections.h">
       <Filter>SofaPan\Source\Signal Processing</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\EarlyReflection.h">
       <Filter>SofaPan\Source\Signal Processing</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\DirectSource.h">
-      <Filter>SofaPan\Source\Signal Processing</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\OnePoleLPF.h">
-      <Filter>SofaPan\Source\Signal Processing</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source\Reverberator.h">
+      <Filter>SofaPan\Source\Signal Processing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\MirrorReflections.h">
       <Filter>SofaPan\Source\Signal Processing</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\PlotHRIRComponent.h">
@@ -3486,6 +3570,9 @@
     <ClInclude Include="..\..\..\..\JUCE\modules\juce_dsp\processors\juce_Oscillator.h">
       <Filter>Juce Modules\juce_dsp\processors</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\JUCE\modules\juce_dsp\processors\juce_Oversampling.h">
+      <Filter>Juce Modules\juce_dsp\processors</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\..\JUCE\modules\juce_dsp\processors\juce_ProcessContext.h">
       <Filter>Juce Modules\juce_dsp\processors</Filter>
     </ClInclude>
@@ -3918,6 +4005,12 @@
     <ClInclude Include="..\..\..\..\JUCE\modules\juce_gui_basics\layout\juce_FlexItem.h">
       <Filter>Juce Modules\juce_gui_basics\layout</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\JUCE\modules\juce_gui_basics\layout\juce_Grid.h">
+      <Filter>Juce Modules\juce_gui_basics\layout</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\JUCE\modules\juce_gui_basics\layout\juce_GridItem.h">
+      <Filter>Juce Modules\juce_gui_basics\layout</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\..\JUCE\modules\juce_gui_basics\layout\juce_GroupComponent.h">
       <Filter>Juce Modules\juce_gui_basics\layout</Filter>
     </ClInclude>
@@ -4223,6 +4316,33 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\JUCE\modules\juce_gui_extra\juce_gui_extra.h">
       <Filter>Juce Modules\juce_gui_extra</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\JUCE\modules\juce_osc\osc\juce_OSCAddress.h">
+      <Filter>Juce Modules\juce_osc\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\JUCE\modules\juce_osc\osc\juce_OSCArgument.h">
+      <Filter>Juce Modules\juce_osc\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\JUCE\modules\juce_osc\osc\juce_OSCBundle.h">
+      <Filter>Juce Modules\juce_osc\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\JUCE\modules\juce_osc\osc\juce_OSCMessage.h">
+      <Filter>Juce Modules\juce_osc\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\JUCE\modules\juce_osc\osc\juce_OSCReceiver.h">
+      <Filter>Juce Modules\juce_osc\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\JUCE\modules\juce_osc\osc\juce_OSCSender.h">
+      <Filter>Juce Modules\juce_osc\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\JUCE\modules\juce_osc\osc\juce_OSCTimeTag.h">
+      <Filter>Juce Modules\juce_osc\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\JUCE\modules\juce_osc\osc\juce_OSCTypes.h">
+      <Filter>Juce Modules\juce_osc\osc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\JUCE\modules\juce_osc\juce_osc.h">
+      <Filter>Juce Modules\juce_osc</Filter>
     </ClInclude>
     <ClInclude Include="..\..\JuceLibraryCode\AppConfig.h">
       <Filter>Juce Library Code</Filter>

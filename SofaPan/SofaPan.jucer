@@ -3,41 +3,61 @@
 <JUCERPROJECT id="xKOOOW" name="SofaPan" projectType="audioplug" version="1.0.0"
               bundleIdentifier="com.yourcompany.SofaPan" includeBinaryInAppConfig="1"
               buildVST="1" buildVST3="1" buildAU="1" buildAUv3="1" buildRTAS="0"
-              buildAAX="0" pluginName="SofaPan" pluginDesc="SofaPan" pluginManufacturer="HSD"
+              buildAAX="0" pluginName="SofaPan" pluginDesc="" pluginManufacturer="HSD"
               pluginManufacturerCode="HSDD" pluginCode="SoPn" pluginChannelConfigs="{1,2}, {2,2}"
               pluginIsSynth="0" pluginWantsMidiIn="0" pluginProducesMidiOut="0"
               pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0" pluginAUExportPrefix="SofaPanAU"
               pluginRTASCategory="" aaxIdentifier="com.yourcompany.SofaPan"
-              pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="5.1.1"
+              pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="5.1.2"
               companyName="HSD" displaySplashScreen="1" reportAppUsage="0"
-              splashScreenColour="Dark" buildStandalone="0" enableIAA="0" cppLanguageStandard="14">
+              splashScreenColour="Dark" buildStandalone="1" enableIAA="0" cppLanguageStandard="14"
+              pluginVSTCategory="">
   <MAINGROUP id="XmHYCT" name="SofaPan">
     <GROUP id="{044A0D15-8678-AA45-7263-8E06162C7D6C}" name="Source">
-      <FILE id="ZLkxNp" name="ParameterStruct.h" compile="0" resource="0"
-            file="Source/ParameterStruct.h"/>
-      <FILE id="yoquz7" name="ErrorHandling.h" compile="0" resource="0" file="Source/ErrorHandling.h"/>
+      <GROUP id="{53BA6B57-099D-F89C-B2DC-3419F4A5307E}" name="Helpers">
+        <FILE id="yLzbca" name="CircularAngleSmoother.h" compile="0" resource="0"
+              file="Source/CircularAngleSmoother.h"/>
+        <FILE id="ymQmUn" name="MinPhaseGenerator.h" compile="0" resource="0"
+              file="Source/MinPhaseGenerator.h"/>
+        <FILE id="bPi6fX" name="UpdateRateLimiter.h" compile="0" resource="0"
+              file="Source/UpdateRateLimiter.h"/>
+        <FILE id="WKmj7H" name="NFSimToolkit.h" compile="0" resource="0" file="Source/NFSimToolkit.h"/>
+        <FILE id="JFUzx6" name="ITDToolkit.h" compile="0" resource="0" file="Source/ITDToolkit.h"/>
+        <FILE id="ZLkxNp" name="ParameterStruct.h" compile="0" resource="0"
+              file="Source/ParameterStruct.h"/>
+        <FILE id="yoquz7" name="ErrorHandling.h" compile="0" resource="0" file="Source/ErrorHandling.h"/>
+      </GROUP>
       <GROUP id="{4951F6A0-0FE2-193E-36C3-F82C3B52EE8C}" name="SOFA Data">
-        <FILE id="x9gfwE" name="SOFAData.cpp" compile="1" resource="0" file="Source/SOFAData.cpp"/>
-        <FILE id="XenoID" name="SOFAData.h" compile="0" resource="0" file="Source/SOFAData.h"/>
+        <FILE id="ZG7Y3j" name="SofaData.cpp" compile="1" resource="0" file="Source/SofaData.cpp"/>
+        <FILE id="Ya4OIc" name="SofaData.h" compile="0" resource="0" file="Source/SofaData.h"/>
         <FILE id="J4UtBE" name="SofaPathSharedUpdater.h" compile="0" resource="0"
               file="Source/SofaPathSharedUpdater.h"/>
       </GROUP>
       <GROUP id="{5486C6E1-FC20-1B3E-70BF-F12BC7680A5B}" name="Signal Processing">
-        <FILE id="Bk80lk" name="ImageSource.cpp" compile="1" resource="0" file="Source/ImageSource.cpp"/>
-        <FILE id="LPDUyA" name="ImageSource.h" compile="0" resource="0" file="Source/ImageSource.h"/>
-        <FILE id="CNwtIM" name="CombFilter.h" compile="0" resource="0" file="Source/CombFilter.h"/>
-        <FILE id="isff8W" name="DelayingAllpass.h" compile="0" resource="0"
-              file="Source/DelayingAllpass.h"/>
-        <FILE id="sCtrkL" name="Delayline.h" compile="0" resource="0" file="Source/Delayline.h"/>
-        <FILE id="T6ZeY5" name="EarlyReflection.cpp" compile="1" resource="0"
-              file="Source/EarlyReflection.cpp"/>
+        <GROUP id="{ED3B9FC8-B4DB-58CD-EDF1-90C0A0EBA571}" name="DSP Helpers">
+          <FILE id="JGKu7y" name="SVF.h" compile="0" resource="0" file="Source/SVF.h"/>
+          <FILE id="PSYC5a" name="BiquadCascade.h" compile="0" resource="0" file="Source/BiquadCascade.h"/>
+          <FILE id="CNwtIM" name="CombFilter.h" compile="0" resource="0" file="Source/CombFilter.h"/>
+          <FILE id="isff8W" name="DelayingAllpass.h" compile="0" resource="0"
+                file="Source/DelayingAllpass.h"/>
+          <FILE id="sCtrkL" name="Delayline.h" compile="0" resource="0" file="Source/Delayline.h"/>
+          <FILE id="QJOR0S" name="OnePoleLPF.h" compile="0" resource="0" file="Source/OnePoleLPF.h"/>
+          <FILE id="qJxbmP" name="Biquad.h" compile="0" resource="0" file="Source/Biquad.h"/>
+        </GROUP>
+        <FILE id="pF7YQ5" name="FilterKernel.cpp" compile="1" resource="0"
+              file="Source/FilterKernel.cpp"/>
+        <FILE id="uqhBiT" name="FilterKernel.h" compile="0" resource="0" file="Source/FilterKernel.h"/>
+        <FILE id="lG7Dhw" name="SoundSource.cpp" compile="1" resource="0" file="Source/SoundSource.cpp"/>
+        <FILE id="kngrpQ" name="SoundSource.h" compile="0" resource="0" file="Source/SoundSource.h"/>
+        <FILE id="i3Lc8d" name="SemistaticReflections.h" compile="0" resource="0"
+              file="Source/SemistaticReflections.h"/>
         <FILE id="zeToDt" name="EarlyReflection.h" compile="0" resource="0"
               file="Source/EarlyReflection.h"/>
-        <FILE id="WzrW7l" name="DirectSource.cpp" compile="1" resource="0"
-              file="Source/DirectSource.cpp"/>
-        <FILE id="WitAML" name="DirectSource.h" compile="0" resource="0" file="Source/DirectSource.h"/>
-        <FILE id="QJOR0S" name="OnePoleLPF.h" compile="0" resource="0" file="Source/OnePoleLPF.h"/>
+        <FILE id="T6ZeY5" name="EarlyReflection.cpp" compile="1" resource="0"
+              file="Source/EarlyReflection.cpp"/>
         <FILE id="l9GNXb" name="Reverberator.h" compile="0" resource="0" file="Source/Reverberator.h"/>
+        <FILE id="pph0YD" name="MirrorReflections.h" compile="0" resource="0"
+              file="Source/MirrorReflections.h"/>
       </GROUP>
       <GROUP id="{2272682A-D310-8B4E-410D-BBB986B4B15E}" name="Components">
         <FILE id="V1UPIK" name="PlotHRIRComponent.h" compile="1" resource="0"
@@ -101,6 +121,7 @@
         <MODULEPATH id="juce_audio_plugin_client" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_audio_utils" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_dsp" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_osc" path="../../JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
     <VS2015 targetFolder="Builds/VisualStudio2015" vst3Folder="/Users/David/GitRepos/vst3sdk"
@@ -127,8 +148,36 @@
         <MODULEPATH id="juce_audio_plugin_client" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_audio_utils" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_dsp" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_osc" path="../../JUCE/modules"/>
       </MODULEPATHS>
     </VS2015>
+    <XCODE_IPHONE targetFolder="Builds/iOS" iosScreenOrientation="portraitlandscape"
+                  externalLibraries="fftw3f&#10;netcdf" enableGNUExtensions="1">
+      <CONFIGURATIONS>
+        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="SofaPan"
+                       headerPath="../../../Dependencies/FFTW3/Mac&#10;../../../Dependencies/netCDF4/mac/include/"
+                       libraryPath="../../../Dependencies/FFTW3/Mac&#10;../../../Dependencies/netCDF4/mac/lib/"/>
+        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="SofaPan"
+                       headerPath="../../../Dependencies/FFTW3/Mac&#10;../../../Dependencies/netCDF4/mac/include/"
+                       libraryPath="../../../Dependencies/FFTW3/Mac&#10;../../../Dependencies/netCDF4/mac/lib/"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_gui_extra" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_dsp" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_core" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_utils" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_plugin_client" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_osc" path="../../JUCE/modules"/>
+      </MODULEPATHS>
+    </XCODE_IPHONE>
   </EXPORTFORMATS>
   <MODULES>
     <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0"/>
@@ -144,6 +193,7 @@
     <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0"/>
     <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0"/>
     <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_osc" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
   </MODULES>
   <JUCEOPTIONS JUCE_QUICKTIME="disabled"/>
 </JUCERPROJECT>

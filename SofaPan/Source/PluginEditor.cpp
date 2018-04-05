@@ -20,7 +20,7 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     
-    LookAndFeel::setDefaultLookAndFeel(&sofaPanLookAndFeel);
+    LookAndFeel::setDefaultLookAndFeel(&juceDefaultLookAndFeel);
     
     
     setSize (900, 500);
@@ -28,9 +28,9 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     panner_az.setSliderStyle(Slider::Rotary);
     panner_az.setComponentID("1");
     panner_az.setLookAndFeel(&azSliderLookAndFeel);
-    panner_az.setRange(0.0, 359.0, 1.0);
+    panner_az.setRange(0.0, 359.0, 0.1);
     panner_az.setTextValueSuffix(" deg");
-    panner_az.setPopupDisplayEnabled(false, this);
+    panner_az.setPopupDisplayEnabled(false, false, this);
     panner_az.setTextBoxStyle(Slider::TextBoxBelow, false, 70, 15);
     panner_az.setColour(Slider::textBoxBackgroundColourId, Colours::white);
     panner_az.setRotaryParameters(0, M_PI*2.0, false);
@@ -44,7 +44,7 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     panner_el.setLookAndFeel(&elSliderLookAndFeel);
     panner_el.setRange(-90.0, 90.0, 1.0);
     panner_el.setTextValueSuffix(" deg");
-    panner_el.setPopupDisplayEnabled(false, this);
+    panner_el.setPopupDisplayEnabled(false, false, this);
     panner_el.setTextBoxStyle(Slider::TextBoxBelow, false, 70, 15);
     panner_el.setColour(Slider::textBoxBackgroundColourId, Colours::white);
     panner_el.setRotaryParameters(M_PI, M_PI*2, true);
@@ -53,9 +53,10 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     addAndMakeVisible(&panner_el);
     
     panner_dist.setSliderStyle(roomsimLayout ? Slider::LinearHorizontal : Slider::LinearVertical);
+    panner_dist.setLookAndFeel(&sofaPanLookAndFeel);
     panner_dist.setRange(0.0, 1.0);
     panner_dist.setTextValueSuffix(" m");
-    panner_dist.setPopupDisplayEnabled(false, this);
+    panner_dist.setPopupDisplayEnabled(false, false, this);
     panner_dist.setTextBoxStyle(Slider::TextBoxBelow, false, 70, 15);
     panner_dist.setDoubleClickReturnValue(true, 1.0);
     panner_dist.addListener(this);
@@ -70,11 +71,15 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     loadSOFAButton.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
     addAndMakeVisible(&loadSOFAButton);
 
+#if ENABLE_TESTBUTTON
     testSwitchButton.setButtonText("Test Button");
     testSwitchButton.setColour(ToggleButton::textColourId, Colours::white);
     testSwitchButton.addListener(this);
-    //addAndMakeVisible(&testSwitchButton);
+    addAndMakeVisible(&testSwitchButton);
+#endif
     
+#if ENABLE_SEMISTATICS
+
     mirrorSourceReflectionsButton.setButtonText("Mirror Source");
     mirrorSourceReflectionsButton.setComponentID("mirrorSourceButton");
     mirrorSourceReflectionsButton.setLookAndFeel(&juceDefaultLookAndFeel);
@@ -105,6 +110,8 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     semiStaticReflectionsButton.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
     addAndMakeVisible(&semiStaticReflectionsButton);
     
+#endif
+    
     useDistanceSimulationButton.setButtonText("Distance Simulation");
     useDistanceSimulationButton.setComponentID("distSimButton");
     useDistanceSimulationButton.setColour(ToggleButton::textColourId, Colours::white);
@@ -125,6 +132,16 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     ITDadjustButton.setColour(ToggleButton::textColourId, Colours::white);
     ITDadjustButton.addListener(this);
     addAndMakeVisible(&ITDadjustButton);
+    
+    
+    headRadiusSlider.setSliderStyle(Slider::LinearHorizontal);
+    headRadiusSlider.setLookAndFeel(&juceDefaultLookAndFeel);
+    headRadiusSlider.setRange(14.0, 20.0);
+    headRadiusSlider.setTextValueSuffix(" cm");
+    headRadiusSlider.setPopupDisplayEnabled(true, true, this);
+    headRadiusSlider.setTextBoxStyle(Slider::TextBoxLeft, false, 50, 15);
+    headRadiusSlider.addListener(this);
+    addAndMakeVisible(&headRadiusSlider);
     
     
     useGlobalSofaFileButton.setButtonText("Global SOFA File");
@@ -183,9 +200,40 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     showSOFAMetadataButton.setColour (TextButton::textColourOffId, Colours::white);
     showSOFAMetadataButton.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
     addAndMakeVisible(&showSOFAMetadataButton);
-    addAndMakeVisible(&metadataView);
-    metadataView.setVisible(false);
     
+    
+#if REVSLIDERACTIVE
+    reverbSlider1.setSliderStyle(Slider::LinearHorizontal);
+    reverbSlider1.setLookAndFeel(&juceDefaultLookAndFeel);
+    reverbSlider1.setRange(-48, -12);
+    reverbSlider1.setTextValueSuffix(" dB");
+    reverbSlider1.setPopupDisplayEnabled(true, true, this);
+    reverbSlider1.setTextBoxStyle(Slider::NoTextBox, false, 30, 15);
+    reverbSlider1.addListener(this);
+    addAndMakeVisible(&reverbSlider1);
+    
+    reverbSlider2.setSliderStyle(Slider::LinearHorizontal);
+    reverbSlider2.setLookAndFeel(&juceDefaultLookAndFeel);
+    reverbSlider2.setRange(0.1, 2);
+    reverbSlider2.setTextValueSuffix(" s");
+    reverbSlider2.setPopupDisplayEnabled(true, true, this);
+    reverbSlider2.setTextBoxStyle(Slider::NoTextBox, false, 30, 15);
+    reverbSlider2.addListener(this);
+    addAndMakeVisible(&reverbSlider2);
+    
+    reverbLabel1.setText("Reverb Amount", NotificationType::dontSendNotification);
+    reverbLabel2.setText("Reverb Decay", NotificationType::dontSendNotification);
+    if(!ENABLE_SEMISTATICS){
+        addAndMakeVisible(&reverbLabel1);
+        addAndMakeVisible(&reverbLabel2);
+    }
+
+    
+#endif
+  
+    addAndMakeVisible(&metadataView);
+    
+    metadataView.setVisible(false);
     
     counter = 0;
     startTimer(50);
@@ -201,7 +249,11 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     popUpInfo->setAlwaysOnTop (true);
     popUpInfo->addToDesktop(0);
     
+    if(!connect(9001))
+       std::cout << "ERROR CONNECT";
     
+    addListener (this, "/sofapan/rotaryknob");
+    addListener (this, "/sofapan/connectHandshake");
  
     rearrange();
 }
@@ -217,27 +269,6 @@ void SofaPanAudioProcessorEditor::paint (Graphics& g)
     
 
     g.drawImage(backgroundImage, getLocalBounds().toFloat());
-    
-    
-    // rotating speaker image
-//    const int speakerSize = 40;
-//    const int spaceBetweenSpeakerAndSlider = 6;
-//    float sliderPosition = (float)panner_az.getValue() / 360.0;
-//    AffineTransform t = AffineTransform().translated(rect.getCentreX()- speakerSize/2 ,
-//                 rect.getY() - speakerSize - spaceBetweenSpeakerAndSlider). rotated((float)(M_PI*2.0*sliderPosition), (float)rect.getCentreX(), (float)rect.getCentreY());
-//    g.drawImageTransformed(speakerImage.rescaled(speakerSize, speakerSize),
-//                           t,
-//                           false);
-
-    
-    
-    // rotating speaker image
-//    sliderPosition = panner_el.getValue() / 360 + 0.75;
-//    t = AffineTransform().translated(rect.getCentreX()- speakerSize/2 ,
-//                                    rect.getY() - speakerSize - spaceBetweenSpeakerAndSlider). rotated((float)(M_PI*2.0*sliderPosition), (float)rect.getCentreX(), (float)rect.getCentreY());
-//    g.drawImageTransformed(speakerImage.rescaled(speakerSize, speakerSize),
-//                           t,
-//                           false);
     
     // sofa metadata short info
     g.setColour(Colours::white);
@@ -257,15 +288,29 @@ void SofaPanAudioProcessorEditor::resized()
 void SofaPanAudioProcessorEditor::timerCallback() {
 
     ITDadjustButton.setToggleState((bool)getParameterValue("ITDadjust"), NotificationType::dontSendNotification);
+#if ENABLE_TESTBUTTON
     testSwitchButton.setToggleState((bool)getParameterValue("test"), NotificationType::dontSendNotification);
+#endif
+    
+#if ENABLE_SEMISTATICS
     mirrorSourceReflectionsButton.setToggleState((bool)getParameterValue("mirrorSource"), NotificationType::dontSendNotification);
     semiStaticReflectionsButton.setToggleState(!(bool)getParameterValue("mirrorSource"), NotificationType::dontSendNotification);
+#endif
+    
     useGlobalSofaFileButton.setToggleState(processor.getUsingGlobalSofaFile(), NotificationType::dontSendNotification);
-
+    
     bool distanceSimActive = (bool)getParameterValue("dist_sim");
     bool nearfieldSimActive = (bool)getParameterValue("nearfield_sim");
     useDistanceSimulationButton.setToggleState(distanceSimActive, NotificationType::dontSendNotification);
     useNearfieldSimulationButton.setToggleState(nearfieldSimActive, NotificationType::dontSendNotification);
+    
+    headRadiusSlider.setValue((float)getParameterValue("individualHeadDiameter") * 6.0 + 14.0);
+    headRadiusSlider.setVisible(ITDadjustButton.getToggleState());
+    
+#if REVSLIDERACTIVE
+    reverbSlider1.setValue((float)getParameterValue("reverbParam1") * 36.0 - 48);
+    reverbSlider2.setValue((float)getParameterValue("reverbParam2") * 1.9 + 0.1);
+#endif
     
     // update panning sliders if needed
     float azimuthValue = getParameterValue("azimuth") * 360.;
@@ -281,15 +326,18 @@ void SofaPanAudioProcessorEditor::timerCallback() {
         panner_dist.setValue(distanceValue, NotificationType::dontSendNotification);
     
     
+    
     // update hrtf/hrir plots
     if(lastElevationValue!=elevationValue || lastAzimuthValue!=azimuthValue || lastDistanceValue!=distanceValue || processor.updateSofaMetadataFlag){
         //printf("\n\n 1. Trigger Repaint! \n");
         if(!roomsimLayout){
-            int complexLength = processor.getComplexLength();
-            int firLength = complexLength - 1;
+//            int complexLength = processor.getComplexLength();
+//            int firLength = complexLength - 1;
+            int firLength = processor.getLengthOfHRIR();
+            int complexLength = firLength + 1;
             int sampleRate = processor.getSampleRate();
             plotHRIRView.drawHRIR(processor.getCurrentHRIR(), firLength, sampleRate, processor.getCurrentITD());
-            plotHRTFView.drawHRTF(processor.getCurrentHRTF(), complexLength, sampleRate);
+            plotHRTFView.drawHRTF(processor.getCurrentMagSpectrum(), processor.getCurrentPhaseSpectrum(), complexLength, sampleRate);
         }
         panner2D_top.setDistanceAndAngle(distanceValue, azimuthValue, elevationValue);
         panner2D_rear.setDistanceAndAngle(distanceValue, azimuthValue, elevationValue);
@@ -396,6 +444,15 @@ void SofaPanAudioProcessorEditor::sliderValueChanged(Slider* slider)
         setParameterValue("distance", panner_dist.getValue());
         repaint();
     }
+    if(slider == &headRadiusSlider){
+        setParameterValue("individualHeadDiameter", (headRadiusSlider.getValue() - 14.0) / 6.0);
+    }
+    if(slider == &reverbSlider1){
+        setParameterValue("reverbParam1", (reverbSlider1.getValue() + 48.0) / 36.0);
+    }
+    if(slider == &reverbSlider2){
+        setParameterValue("reverbParam2", (reverbSlider2.getValue() - 0.1) / 1.9);
+    }
 }
 
 void SofaPanAudioProcessorEditor::sliderDragStarted(Slider* slider)
@@ -412,6 +469,7 @@ void SofaPanAudioProcessorEditor::sliderDragStarted(Slider* slider)
         if (AudioProcessorParameter* param = getParameter("distance"))
             param->beginChangeGesture();
     }
+    
 }
 
 void SofaPanAudioProcessorEditor::sliderDragEnded(Slider* slider)
@@ -478,11 +536,16 @@ void SofaPanAudioProcessorEditor::buttonClicked(Button *button)
     if (button == &ITDadjustButton)
         setParameterValue("ITDadjust", ITDadjustButton.getToggleState());
     
+#if ENABLE_TESTBUTTON
     if (button == &testSwitchButton)
         setParameterValue("test", testSwitchButton.getToggleState());
+#endif
     
+#if ENABLE_SEMISTATICS
+
     if (button == &mirrorSourceReflectionsButton || button == &semiStaticReflectionsButton)
         setParameterValue("mirrorSource", mirrorSourceReflectionsButton.getToggleState());
+#endif
     
     if(button == &showSOFAMetadataButton)
         metadataView.setVisible(true);
@@ -530,6 +593,7 @@ void SofaPanAudioProcessorEditor::buttonClicked(Button *button)
         setParameterValue("nearfield_sim", false);
 
     }
+    
     
     
 
@@ -595,14 +659,36 @@ void SofaPanAudioProcessorEditor::rearrange(){
     Rectangle<int> distanceSimControlBox = Rectangle<int>(10, showSOFAMetadataButton.getBottom() + 20,220, 90);
     useDistanceSimulationButton.setBounds(distanceSimControlBox.getX() + 10, distanceSimControlBox.getY() + 10, 100, 30);
     useNearfieldSimulationButton.setBounds(20., useDistanceSimulationButton.getBottom(), 100., 30.);
+#if ENABLE_SEMISTATICS
+
     mirrorSourceReflectionsButton.setBounds(useDistanceSimulationButton.getRight()+10, useDistanceSimulationButton.getY() + 5, 45., 20.);
     semiStaticReflectionsButton.setBounds(mirrorSourceReflectionsButton.getBounds().withX(mirrorSourceReflectionsButton.getRight()));
+#endif
+
+#if REVSLIDERACTIVE
+        Rectangle<int> spaceForRevSliders = distanceSimControlBox.withLeft(useNearfieldSimulationButton.getRight());
+        reverbLabel1.setBounds(spaceForRevSliders.getX(), spaceForRevSliders.getY()+5, spaceForRevSliders.getWidth()*0.9, spaceForRevSliders.getHeight() / 8);
+        reverbSlider1.setBounds(spaceForRevSliders.getX(), reverbLabel1.getBottom(), spaceForRevSliders.getWidth(), spaceForRevSliders.getHeight() / 3);
+        reverbLabel2.setBounds(spaceForRevSliders.getX(), reverbSlider1.getBottom(), spaceForRevSliders.getWidth()*0.9, spaceForRevSliders.getHeight() / 8);
+        reverbSlider2.setBounds(spaceForRevSliders.getX(), reverbLabel2.getBottom(), spaceForRevSliders.getWidth(), spaceForRevSliders.getHeight() / 3);
+#if ENABLE_SEMISTATICS
+
+        spaceForRevSliders = distanceSimControlBox.withLeft(useNearfieldSimulationButton.getRight()).withTop(mirrorSourceReflectionsButton.getBottom());
+        reverbSlider1.setBounds(spaceForRevSliders.removeFromTop(spaceForRevSliders.getHeight()/2));
+        reverbSlider2.setBounds(spaceForRevSliders);
+#endif
     
+#endif
     Rectangle<int> ITDAdjustControlBox = Rectangle<int>(distanceSimControlBox.withY(distanceSimControlBox.getBottom() + 10));
     ITDadjustButton.setBounds(ITDAdjustControlBox.getX() + 10, ITDAdjustControlBox.getY() + 10, 130., 30.);
+    //ITDadjustButton.setBounds(ITDAdjustControlBox.removeFromTop(ITDAdjustControlBox.getHeight()/2).reduced(10));
     
-    //testSwitchButton.setBounds(10., mirrorSourceReflectionsButton.getBottom() + 10, 100., 30.);
-
+    headRadiusSlider.setBounds(ITDAdjustControlBox.getX() + 20, ITDAdjustControlBox.getY() + 50, ITDAdjustControlBox.getWidth() - 30, 30);
+    
+#if ENABLE_TESTBUTTON
+    testSwitchButton.setBounds(10., ITDAdjustControlBox.getBottom() + 10, 100., 30.);
+#endif
+    
     showTooltipsButton.setBounds(100, getLocalBounds().getBottom() - 30, 100, 30);
 
     
@@ -610,7 +696,7 @@ void SofaPanAudioProcessorEditor::rearrange(){
     int panner_size;
     const int spacing = 30;
 
-    const Rectangle<int> mainControlBox = Rectangle<int>(240, spacing, getWidth() - 260, getHeight() - spacing * 2);
+    const Rectangle<int> mainControlBox = Rectangle<int>(240, spacing, getWidth() - 260, getHeight() - 70);
     Rectangle<int> boxWithSpacing = mainControlBox.reduced(spacing, 10);
 
     Rectangle<int> azimuthLabel, elevationLabel, distanceLabel, topViewLabel, rearViewLabel, hrtfLabel, hrirLabel;
@@ -664,7 +750,6 @@ void SofaPanAudioProcessorEditor::rearrange(){
     Rectangle<int> modeSelectionBox = Rectangle<int>(mainControlBox.getX(), mainControlBox.getY()-20, modeSelectionBoxWidth, 20);
     useLayoutSimplePanningButton.setBounds(modeSelectionBox.withWidth(modeSelectionBoxWidth/2.0));
     useLayoutRoomsimButton.setBounds(modeSelectionBox.withWidth(modeSelectionBoxWidth/2.0).translated(modeSelectionBoxWidth/2.0, 0));
-    
     
     //Create Background Image
     backgroundImage = Image(Image::RGB, getLocalBounds().getWidth(), getLocalBounds().getHeight(), true);
@@ -736,4 +821,23 @@ void SofaPanAudioProcessorEditor::rearrange(){
         g.drawText("Rear View", rearViewLabel, Justification::topLeft);
         
     }
+}
+
+void SofaPanAudioProcessorEditor::oscMessageReceived(const OSCMessage& message){
+    
+    
+//    if (message.size() == 1 && message[0].isFloat32())
+//        rotaryKnob.setValue (jlimit (0.0f, 10.0f, message[0].getFloat32()));
+//
+//
+    if(message.getAddressPattern().matches("/sofapan/connectHandshake") && message[0].isString()){
+        if(message[0].getString().contains("SYN")){
+            std::cout << "\n\nMessageReceived!" << message[0].getString().substring(4);
+
+            oscSender.connect(message[0].getString().substring(4), 9001);
+            oscSender.send("/sofapan/connectHandshake", String("ACK"));
+
+        }
+    }
+    
 }
