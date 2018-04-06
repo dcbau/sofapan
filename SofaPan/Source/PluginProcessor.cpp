@@ -55,8 +55,8 @@ SofaPanAudioProcessor::SofaPanAudioProcessor()
 SofaPanAudioProcessor::~SofaPanAudioProcessor()
 {
     
-    delete HRTFs;
-    HRTFs = NULL;
+    //delete HRTFs;
+    //HRTFs = NULL;
     updater->removeConnection(getPipe()->getName());
     
 }
@@ -380,7 +380,7 @@ float* SofaPanAudioProcessor::getCurrentHRIR()
     if(!(bool)params.distanceSimulationParam->get())
         distance = params.distanceParam->get();
     
-    return HRTFs->getHRIRforAngle(elevation, azimuth, distance, hrir_type_minPhase);
+    return HRTFs->getHRIRforAngle(elevation, azimuth, distance, hrir_type_original);
 }
 
 ITDStruct SofaPanAudioProcessor::getCurrentITD()

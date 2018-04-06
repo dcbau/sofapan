@@ -88,8 +88,8 @@ int SoundSource::initWithSofaData(SOFAData *sD, int _sampleRate, int _index){
 
 void SoundSource::releaseResources(){
     if(inputBuffer!= nullptr) fftwf_free(inputBuffer);
-    if(filterOutBufferL != nullptr) free(filterOutBufferL);
-    if(filterOutBufferR != nullptr) free(filterOutBufferR);
+    if(filterOutBufferL != nullptr) fftwf_free(filterOutBufferL);
+    if(filterOutBufferR != nullptr) fftwf_free(filterOutBufferR);
     if(interpolatedHRTF != nullptr) fftwf_free(interpolatedHRTF);
     if(interpolatedHRTF_R != nullptr) fftwf_free(interpolatedHRTF_R);
 

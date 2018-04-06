@@ -114,7 +114,7 @@ private:
     
     float sampleRate_f;
     
-    SOFAData* HRTFs;
+    ScopedPointer<SOFAData> HRTFs;
     SoundSource directSource;
     
     //std::vector<EarlyReflection*> earlyReflections;

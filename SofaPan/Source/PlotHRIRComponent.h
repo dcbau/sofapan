@@ -310,7 +310,8 @@ public:
 //            onsetIndex_L = preSpace;
 //            onsetIndex_R = preSpace - ITDsamples;
 //        }
-        onsetIndex_L = ITD.onsetL_samples;
+      /*
+		onsetIndex_L = ITD.onsetL_samples;
         onsetIndex_R = ITD.onsetR_samples;
         
         it = IR_Left.begin();
@@ -324,7 +325,8 @@ public:
         ITDdisplayText = String(ITD.ITD_ms);
         ITDdisplayText = shortenFloatString(ITDdisplayText, 1);
         ITDdisplayText.append("ms ITD", 6);
-        
+       */
+
 //        //RESIZE BOTH VECTORS
 //        
 //        //Detect Onset Threshold

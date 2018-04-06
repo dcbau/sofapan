@@ -85,8 +85,8 @@ int EarlyReflection::initWithSofaData(SOFAData *sD, int _sampleRate, float angle
 void EarlyReflection::releaseResources(){
     
     if(inputBuffer != NULL) fftwf_free(inputBuffer);
-    if(filterOutBufferL != NULL) free(filterOutBufferL);
-    if(filterOutBufferR != NULL) free(filterOutBufferR);
+    if(filterOutBufferL != NULL) fftwf_free(filterOutBufferL);
+    if(filterOutBufferR != NULL) fftwf_free(filterOutBufferR);
     if(hrtf != NULL)fftwf_free(hrtf);
     if(hrtf_minPhase != NULL)fftwf_free(hrtf_minPhase);
     
