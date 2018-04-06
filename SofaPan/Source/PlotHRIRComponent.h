@@ -262,14 +262,17 @@ public:
     /** Size is the length of one IR. The float vector hrir should contain the left AND the right IR, making the vector of length size*2 */
     void drawHRIR(float* _HRIR, int size, int _sampleRate, ITDStruct ITD){
         
-        
+		std::vector<float> leHRIR;
+		for (int i = 0; i< size*2; i++) {
+			leHRIR.push_back(_HRIR[i]);
+		}
 
         
         sampleRate = _sampleRate;
         IR_Left.clear();
         IR_Right.clear();
-        IR_Left.resize(size);
-        IR_Right.resize(size);
+        IR_Left.resize(size, 0);
+        IR_Right.resize(size, 0);
 
         for(int i = 0; i< size; i++){
             IR_Left[i] = 0.0;
@@ -287,7 +290,7 @@ public:
         
         //Remove zero-tail of long responses (minimum 128 samples remaining)
         if(size > 128){
-            for(int i = 1; i < size - 128; i++){
+            for(int i = 1; i < (size - 128); i++){
                 if(IR_Left[size - i] == 0.0 && IR_Right[size - i] == 0.0){
                     IR_Left.pop_back();
                     IR_Right.pop_back();
@@ -311,12 +314,12 @@ public:
         onsetIndex_R = ITD.onsetR_samples;
         
         it = IR_Left.begin();
-        IR_Left.insert ( it , onsetIndex_L, 0.0 );
-        IR_Left.resize(size);
+        IR_Left.insert ( it , onsetIndex_L, 0.0f);
+        IR_Left.resize(size, 0);
         
         it = IR_Right.begin();
-        IR_Right.insert(it, onsetIndex_R, 0.0);
-        IR_Right.resize(size);
+        IR_Right.insert(it, onsetIndex_R, 0.0f);
+        IR_Right.resize(size, 0);
         
         ITDdisplayText = String(ITD.ITD_ms);
         ITDdisplayText = shortenFloatString(ITDdisplayText, 1);

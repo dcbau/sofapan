@@ -536,7 +536,7 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
         nc_inq_attlen(ncid, NC_GLOBAL, name_of_att[i], &attlength);
         
         char* att = new char[attlength + 1];
-        nc_get_att(ncid, NC_GLOBAL, name_of_att[i], &att);
+        nc_get_att(ncid, NC_GLOBAL, name_of_att[i], att);
         att[attlength] = '\0';
         attributes[i] = att;
         
@@ -925,7 +925,7 @@ String SOFAData::getSOFAGlobalAttribute(const char* attribute_ID, int ncid){
     
     //get value if possible
     char* att = new char[att_length + 1];
-    if(nc_get_att(ncid, NC_GLOBAL, attribute_ID, &att))
+    if(nc_get_att(ncid, NC_GLOBAL, attribute_ID, att))
         return String("- Unknown - ");
     
     //terminate string manually

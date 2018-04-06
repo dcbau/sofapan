@@ -13,9 +13,9 @@
 SoundSource::SoundSource()
 
 {
-    filterOutBufferL = filterOutBufferR = inputBuffer  = NULL;
-    interpolatedHRTF = NULL;
-    interpolatedHRTF_R = NULL;
+    filterOutBufferL = filterOutBufferR = inputBuffer  = nullptr;
+    interpolatedHRTF = nullptr;
+    interpolatedHRTF_R = nullptr;
     firLength = 0;
     
     
@@ -48,7 +48,7 @@ int SoundSource::initWithSofaData(SOFAData *sD, int _sampleRate, int _index){
         interpolatedHRTF = fftwf_alloc_complex(complexLength * 2);
         interpolatedHRTF_R = fftwf_alloc_complex(complexLength * 2);
 
-        if(inputBuffer == NULL || filterOutBufferL == NULL || filterOutBufferR == NULL){
+        if(inputBuffer == nullptr || filterOutBufferL == nullptr || filterOutBufferR == nullptr){
             ErrorHandling::reportError("Direct Source Module", ERRMALLOC, true);
             return 1;
         }
@@ -87,15 +87,15 @@ int SoundSource::initWithSofaData(SOFAData *sD, int _sampleRate, int _index){
 
 
 void SoundSource::releaseResources(){
-    if(inputBuffer!= NULL) fftwf_free(inputBuffer);
-    if(filterOutBufferL != NULL) free(filterOutBufferL);
-    if(filterOutBufferR != NULL) free(filterOutBufferR);
-    if(interpolatedHRTF != NULL) fftwf_free(interpolatedHRTF);
-    if(interpolatedHRTF_R != NULL) fftwf_free(interpolatedHRTF_R);
+    if(inputBuffer!= nullptr) fftwf_free(inputBuffer);
+    if(filterOutBufferL != nullptr) free(filterOutBufferL);
+    if(filterOutBufferR != nullptr) free(filterOutBufferR);
+    if(interpolatedHRTF != nullptr) fftwf_free(interpolatedHRTF);
+    if(interpolatedHRTF_R != nullptr) fftwf_free(interpolatedHRTF_R);
 
-    filterOutBufferL = filterOutBufferR = inputBuffer = NULL;
-    interpolatedHRTF = NULL;
-    interpolatedHRTF_R = NULL;
+    filterOutBufferL = filterOutBufferR = inputBuffer = nullptr;
+    interpolatedHRTF = nullptr;
+    interpolatedHRTF_R = nullptr;
     
 }
 
