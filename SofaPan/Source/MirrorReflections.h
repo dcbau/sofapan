@@ -15,6 +15,7 @@
 #include "BiquadCascade.h"
 #include "math.h"
 
+//Geometrical represenation of a point in 3D
 class vector3D{
 public:
     
@@ -29,6 +30,7 @@ public:
     ~vector3D(){}
 };
 
+//Geometrical represenation of a 3d plane
 class wall3D{
 public:
     vector3D normVec;
@@ -49,16 +51,9 @@ public:
         wallDampingFilter.addFilter(bq_type_highshelf, 100, 0.707, -1);
         wallDampingFilter.addFilter(bq_type_peak, 1000, 2, -2);
         wallDampingFilter.addFilter(bq_type_peak, 3500, 2, 2);
-        //wallDampingFilter.addFilter(bq_type_lowshelf, 10000, 0.707, -2); //to add an overall loss of energy
 
         wallDispersionFilter.addFilter(bq_type_allpass, 200, 1, 0);
         wallDispersionFilter.addFilter(bq_type_allpass, 200, 1, 0);
-        //wallDispersionFilter.addFilter(bq_type_allpass, 200, 1, 0);
-        //wallDispersionFilter.addFilter(bq_type_allpass, 200, 1, 0);
-//        wallDispersionFilter.addFilter(bq_type_allpass, 500, 2, 0);
-//        wallDispersionFilter.addFilter(bq_type_allpass, 500, 2, 0);
-//        wallDispersionFilter.addFilter(bq_type_allpass, 500, 2, 0);
-//        wallDispersionFilter.addFilter(bq_type_allpass, 500, 2, 0);
         wallDispersionFilter.addFilter(bq_type_highpass, 200, 0.707, 0);
 
         
@@ -71,25 +66,15 @@ public:
         const float roomHeight = 3.0;
         const float receiverHeight = 1.7;
 
-        //roomRadius *= 3.0; //TEST
-
-//        wall[0]= Line<float>(-roomRadius, roomRadius, roomRadius, roomRadius); //Front
-//        wall[1]= Line<float>(roomRadius, roomRadius, roomRadius, -roomRadius); //Right
-//        wall[2]= Line<float>(roomRadius, -roomRadius, -roomRadius, -roomRadius); //Back
-//        wall[3]= Line<float>(-roomRadius, -roomRadius, -roomRadius, roomRadius); //Left
-
         int status = 0;
         
         for(int i = 0; i < numReflections; i++){
             status += reflections[i].initWithSofaData(sD, sampleRate, i + 10);
         }
-        
-
-        wallDampFilter.init(5000.0, sampleRate);
-
     
         walls.resize(0);
         
+        //Add walls of the room
         walls.push_back(wall3D(vector3D(-1.0, 0.0, 0.0), vector3D(roomRadius, 0.0, 0.0))); //front wall
         walls.push_back(wall3D(vector3D(0.0, -1.0, 0.0), vector3D(0.0, roomRadius, 0.0))); //right wall
         walls.push_back(wall3D(vector3D(1.0, 0.0, 0.0), vector3D(-roomRadius, 0.0, 0.0))); //back wall
@@ -97,32 +82,19 @@ public:
         
         numUsedReflections = 4;
         
-//        //only use floor and ceiling reflections if there are suitable hrtfs present
-//        if(sD->getMetadata().minElevation < -85.0){
-//            walls.push_back(wall3D(vector3D(0.0, 0.0, 1.0), vector3D(0.0, 0.0, -receiverHeight))); //floor
-//            numUsedReflections++;
-//        }
-//        if(sD->getMetadata().maxElevation > 85.0){
-//            walls.push_back(wall3D(vector3D(0.0, 0.0, -1.0), vector3D(0.0, 0.0, roomHeight - receiverHeight))); //ceiling
-//            numUsedReflections++;
-//        }
+        //only use floor and ceiling reflections if there are suitable hrtfs present
+        if(sD->getMetadata().minElevation < -85.0){
+            walls.push_back(wall3D(vector3D(0.0, 0.0, 1.0), vector3D(0.0, 0.0, -receiverHeight))); //floor
+            numUsedReflections++;
+        }
+        if(sD->getMetadata().maxElevation > 85.0){
+            walls.push_back(wall3D(vector3D(0.0, 0.0, -1.0), vector3D(0.0, 0.0, roomHeight - receiverHeight))); //ceiling
+            numUsedReflections++;
+        }
         
 
         
         printf("\nINIT with %d reflections", numUsedReflections);
-        
-        //numUsedReflections = 4;
-        
-//        soundSourceData data;
-//        data.azimuth = 90.0;
-//        data.elevation = 0.0;
-//        data.distance = 2.0;
-//        data.ITDAdjust = false;
-//        data.nfSimulation = false;
-//        data.overwriteOutputBuffer = false;
-//
-//        soundSourceData mirrorSource = makeMSPosition3D(testWall, data);
-
         
         
         
@@ -130,16 +102,15 @@ public:
     }
     
     void prepareToPlay(int sampleRate){
+        
         for(int i = 0; i < numReflections; i++){
             reflections[i].prepareToPlay();
         }
         
-
-
-        wallDampFilter.prepareToPlay();
         wallDampingFilter.prepareToPlay(sampleRate);
         wallDispersionFilter.prepareToPlay(sampleRate);
     }
+    
     
     void process(const float* inBuffer, float* outBuffer_L, float* outBuffer_R, int numSamples, parameterStruct params){
         
@@ -148,8 +119,6 @@ public:
         float distance = params.distanceParam->get();
         Point<float> sourcePos = origin.getPointOnCircumference(distance, azimuth);
         sourcePos.y *= -1.0;
-//        printf("\n SOURCE Azimuth: %.2f, Distance: %.2f", azimuth, distance);
-//        printf("\n SOURCE X: %.2f, Y: %.2f", sourcePos.getX(), sourcePos.getY());
         
         soundSourceData data;
         data.azimuth = params.azimuthParam->get() * 360.0;
@@ -165,14 +134,9 @@ public:
         //convert refPos to xyz coords point
         float el_rad = data.elevation * d2r;
         float az_rad = data.azimuth * d2r;
-        
         sourcePosCartesian.x = cosf(az_rad) * cosf(el_rad) * data.distance;
         sourcePosCartesian.y = sinf(az_rad) * cosf(el_rad) * data.distance;
         sourcePosCartesian.z = data.distance * sinf(el_rad);
-//
-//        if(counter > 100)  printf("\n");
-//
-        counter++;
 
         for(int i = 0; i < numSamples; i++){
             outBuffer_L[i] = outBuffer_R[i] = 0.0;
@@ -180,34 +144,10 @@ public:
         for(int i = 0; i < numUsedReflections; i++){
             firstOrderReflections[i] = makeMSPosition3D(walls[i], data);
             reflections[i].process(inBuffer, outBuffer_L, outBuffer_R, numSamples, firstOrderReflections[i]);
-            
-//            if(counter > 50){
-//                printf("\n%d: Az: %.3f, Dst: %.3f", i, firstOrderReflections[i].azimuth, firstOrderReflections[i].distance);
-//            }
-        }
-        if(counter > 50){
-            counter = 0;
         }
         wallDampingFilter.processBlockStereo(outBuffer_L, outBuffer_R, numSamples);
         wallDispersionFilter.processBlockStereo(outBuffer_L, outBuffer_R, numSamples);
 
-
-        
-//        else
-//        {
-//            for(int i = 0; i < 4; i++){
-//                reflections[i].process(inBuffer, outBuffer_L, outBuffer_R, numSamples, makeMSPosition(wall[i], data));
-//            }
-//            wallDampingFilter.processBlockStereo(outBuffer_L, outBuffer_R, numSamples);
-//
-//        }
-
-        //Apply frequency damping from wall reflection
-       // if(params.testSwitchParam->get())
-       // else
-         //   wallDampFilter.processBlockStereo(outBuffer_L, outBuffer_R, numSamples);
-        
-        
     }
 
 private:
@@ -252,10 +192,6 @@ private:
         //Make mirrorsource data
         refPos.azimuth = az_rad * r2d;
         refPos.distance = lengthOfImageSourceVector;
-//        if(refPos.test){
-//            refPos.distance += 2.0;
-//            printf("TEST   ");
-//        }
         refPos.elevation = el_rad * r2d;
         refPos.ITDAdjust = refPos.ITDAdjust;
         refPos.nfSimulation = false;
@@ -264,19 +200,13 @@ private:
         return refPos;
     }
 
-    const int numReflections = 4;
+    const int numReflections = 6;
     int numUsedReflections;
-    SoundSource reflections[4];
+    SoundSource reflections[6];
     float roomRadius;
-
-    //Line<float> wall[6];
-
-    OnePoleLPF wallDampFilter;
     
     BiquadCascade wallDampingFilter;
     BiquadCascade wallDispersionFilter;
-
-    int counter = 0;
     
     std::vector<wall3D> walls;
 
