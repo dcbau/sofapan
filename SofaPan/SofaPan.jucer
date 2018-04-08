@@ -9,9 +9,9 @@
               pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0" pluginAUExportPrefix="SofaPanAU"
               pluginRTASCategory="" aaxIdentifier="com.yourcompany.SofaPan"
               pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="5.2.1"
-              companyName="HSD" displaySplashScreen="1" reportAppUsage="0"
+              companyName="HSD" displaySplashScreen="1" reportAppUsage="1"
               splashScreenColour="Dark" buildStandalone="1" enableIAA="0" cppLanguageStandard="14"
-              pluginVSTCategory="">
+              pluginVSTCategory="" companyCopyright="HSD">
   <MAINGROUP id="XmHYCT" name="SofaPan">
     <GROUP id="{044A0D15-8678-AA45-7263-8E06162C7D6C}" name="Source">
       <GROUP id="{53BA6B57-099D-F89C-B2DC-3419F4A5307E}" name="Helpers">
@@ -102,10 +102,12 @@
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="SofaPan"
                        headerPath="../../../Dependencies/FFTW3/Mac&#10;../../../Dependencies/netCDF4/mac/include/"
-                       libraryPath="../../../Dependencies/FFTW3/Mac&#10;../../../Dependencies/netCDF4/mac/lib/"/>
+                       libraryPath="../../../Dependencies/FFTW3/Mac&#10;../../../Dependencies/netCDF4/mac/lib/"
+                       enablePluginBinaryCopyStep="1"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="SofaPan"
                        headerPath="../../../Dependencies/FFTW3/Mac&#10;../../../Dependencies/netCDF4/mac/include/"
-                       libraryPath="../../../Dependencies/FFTW3/Mac&#10;../../../Dependencies/netCDF4/mac/lib/"/>
+                       libraryPath="../../../Dependencies/FFTW3/Mac&#10;../../../Dependencies/netCDF4/mac/lib/"
+                       enablePluginBinaryCopyStep="1"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../Dependencies/JUCE/modules"/>
@@ -125,14 +127,17 @@
       </MODULEPATHS>
     </XCODE_MAC>
     <VS2015 targetFolder="Builds/VisualStudio2015" vst3Folder="../Dependencies/vst3sdk"
-            externalLibraries="libfftw3f-3.lib&#10;netcdf.lib">
+            externalLibraries="libfftw3f-3.lib&#10;netcdf.lib" windowsTargetPlatformVersion="8.1">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="x64"
                        isDebug="1" optimisation="1" targetName="SofaPan" headerPath="../../../Dependencies/FFTW3/Win x64/&#10;../../../Dependencies/netCDF4/win64/include/"
-                       libraryPath="../../../Dependencies/FFTW3/Win x64/&#10;../../../Dependencies/netCDF4/win64/lib/"/>
+                       libraryPath="../../../Dependencies/FFTW3/Win x64/&#10;../../../Dependencies/netCDF4/win64/lib/"
+                       debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"/>
         <CONFIGURATION name="Release" winWarningLevel="4" generateManifest="1" winArchitecture="x64"
                        isDebug="0" optimisation="1" targetName="SofaPan" libraryPath="../../../Dependencies/FFTW3/Win x64/&#10;../../../Dependencies/netCDF4/win64/lib/"
-                       headerPath="../../../Dependencies/FFTW3/Win x64/&#10;../../../Dependencies/netCDF4/win64/include/"/>
+                       headerPath="../../../Dependencies/FFTW3/Win x64/&#10;../../../Dependencies/netCDF4/win64/include/"
+                       debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"
+                       linkTimeOptimisation="1"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../Dependencies/JUCE/modules"/>
@@ -152,14 +157,17 @@
       </MODULEPATHS>
     </VS2015>
     <XCODE_IPHONE targetFolder="Builds/iOS" iosScreenOrientation="portraitlandscape"
-                  externalLibraries="fftw3f&#10;netcdf" enableGNUExtensions="1">
+                  externalLibraries="fftw3f&#10;netcdf" enableGNUExtensions="1"
+                  iPadScreenOrientation="portraitlandscape" iosDeviceFamily="1,2">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="SofaPan"
                        headerPath="../../../Dependencies/FFTW3/Mac&#10;../../../Dependencies/netCDF4/mac/include/"
-                       libraryPath="../../../Dependencies/FFTW3/Mac&#10;../../../Dependencies/netCDF4/mac/lib/"/>
+                       libraryPath="../../../Dependencies/FFTW3/Mac&#10;../../../Dependencies/netCDF4/mac/lib/"
+                       enablePluginBinaryCopyStep="1"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="SofaPan"
                        headerPath="../../../Dependencies/FFTW3/Mac&#10;../../../Dependencies/netCDF4/mac/include/"
-                       libraryPath="../../../Dependencies/FFTW3/Mac&#10;../../../Dependencies/netCDF4/mac/lib/"/>
+                       libraryPath="../../../Dependencies/FFTW3/Mac&#10;../../../Dependencies/netCDF4/mac/lib/"
+                       enablePluginBinaryCopyStep="1"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_gui_extra" path="../Dependencies/JUCE/modules"/>
@@ -179,18 +187,27 @@
       </MODULEPATHS>
     </XCODE_IPHONE>
     <VS2017 targetFolder="Builds/VisualStudio2017" vst3Folder="../Dependencies/vst3sdk"
-            externalLibraries="libfftw3f-3.lib&#10;libcurl_imp.lib&#10;libhdf5.lib&#10;libhdf5_hl.lib&#10;netcdf.lib&#10;zlib.lib">
+            externalLibraries="libfftw3f-3.lib&#10;libcurl_imp.lib&#10;libhdf5.lib&#10;libhdf5_hl.lib&#10;netcdf.lib&#10;zlib.lib"
+            windowsTargetPlatformVersion="10.0.16299.0">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug" headerPath="../../../Dependencies/FFTW3/Win x86/&#10;../../../Dependencies/netCDF4/win32/include/"
                        libraryPath="../../../Dependencies/FFTW3/Win x86/&#10;../../../Dependencies/netCDF4/win32/lib/"
-                       winArchitecture="Win32"/>
+                       winArchitecture="Win32" winWarningLevel="4" generateManifest="1"
+                       debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"/>
         <CONFIGURATION isDebug="1" name="Debug" headerPath="../../../Dependencies/FFTW3/Win x64/&#10;../../../Dependencies/netCDF4/win64/include/"
-                       libraryPath="../../../Dependencies/FFTW3/Win x64/&#10;../../../Dependencies/netCDF4/win64/lib/"/>
+                       libraryPath="../../../Dependencies/FFTW3/Win x64/&#10;../../../Dependencies/netCDF4/win64/lib/"
+                       winWarningLevel="4" generateManifest="1" winArchitecture="x64"
+                       debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"/>
         <CONFIGURATION isDebug="0" name="Release" headerPath="../../../Dependencies/FFTW3/Win x86/&#10;../../../Dependencies/netCDF4/win32/include/"
                        libraryPath="../../../Dependencies/FFTW3/Win x86/&#10;../../../Dependencies/netCDF4/win32/lib/"
-                       winArchitecture="Win32"/>
+                       winArchitecture="Win32" winWarningLevel="4" generateManifest="1"
+                       debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"
+                       linkTimeOptimisation="1"/>
         <CONFIGURATION isDebug="0" name="Release" headerPath="../../../Dependencies/FFTW3/Win x64/&#10;../../../Dependencies/netCDF4/win64/include/"
-                       libraryPath="../../../Dependencies/FFTW3/Win x64/&#10;../../../Dependencies/netCDF4/win64/lib/"/>
+                       libraryPath="../../../Dependencies/FFTW3/Win x64/&#10;../../../Dependencies/netCDF4/win64/lib/"
+                       winWarningLevel="4" generateManifest="1" winArchitecture="x64"
+                       debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"
+                       linkTimeOptimisation="1"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_osc" path="../Dependencies/JUCE/modules"/>

@@ -74,9 +74,9 @@ private:
     }
     
     SofaPathSharedUpdater(){}
-    SofaPathSharedUpdater(const SofaPathSharedUpdater&);
+    SofaPathSharedUpdater(SofaPathSharedUpdater const&);
     void operator=(SofaPathSharedUpdater const&);
-    ~SofaPathSharedUpdater(){}
+    //~SofaPathSharedUpdater(){}
     OwnedArray<Connection> connections;
     int count_id = 1000;
     String currentFilePath = "";
