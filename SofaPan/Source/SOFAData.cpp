@@ -520,10 +520,10 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
     int numberOfAttributes;
     nc_inq(ncid, NULL, NULL, &numberOfAttributes, NULL);
     
-	char* name_of_att[NC_MAX_NAME + 1];
-	for (int i = 0; i <= NC_MAX_NAME; ++i) {
-		name_of_att[i] = new char[numberOfAttributes];
-	}
+	char** name_of_att =  new char*[numberOfAttributes];
+    for (int i = 0; i <= numberOfAttributes; ++i) {
+        name_of_att[i] = new char[NC_MAX_NAME+1];
+    }
     char** attributes = new char*[numberOfAttributes];
     
     sofaMetadata.globalAttributeNames.resize(0);
@@ -539,10 +539,17 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
         nc_get_att(ncid, NC_GLOBAL, name_of_att[i], att);
         att[attlength] = '\0';
         attributes[i] = att;
+
+        //Check for ö (especially for the FH Köln Dataset ;) )
+        for(int k = 0; k < attlength; k++){
+            if(att[k] == '\366') //This value is in the attributes where an "ö" should be. It messes up the whole string procedure under windows.
+                att[k] = 'o';
+        }
+        
         
         sofaMetadata.globalAttributeNames.add(String(CharPointer_UTF8 (name_of_att[i])));
         sofaMetadata.globalAttributeValues.add(String(CharPointer_UTF8 (attributes[i])));
-        
+
     }
     
     sofaMetadata.listenerShortName = getSOFAGlobalAttribute("ListenerShortName", ncid);

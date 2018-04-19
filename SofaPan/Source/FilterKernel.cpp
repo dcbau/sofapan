@@ -121,7 +121,7 @@ void FilterKernel::releaseResources(){
 }
 
 
-
+//Gets called once prior to all audio processin
 void FilterKernel::prepareToPlay(fftwf_complex* initHRTF){
     
     for(int i = 0; i < firLength; i++){

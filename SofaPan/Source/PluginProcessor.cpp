@@ -114,7 +114,7 @@ void SofaPanAudioProcessor::changeProgramName (int index, const String& newName)
 {
 }
 
-//==============================================================================
+//Gets called as an initialisation prior to all audio processing
 void SofaPanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     printf("\n prepare to play \n");

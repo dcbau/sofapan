@@ -28,14 +28,15 @@ SoundSource::~SoundSource(){
 
 int SoundSource::initWithSofaData(SOFAData *sD, int _sampleRate, int _index){
     
+    //the index identifies the soundsource, because multiple soundsources are instantiated from the pluginprocessor
     index = _index;
-    
     
     sofaData = sD;
     sampleRate = _sampleRate;
     
     filter.init(sD->getLengthOfHRIR());
     
+    //reallocate the buffers that depend on the hrir, if the length of the HRIR (which influences the length of almost everything) changes
     if(firLength != sD->getLengthOfHRIR()){
         releaseResources();
         
@@ -58,19 +59,19 @@ int SoundSource::initWithSofaData(SOFAData *sD, int _sampleRate, int _index){
     previousElevation = 0;
     previousDistance = 1.0;
     previousITDAdjust = false;
+    
+    //Initialize with any hrtf, so no convolution is done with a empty memory
     hrtf_l = sofaData->getHRTFforAngle(0.0, 0.0, 1.0, hrtf_type_pseudoMinPhase);
     hrtf_r = sofaData->getHRTFforAngle(0.0, 0.0, 1.0, hrtf_type_pseudoMinPhase);
     
-    
+    //determine the interpolation ordner (minimum 2) acoording to the SOFA Data
     interpolationOrder = 2;
-    
     if(sofaData->getMetadata().hasMultipleDistances)
         interpolationOrder++;
-    
     if(sofaData->getMetadata().hasElevation)
         interpolationOrder++;
     
-    printf("\n\n INterpolation Order: %d \n\n", interpolationOrder);
+    //printf("\n\n Interpolation Order: %d \n\n", interpolationOrder);
     
     distanceDelaySmoother.reset((double)sampleRate, 0.5);
     distanceGainSmoother.reset((double)sampleRate, 0.5);
@@ -100,7 +101,7 @@ void SoundSource::releaseResources(){
 }
 
 
-
+//Gets called once prior to all audio processin
 void SoundSource::prepareToPlay(){
     
     filter.prepareToPlay(sofaData->getHRTFforAngle(0.0, 0.0, 1.0, hrtf_type_pseudoMinPhase));
@@ -126,7 +127,7 @@ void SoundSource::prepareToPlay(){
 void SoundSource::process(const float* inBuffer, float* outBuffer_L, float* outBuffer_R, int numSamples, soundSourceData data){
     
 
-    
+    //tell the smoother objects the current values. if one of the values is needed, the smoother takes care that there are no abrupt jumps
     distanceDelaySmoother.setValue(data.distance * meterToMs);
     distanceGainSmoother.setValue(1.0 / data.distance);
 
@@ -135,15 +136,18 @@ void SoundSource::process(const float* inBuffer, float* outBuffer_L, float* outB
     
     for(int sample = 0; sample < numSamples; sample++){
         
-
+        //Gather samples for the convolution
         inputBuffer[fifoIndex] = inBuffer[sample];
         
+        //Output of samples coming from the convolution
+        //output of the delaylines left & right, delayed by the sum distance delay and the individual itd delay for left and right
         float smoothedDistanceDelay = distanceDelaySmoother.getNextValue();
         float delayLineOutputL = ITDdelayL.pullSample(ITDDelaySmootherL.getNextValue() + smoothedDistanceDelay);//smoothDelay.update(distanceDelay));
         ITDdelayL.pushSample(filterOutBufferL[fifoIndex]);
         float delayLineOutputR = ITDdelayR.pullSample(ITDDelaySmootherR.getNextValue() + smoothedDistanceDelay);//smoothDelay.update(distanceDelay));
         ITDdelayR.pushSample(filterOutBufferR[fifoIndex]);
         
+        //apply the damping according to the distance from source to listener
         float g = distanceGainSmoother.getNextValue();
         if(data.overwriteOutputBuffer){
             outBuffer_L[sample] = delayLineOutputL * g;
@@ -155,53 +159,35 @@ void SoundSource::process(const float* inBuffer, float* outBuffer_L, float* outB
         
         fifoIndex++;
         
+        //if buffer is full, trigger the convolution process
         if(fifoIndex == firLength){
-            
+            fifoIndex = 0;
 
-            
+
             data.azimuth = azimuthSmoothed.getNextValue();
             data.elevation = elevationSmoothed.getNextValue();
             
-//            if(index == 11 && (data.azimuth < 45.0 || data.azimuth > 135.0))
-//                printf("\n ERROR [%d]  :%.3f", index, data.azimuth);
-
-//            if(index == 12 && (data.azimuth < 135.0 || data.azimuth > 225.0))
-//                printf("\n ERROR [%d]  :%.3f", index, data.azimuth);
-//
-//            if(index == 13 && (data.azimuth < 225.0 || data.azimuth > 315.0))
-//                printf("\n ERROR [%d]  :%.3f", index, data.azimuth);
-            
-            //printf("\nDistanceDelay: %.3f, Smoothed Delay: %.3f", distanceDelay, smoothedDelay);
-            fifoIndex = 0;
             
             //update Distance Delay and ITD Delay
             delayL_ms = delayR_ms =0.0;
             
             float ITD = 0.0;
             if(data.ITDAdjust){
-                //if(data.test)
-                    ITD = ITDToolkit::woodworthSphericalITD(data.customHeadRadius, data.azimuth, data.elevation);
-                //else
-                  //  ITD = ITDToolkit::woodworthSphericalITD(sofaData->getMetadata().headRadius, data.azimuth, data.elevation);
+                ITD = ITDToolkit::woodworthSphericalITD(data.customHeadRadius, data.azimuth, data.elevation);
             }
-//            else
-//                ITD = sofaData->getITDForAngle(data.elevation, data.azimuth, data.distance).ITD_ms;
-//                //printf("\n%.3f°: Woodworth: %.3f, Measured: %.3f, Error: %.3f", data.azimuth, ITD, mITD, fabsf(ITD - mITD));
-//                
-                
+
+            //delay left or right channel, depending on wether the ITD is positive or negative
             if(ITD > 0.0)
                 delayL_ms = ITD;
             else
                 delayR_ms = fabsf(ITD);
             
-            if(fabsf(ITDDelaySmootherL.getTargetValue() - delayL_ms) > 0.00001) //to avoid retriggers caused by small calculation errors
+            //to avoid retriggers caused by small calculation errors
+            if(fabsf(ITDDelaySmootherL.getTargetValue() - delayL_ms) > 0.00001)
                 ITDDelaySmootherL.setValue(delayL_ms);
             if(fabsf(ITDDelaySmootherR.getTargetValue() - delayR_ms) > 0.00001)
                 ITDDelaySmootherR.setValue(delayR_ms);
-//            }else{
-//                ITDDelaySmootherL.setValue(0.0);
-//                ITDDelaySmootherR.setValue(0.0);
-//            }
+
             
             if(data.nfSimulation && data.distance < 1.0)
                 processNearfield(data);
@@ -225,6 +211,7 @@ void SoundSource::processFarfield(soundSourceData data){
         
         if(data.ITDAdjust)
         {
+            //interpolation
             sofaData->getHRTFsForInterpolation(hrtfsForInterpolation_Mag, hrtfsForInterpolation_Phase, interpolationDistances, data.elevation, data.azimuth, data.distance, interpolationOrder);
             interpolation(L);
             hrtf_l = interpolatedHRTF;
@@ -242,7 +229,7 @@ void SoundSource::processFarfield(soundSourceData data){
 
     }
     
-    
+    //Do the actual convolution!
     filter.processBlock(inputBuffer, filterOutBufferL, filterOutBufferR, hrtf_l, hrtf_r + complexLength);
 }
 
@@ -274,6 +261,7 @@ void SoundSource::processNearfield(soundSourceData data){
     {
 
         if(data.ITDAdjust){
+            //interpolation
             sofaData->getHRTFsForInterpolation(hrtfsForInterpolation_Mag, hrtfsForInterpolation_Phase, interpolationDistances, data.elevation, azimuth_l, distance, interpolationOrder);
             interpolation(L);
             hrtf_l = interpolatedHRTF;
@@ -295,7 +283,10 @@ void SoundSource::processNearfield(soundSourceData data){
         previousITDAdjust = data.ITDAdjust;
     }
     
+    
+    //Do the actual convolution!
     filter.processBlock(inputBuffer, filterOutBufferL, filterOutBufferR, hrtf_l, hrtf_r + complexLength);
+    
     
     float gainL = NFSimToolkit::getAdaptedIIDGain(data.distance, data.azimuth, data.elevation, 0);
     float gainR = NFSimToolkit::getAdaptedIIDGain(data.distance, data.azimuth, data.elevation, 1);
@@ -309,7 +300,6 @@ void SoundSource::processNearfield(soundSourceData data){
 
 void SoundSource::interpolation(int leftOrRight){
 
-    float w1, w2, w3, w4;
     float mag, phase;
 
 	float *w = new float[interpolationOrder];
@@ -349,115 +339,6 @@ void SoundSource::interpolation(int leftOrRight){
         }
     }
     
-    
-//
-//    switch(interpolationOrder){
-//        case 2:
-//
-//            //if one distance is zero, no interpolation is done at all
-//            if(interpolationDistances[0] == 0 ||interpolationDistances[1] == 0)
-//            {
-//                w1 = interpolationDistances[0] == 0 ? 1 : 0;
-//                w2 = interpolationDistances[1] == 0 ? 1 : 0;
-//            }
-//            else
-//            {
-//                w1 = 1.0 / interpolationDistances[0];
-//                w2 = 1.0 / interpolationDistances[1];
-//            }
-//
-//            for(int i = 0; i < complexLength * 2; i++)
-//            {
-//                mag = (hrtfsForInterpolation_Mag[0][i] * w1 + hrtfsForInterpolation_Mag[1][i] * w2) / (w1 + w2);
-//                phase = (hrtfsForInterpolation_Phase[0][i] * w1 + hrtfsForInterpolation_Phase[1][i] * w2) / (w1 + w2);
-//
-//                if(leftOrRight == L)
-//                {
-//                    interpolatedHRTF[i][0] = mag * cosf(phase);
-//                    interpolatedHRTF[i][1] = mag * sinf(phase);
-//                }
-//                if(leftOrRight == R)
-//                {
-//                    interpolatedHRTF_R[i][0] = mag * cosf(phase);
-//                    interpolatedHRTF_R[i][1] = mag * sinf(phase);
-//                }
-//            }
-//            break;
-//
-//        case 3:
-//
-//            //if one distance is zero, no interpolation is done at all
-//            if(interpolationDistances[0] == 0 ||interpolationDistances[1] == 0 ||interpolationDistances[2] == 0 )
-//            {
-//                w1 = interpolationDistances[0] == 0 ? 1 : 0;
-//                w2 = interpolationDistances[1] == 0 ? 1 : 0;
-//                w3 = interpolationDistances[2] == 0 ? 1 : 0;
-//            }
-//            else
-//            {
-//                w1 = 1.0 / interpolationDistances[0];
-//                w2 = 1.0 / interpolationDistances[1];
-//                w3 = 1.0 / interpolationDistances[2];
-//            }
-//
-//            for(int i = 0; i < complexLength * 2; i++)
-//            {
-//                mag = (hrtfsForInterpolation_Mag[0][i] * w1 + hrtfsForInterpolation_Mag[1][i] * w2 + hrtfsForInterpolation_Mag[2][i] * w3) / (w1 + w2 + w3);
-//                phase = (hrtfsForInterpolation_Phase[0][i] * w1 + hrtfsForInterpolation_Phase[1][i] * w2 + hrtfsForInterpolation_Phase[2][i] * w3) / (w1 + w2 + w3);
-//
-//                if(leftOrRight == L)
-//                {
-//                    interpolatedHRTF[i][0] = mag * cosf(phase);
-//                    interpolatedHRTF[i][1] = mag * sinf(phase);
-//                }
-//                if(leftOrRight == R)
-//                {
-//                    interpolatedHRTF_R[i][0] = mag * cosf(phase);
-//                    interpolatedHRTF_R[i][1] = mag * sinf(phase);
-//                }
-//            }
-//
-//            break;
-//
-//        case 4:
-//
-//            //if one distance is zero, no interpolation is done at all
-//            if(interpolationDistances[0] == 0 ||interpolationDistances[1] == 0 ||interpolationDistances[2] == 0 ||interpolationDistances[3] == 0)
-//            {
-//                w1 = interpolationDistances[0] == 0 ? 1 : 0;
-//                w2 = interpolationDistances[1] == 0 ? 1 : 0;
-//                w3 = interpolationDistances[2] == 0 ? 1 : 0;
-//                w4 = interpolationDistances[2] == 0 ? 1 : 0;
-//            }
-//            else
-//            {
-//                w1 = 1.0 / interpolationDistances[0];
-//                w2 = 1.0 / interpolationDistances[1];
-//                w3 = 1.0 / interpolationDistances[2];
-//                w4 = 1.0 / interpolationDistances[3];
-//            }
-//
-//            for(int i = 0; i < complexLength * 2; i++)
-//            {
-//                mag = (hrtfsForInterpolation_Mag[0][i] * w1 + hrtfsForInterpolation_Mag[1][i] * w2 + hrtfsForInterpolation_Mag[2][i] * w3 + hrtfsForInterpolation_Mag[3][i] * w4) / (w1 + w2 + w3 + w4);
-//                phase = (hrtfsForInterpolation_Phase[0][i] * w1 + hrtfsForInterpolation_Phase[1][i] * w2 + hrtfsForInterpolation_Phase[2][i] * w3 + hrtfsForInterpolation_Phase[3][i] * w4) / (w1 + w2 + w3 + w4);
-//
-//                if(leftOrRight == L)
-//                {
-//                    interpolatedHRTF[i][0] = mag * cosf(phase);
-//                    interpolatedHRTF[i][1] = mag * sinf(phase);
-//                }
-//                if(leftOrRight == R)
-//                {
-//                    interpolatedHRTF_R[i][0] = mag * cosf(phase);
-//                    interpolatedHRTF_R[i][1] = mag * sinf(phase);
-//                }
-//            }
-//
-//            break;
-//
-//    }
-//
     
     
 }

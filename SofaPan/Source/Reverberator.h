@@ -114,7 +114,6 @@ private:
     float rt60 = 1.0; //inital 1s
     CombFilter comb[8];
     const float combDelay[8] = {31.71f, 37.11f, 40.23f, 44.14f, 30.47f, 33.98f, 41.41f, 42.58f};
-//    const float combDelay[8] = {31.71, 37.11, 40.23, 44.14, 30.47, 33.98, 41.41, 42.58};
 
     float combFBGain[8];
     float combLPFGain[8] = {0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f};

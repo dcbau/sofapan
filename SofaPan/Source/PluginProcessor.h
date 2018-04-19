@@ -22,7 +22,6 @@
 #include "SemistaticReflections.h"
 #include "MirrorReflections.h"
 #include "BiquadCascade.h"
-#include "SVF.h"
 
 
 //Interface für SOFA File:
@@ -35,7 +34,7 @@ extern "C" {
 #elif _WIN32
 #define SOFA_DEFAULT_PATH "C:\\Program Files (x86)\\Steinberg\\VstPlugins\\SOFAFiles\\mit_kemar_normal_pinna.sofa"
 #elif __APPLE__
-#define SOFA_DEFAULT_PATH "/Users/David/Documents/FH/Master-Thesis/SOFA\ Files/FHKoeln/Nearfield\ 2016/NFHRIR_L2702_SOFA/HRIR_L2702_NF100.sofa"
+#define SOFA_DEFAULT_PATH "/Library/Audio/Plug-Ins/SOFAFiles/mit_kemar_normal_pinna.sofa"
 #endif
 
 #define ROOMRADIUS 5.0
