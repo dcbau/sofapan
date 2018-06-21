@@ -255,6 +255,19 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     addListener (this, "/sofapan/rotaryknob");
     addListener (this, "/sofapan/connectHandshake");
  
+    
+    
+    String buildDateAndTimeString = String("Build Date: ") + String(__DATE__) + String(" ") + String(__TIME__);
+    
+    String buildVersionString = String("  Vers.") + String(JucePlugin_Version);
+
+    buildDateAndTimeLabel.setText(buildDateAndTimeString, NotificationType::dontSendNotification);
+    buildDateAndTimeLabel.setFont(Font(8));
+    addAndMakeVisible(buildDateAndTimeLabel);
+    buildVersionLabel.setText(buildVersionString, NotificationType::dontSendNotification);
+    buildVersionLabel.setFont(Font(8));
+    addAndMakeVisible(buildVersionLabel);
+    
     rearrange();
 }
 
@@ -647,6 +660,9 @@ void SofaPanAudioProcessorEditor::mouseExit(const MouseEvent &e){
 }
 
 void SofaPanAudioProcessorEditor::rearrange(){
+    
+    buildVersionLabel.setBounds(getLocalBounds().getRight()-100, getLocalBounds().getBottom()-10, 100, 10);
+    buildDateAndTimeLabel.setBounds(buildVersionLabel.getBounds().translated(-100, 0));
     
     metadataView.setBounds(getLocalBounds().reduced(20));
 

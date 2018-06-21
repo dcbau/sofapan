@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="xKOOOW" name="SofaPan" projectType="audioplug" version="1.0.0"
+<JUCERPROJECT id="xKOOOW" name="SofaPan" projectType="audioplug" version="1.2"
               bundleIdentifier="com.yourcompany.SofaPan" includeBinaryInAppConfig="1"
               buildVST="1" buildVST3="1" buildAU="1" buildAUv3="1" buildRTAS="0"
               buildAAX="0" pluginName="SofaPan" pluginDesc="" pluginManufacturer="HSD"
@@ -8,7 +8,7 @@
               pluginIsSynth="0" pluginWantsMidiIn="0" pluginProducesMidiOut="0"
               pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0" pluginAUExportPrefix="SofaPanAU"
               pluginRTASCategory="" aaxIdentifier="com.yourcompany.SofaPan"
-              pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="5.2.1"
+              pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="5.1.2"
               companyName="HSD" displaySplashScreen="1" reportAppUsage="1"
               splashScreenColour="Dark" buildStandalone="1" enableIAA="0" cppLanguageStandard="14"
               pluginVSTCategory="" companyCopyright="HSD">
@@ -158,7 +158,8 @@
     </VS2015>
     <XCODE_IPHONE targetFolder="Builds/iOS" iosScreenOrientation="portraitlandscape"
                   externalLibraries="fftw3f&#10;netcdf" enableGNUExtensions="1"
-                  iPadScreenOrientation="portraitlandscape" iosDeviceFamily="1,2">
+                  iPadScreenOrientation="portraitlandscape" iosDeviceFamily="1,2"
+                  extraDefs="">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="SofaPan"
                        headerPath="../../../Dependencies/FFTW3/Mac&#10;../../../Dependencies/netCDF4/mac/include/"

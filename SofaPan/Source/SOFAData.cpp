@@ -929,11 +929,15 @@ String SOFAData::getSOFAGlobalAttribute(const char* attribute_ID, int ncid){
     if(nc_inq_attlen(ncid, NC_GLOBAL, attribute_ID, &att_length))
         return String("- Unknown - ");
     
+    if(att_length == 0)
+        return String("Empty");
     
     //get value if possible
     char* att = new char[att_length + 1];
     if(nc_get_att(ncid, NC_GLOBAL, attribute_ID, att))
         return String("- Unknown - ");
+    
+    
     
     //terminate string manually
     att[att_length] = '\0';

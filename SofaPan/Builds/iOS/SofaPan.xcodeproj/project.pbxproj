@@ -212,7 +212,7 @@
 					7D9949B016D999D27ED5085B,
 					93E9669F186F52B9ED863BFB,
 					5AFC63EB04A5ACF94C41DEBA,
-					CD4F34D6928A03EA5B4F1936, ); name = "JUCE Modules"; sourceTree = "<group>"; };
+					CD4F34D6928A03EA5B4F1936, ); name = "Juce Modules"; sourceTree = "<group>"; };
 		4D51CBD007D6258279F2D4A0 = {isa = PBXGroup; children = (
 					FB796BF702360FFC082AD735,
 					46B2DB9CF97D5C2F3E9AF38A,
@@ -232,7 +232,7 @@
 					DC053F80923F618C1C307396,
 					0C01E0DBBA4AA7ACABE4345F,
 					E9B57B95482932DBB357E0DB,
-					EF19519F7DEE3E05B934F9A5, ); name = "JUCE Library Code"; sourceTree = "<group>"; };
+					EF19519F7DEE3E05B934F9A5, ); name = "Juce Library Code"; sourceTree = "<group>"; };
 		75598C7D5A6D28E7FB02D6E3 = {isa = PBXGroup; children = (
 					5BC7696992806BA662D6F210,
 					0543ABE61BEA9262B0B68B98,
@@ -275,8 +275,8 @@
 					"_DEBUG=1",
 					"DEBUG=1",
 					"JUCER_XCODE_IPHONE_5BC26AE3=1",
-					"JUCE_APP_VERSION=1.0.0",
-					"JUCE_APP_VERSION_HEX=0x10000",
+					"JUCE_APP_VERSION=1.2",
+					"JUCE_APP_VERSION_HEX=0x10200",
 					"JucePlugin_Build_VST=0",
 					"JucePlugin_Build_VST3=0",
 					"JucePlugin_Build_AU=0",
@@ -304,8 +304,8 @@
 					"_NDEBUG=1",
 					"NDEBUG=1",
 					"JUCER_XCODE_IPHONE_5BC26AE3=1",
-					"JUCE_APP_VERSION=1.0.0",
-					"JUCE_APP_VERSION_HEX=0x10000",
+					"JUCE_APP_VERSION=1.2",
+					"JUCE_APP_VERSION_HEX=0x10200",
 					"JucePlugin_Build_VST=0",
 					"JucePlugin_Build_VST3=0",
 					"JucePlugin_Build_AU=0",
@@ -317,7 +317,6 @@
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				HEADER_SEARCH_PATHS = ("../../JuceLibraryCode", "../../../Dependencies/JUCE/modules", "../../../Dependencies/FFTW3/Mac", "../../../Dependencies/netCDF4/mac/include/", "../../../Dependencies/JUCE/modules/juce_audio_plugin_client", "$(inherited)");
 				LIBRARY_SEARCH_PATHS = ("$(inherited)", "\"../../../Dependencies/FFTW3/Mac\"", "\"../../../Dependencies/netCDF4/mac/lib/\"");
-				LLVM_LTO = YES;
 				OTHER_LDFLAGS = "-lSofaPan -lfftw3f -lnetcdf";
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.SofaPan;
 				USE_HEADERMAP = NO; }; name = Release; };
@@ -335,8 +334,8 @@
 					"_DEBUG=1",
 					"DEBUG=1",
 					"JUCER_XCODE_IPHONE_5BC26AE3=1",
-					"JUCE_APP_VERSION=1.0.0",
-					"JUCE_APP_VERSION_HEX=0x10000",
+					"JUCE_APP_VERSION=1.2",
+					"JUCE_APP_VERSION_HEX=0x10200",
 					"JucePlugin_Build_VST=0",
 					"JucePlugin_Build_VST3=0",
 					"JucePlugin_Build_AU=0",
@@ -366,8 +365,8 @@
 					"_NDEBUG=1",
 					"NDEBUG=1",
 					"JUCER_XCODE_IPHONE_5BC26AE3=1",
-					"JUCE_APP_VERSION=1.0.0",
-					"JUCE_APP_VERSION_HEX=0x10000",
+					"JUCE_APP_VERSION=1.2",
+					"JUCE_APP_VERSION_HEX=0x10200",
 					"JucePlugin_Build_VST=0",
 					"JucePlugin_Build_VST3=0",
 					"JucePlugin_Build_AU=0",
@@ -381,7 +380,6 @@
 				INFOPLIST_FILE = Info-AUv3_AppExtension.plist;
 				INFOPLIST_PREPROCESS = NO;
 				LIBRARY_SEARCH_PATHS = ("$(inherited)", "\"../../../Dependencies/FFTW3/Mac\"", "\"../../../Dependencies/netCDF4/mac/lib/\"");
-				LLVM_LTO = YES;
 				OTHER_LDFLAGS = "-lSofaPan -lfftw3f -lnetcdf";
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.SofaPan.SofaPanAUv3;
 				USE_HEADERMAP = NO; }; name = Release; };
@@ -399,8 +397,8 @@
 					"_DEBUG=1",
 					"DEBUG=1",
 					"JUCER_XCODE_IPHONE_5BC26AE3=1",
-					"JUCE_APP_VERSION=1.0.0",
-					"JUCE_APP_VERSION_HEX=0x10000",
+					"JUCE_APP_VERSION=1.2",
+					"JUCE_APP_VERSION_HEX=0x10200",
 					"JucePlugin_Build_VST=0",
 					"JucePlugin_Build_VST3=0",
 					"JucePlugin_Build_AU=0",
@@ -430,8 +428,8 @@
 					"_NDEBUG=1",
 					"NDEBUG=1",
 					"JUCER_XCODE_IPHONE_5BC26AE3=1",
-					"JUCE_APP_VERSION=1.0.0",
-					"JUCE_APP_VERSION_HEX=0x10000",
+					"JUCE_APP_VERSION=1.2",
+					"JUCE_APP_VERSION_HEX=0x10200",
 					"JucePlugin_Build_VST=0",
 					"JucePlugin_Build_VST3=0",
 					"JucePlugin_Build_AU=0",
@@ -445,7 +443,6 @@
 				INFOPLIST_FILE = Info-Standalone_Plugin.plist;
 				INFOPLIST_PREPROCESS = NO;
 				LIBRARY_SEARCH_PATHS = ("$(inherited)", "\"../../../Dependencies/FFTW3/Mac\"", "\"../../../Dependencies/netCDF4/mac/lib/\"");
-				LLVM_LTO = YES;
 				OTHER_LDFLAGS = "-lSofaPan -lfftw3f -lnetcdf";
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.SofaPan;
 				USE_HEADERMAP = NO; }; name = Release; };
@@ -463,8 +460,8 @@
 					"_DEBUG=1",
 					"DEBUG=1",
 					"JUCER_XCODE_IPHONE_5BC26AE3=1",
-					"JUCE_APP_VERSION=1.0.0",
-					"JUCE_APP_VERSION_HEX=0x10000",
+					"JUCE_APP_VERSION=1.2",
+					"JUCE_APP_VERSION_HEX=0x10200",
 					"JucePlugin_Build_VST=0",
 					"JucePlugin_Build_VST3=0",
 					"JucePlugin_Build_AU=0",
@@ -494,8 +491,8 @@
 					"_NDEBUG=1",
 					"NDEBUG=1",
 					"JUCER_XCODE_IPHONE_5BC26AE3=1",
-					"JUCE_APP_VERSION=1.0.0",
-					"JUCE_APP_VERSION_HEX=0x10000",
+					"JUCE_APP_VERSION=1.2",
+					"JUCE_APP_VERSION_HEX=0x10200",
 					"JucePlugin_Build_VST=0",
 					"JucePlugin_Build_VST3=0",
 					"JucePlugin_Build_AU=0",
@@ -509,7 +506,6 @@
 				HEADER_SEARCH_PATHS = ("../../JuceLibraryCode", "../../../Dependencies/JUCE/modules", "../../../Dependencies/FFTW3/Mac", "../../../Dependencies/netCDF4/mac/include/", "../../../Dependencies/JUCE/modules/juce_audio_plugin_client", "$(inherited)");
 				INSTALL_PATH = "@executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = ("$(inherited)", "\"../../../Dependencies/FFTW3/Mac\"", "\"../../../Dependencies/netCDF4/mac/lib/\"");
-				LLVM_LTO = YES;
 				OTHER_LDFLAGS = "-lfftw3f -lnetcdf";
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.SofaPan;
 				USE_HEADERMAP = NO; }; name = Release; };
@@ -689,7 +685,7 @@
 					20F8B1CADB80D645E34504F8, ); runOnlyForDeploymentPostprocessing = 0; };
 		F3275D58DA46CF5CE4098AD6 = {isa = PBXNativeTarget; buildConfigurationList = DBF5430245B6F66AB164DAF6; buildPhases = (
 					7B3DF44301194AF9358C628A, ); buildRules = ( ); dependencies = (  ); name = "SofaPan - Shared Code"; productName = SofaPan; productReference = 26C12FF0FEE222CE2D49DB7D; productType = "com.apple.product-type.library.static"; };
-		980704EC61FBF6DD2C7E6E3D = {isa = PBXProject; buildConfigurationList = 5795FDF67AB0A89D19429BB3; attributes = { LastUpgradeCheck = 0830; ORGANIZATIONNAME = "HSD"; TargetAttributes = { F0700BE19DB13E4A6A07A597 = { SystemCapabilities = {com.apple.ApplicationGroups.iOS = { enabled = 0; }; com.apple.InAppPurchase = { enabled = 0; }; com.apple.InterAppAudio = { enabled = 0; }; com.apple.Push = { enabled = 0; }; com.apple.Sandbox = { enabled = 0; }; }; };E4C202288F13C045F5A7A513 = { SystemCapabilities = {com.apple.ApplicationGroups.iOS = { enabled = 0; }; com.apple.InAppPurchase = { enabled = 0; }; com.apple.InterAppAudio = { enabled = 0; }; com.apple.Push = { enabled = 0; }; com.apple.Sandbox = { enabled = 1; }; }; };1DD10B1CA358023824FAE9ED = { SystemCapabilities = {com.apple.ApplicationGroups.iOS = { enabled = 0; }; com.apple.InAppPurchase = { enabled = 0; }; com.apple.InterAppAudio = { enabled = 0; }; com.apple.Push = { enabled = 0; }; com.apple.Sandbox = { enabled = 0; }; }; };F3275D58DA46CF5CE4098AD6 = { SystemCapabilities = {com.apple.ApplicationGroups.iOS = { enabled = 0; }; com.apple.InAppPurchase = { enabled = 0; }; com.apple.InterAppAudio = { enabled = 0; }; com.apple.Push = { enabled = 0; }; com.apple.Sandbox = { enabled = 0; }; }; }; }; }; compatibilityVersion = "Xcode 3.2"; hasScannedForEncodings = 0; mainGroup = F69B6AF1267FE7A52443F3F7; projectDirPath = ""; projectRoot = ""; targets = (F0700BE19DB13E4A6A07A597, E4C202288F13C045F5A7A513, 1DD10B1CA358023824FAE9ED, F3275D58DA46CF5CE4098AD6); };
+		980704EC61FBF6DD2C7E6E3D = {isa = PBXProject; buildConfigurationList = 5795FDF67AB0A89D19429BB3; attributes = { LastUpgradeCheck = 0830; TargetAttributes = { F0700BE19DB13E4A6A07A597 = { SystemCapabilities = {com.apple.ApplicationGroups.iOS = { enabled = 0; }; com.apple.InAppPurchase = { enabled = 0; }; com.apple.InterAppAudio = { enabled = 0; }; com.apple.Push = { enabled = 0; }; com.apple.Sandbox = { enabled = 0; }; }; };E4C202288F13C045F5A7A513 = { SystemCapabilities = {com.apple.ApplicationGroups.iOS = { enabled = 0; }; com.apple.InAppPurchase = { enabled = 0; }; com.apple.InterAppAudio = { enabled = 0; }; com.apple.Push = { enabled = 0; }; com.apple.Sandbox = { enabled = 1; }; }; };1DD10B1CA358023824FAE9ED = { SystemCapabilities = {com.apple.ApplicationGroups.iOS = { enabled = 0; }; com.apple.InAppPurchase = { enabled = 0; }; com.apple.InterAppAudio = { enabled = 0; }; com.apple.Push = { enabled = 0; }; com.apple.Sandbox = { enabled = 0; }; }; };F3275D58DA46CF5CE4098AD6 = { SystemCapabilities = {com.apple.ApplicationGroups.iOS = { enabled = 0; }; com.apple.InAppPurchase = { enabled = 0; }; com.apple.InterAppAudio = { enabled = 0; }; com.apple.Push = { enabled = 0; }; com.apple.Sandbox = { enabled = 0; }; }; }; }; }; compatibilityVersion = "Xcode 3.2"; hasScannedForEncodings = 0; mainGroup = F69B6AF1267FE7A52443F3F7; projectDirPath = ""; projectRoot = ""; targets = (F0700BE19DB13E4A6A07A597, E4C202288F13C045F5A7A513, 1DD10B1CA358023824FAE9ED, F3275D58DA46CF5CE4098AD6); };
 	};
 	rootObject = 980704EC61FBF6DD2C7E6E3D;
 }
