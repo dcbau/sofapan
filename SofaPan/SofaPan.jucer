@@ -118,12 +118,11 @@
         <MODULEPATH id="juce_gui_extra" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_audio_basics" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_audio_devices" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_formats" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_audio_processors" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_audio_plugin_client" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_utils" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_dsp" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_osc" path="../Dependencies/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_utils" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
     <VS2015 targetFolder="Builds/VisualStudio2015" vst3Folder="../Dependencies/vst3sdk"
@@ -148,12 +147,11 @@
         <MODULEPATH id="juce_gui_extra" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_audio_basics" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_audio_devices" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_formats" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_audio_processors" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_audio_plugin_client" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_utils" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_dsp" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_osc" path="../Dependencies/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_utils" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../JUCE/modules"/>
       </MODULEPATHS>
     </VS2015>
     <XCODE_IPHONE targetFolder="Builds/iOS" iosScreenOrientation="portraitlandscape"
@@ -175,16 +173,15 @@
         <MODULEPATH id="juce_gui_basics" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_graphics" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_events" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_dsp" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_data_structures" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_core" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_utils" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_audio_processors" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_audio_plugin_client" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_formats" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_audio_devices" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_audio_basics" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_osc" path="../Dependencies/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_utils" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_IPHONE>
     <VS2017 targetFolder="Builds/VisualStudio2017" vst3Folder="../Dependencies/vst3sdk"
@@ -216,33 +213,42 @@
         <MODULEPATH id="juce_gui_basics" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_graphics" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_events" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_dsp" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_data_structures" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_core" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_utils" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_audio_processors" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_audio_plugin_client" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_formats" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_audio_devices" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_audio_basics" path="../Dependencies/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_utils" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../JUCE/modules"/>
       </MODULEPATHS>
     </VS2017>
   </EXPORTFORMATS>
   <MODULES>
     <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
     <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0"/>
-    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
     <MODULE id="juce_audio_plugin_client" showAllCode="1" useLocalCopy="0"/>
     <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0"/>
-    <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
     <MODULE id="juce_core" showAllCode="1" useLocalCopy="0"/>
     <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0"/>
-    <MODULE id="juce_dsp" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
     <MODULE id="juce_events" showAllCode="1" useLocalCopy="0"/>
     <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0"/>
     <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0"/>
     <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0"/>
     <MODULE id="juce_osc" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
   </MODULES>
-  <JUCEOPTIONS JUCE_QUICKTIME="disabled"/>
+  <JUCEOPTIONS JUCE_QUICKTIME="disabled" JUCE_USE_FLAC="disabled" JUCE_USE_OGGVORBIS="disabled"
+               JUCE_WASAPI="disabled" JUCE_WASAPI_EXCLUSIVE="disabled" JUCE_ALSA="disabled"
+               JUCE_JACK="disabled" JUCE_USE_ANDROID_OPENSLES="disabled" JUCE_USE_WINRT_MIDI="disabled"
+               JUCE_FORCE_USE_LEGACY_PARAM_IDS="disabled" JUCE_FORCE_LEGACY_PARAMETER_AUTOMATION_TYPE="disabled"
+               JUCE_USE_STUDIO_ONE_COMPATIBLE_PARAMETERS="disabled" JUCE_USE_MP3AUDIOFORMAT="disabled"
+               JUCE_USE_LAME_AUDIO_FORMAT="disabled" JUCE_PLUGINHOST_VST="disabled"
+               JUCE_PLUGINHOST_VST3="disabled" JUCE_PLUGINHOST_AU="disabled"
+               JUCE_USE_CDREADER="disabled" JUCE_USE_CDBURNER="disabled" JUCE_LOG_ASSERTIONS="disabled"
+               JUCE_DONT_AUTOLINK_TO_WIN32_LIBRARIES="disabled" JUCE_USE_CURL="disabled"
+               JUCE_EXECUTE_APP_SUSPEND_ON_IOS_BACKGROUND_TASK="disabled" JUCE_USE_COREIMAGE_LOADER="disabled"
+               JUCE_ENABLE_REPAINT_DEBUGGING="disabled" JUCE_WEB_BROWSER="disabled"
+               JUCE_ENABLE_LIVE_CONSTANT_EDITOR="disabled"/>
 </JUCERPROJECT>
