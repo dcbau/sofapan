@@ -118,7 +118,7 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     useDistanceSimulationButton.addListener(this);
     useDistanceSimulationButton.addMouseListener(this, true);
     addAndMakeVisible(&useDistanceSimulationButton);
-    useDistanceSimulationButton.setToggleState(true, NotificationType::sendNotification);
+    useDistanceSimulationButton.setToggleState(false, NotificationType::sendNotification);
     
     useNearfieldSimulationButton.setButtonText("Nearfield Simulation");
     useNearfieldSimulationButton.setComponentID("nfSimButton");
@@ -126,7 +126,7 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     useNearfieldSimulationButton.addListener(this);
     useNearfieldSimulationButton.addMouseListener(this, true);
     addAndMakeVisible(&useNearfieldSimulationButton);
-    useNearfieldSimulationButton.setToggleState(true, NotificationType::sendNotification);
+    useNearfieldSimulationButton.setToggleState(false, NotificationType::sendNotification);
     
     ITDadjustButton.setButtonText("ITD Adjustment");
     ITDadjustButton.setColour(ToggleButton::textColourId, Colours::white);
@@ -316,6 +316,7 @@ void SofaPanAudioProcessorEditor::timerCallback() {
     bool nearfieldSimActive = (bool)getParameterValue("nearfield_sim");
     useDistanceSimulationButton.setToggleState(distanceSimActive, NotificationType::dontSendNotification);
     useNearfieldSimulationButton.setToggleState(nearfieldSimActive, NotificationType::dontSendNotification);
+
     
     headRadiusSlider.setValue((float)getParameterValue("individualHeadDiameter") * 6.0 + 14.0);
     headRadiusSlider.setVisible(ITDadjustButton.getToggleState());
@@ -323,6 +324,10 @@ void SofaPanAudioProcessorEditor::timerCallback() {
 #if REVSLIDERACTIVE
     reverbSlider1.setValue((float)getParameterValue("reverbParam1") * 36.0 - 48);
     reverbSlider2.setValue((float)getParameterValue("reverbParam2") * 1.9 + 0.1);
+	reverbSlider1.setVisible(useDistanceSimulationButton.getToggleState());
+	reverbSlider2.setVisible(useDistanceSimulationButton.getToggleState());
+	reverbLabel1.setVisible(useDistanceSimulationButton.getToggleState());
+	reverbLabel2.setVisible(useDistanceSimulationButton.getToggleState());
 #endif
     
     // update panning sliders if needed
@@ -338,6 +343,7 @@ void SofaPanAudioProcessorEditor::timerCallback() {
     if(distanceValue != lastDistanceValue)
         panner_dist.setValue(distanceValue, NotificationType::dontSendNotification);
     
+
     
     
     // update hrtf/hrir plots
@@ -379,7 +385,7 @@ void SofaPanAudioProcessorEditor::timerCallback() {
         if (eleMax-eleMin != 0.0){
             String elevationMin = static_cast <String> (processor.metadata_sofafile.minElevation);
             String elevationMax = static_cast <String> (processor.metadata_sofafile.maxElevation);
-            elevationRange_Note = (elevationMin + "° to " + elevationMax + "°" );
+            elevationRange_Note = (elevationMin + "deg to " + elevationMax + "deg" );
             panner_el.setEnabled(true);
             panner_el.setRange(eleMin, eleMax);
             panner_el.setRotaryParameters((270. + eleMin) * deg2rad , (270. + eleMax) * deg2rad, true);
@@ -392,8 +398,8 @@ void SofaPanAudioProcessorEditor::timerCallback() {
             panner_el.setEnabled(false);
             panner2D_rear.setHasElevation(false);
         }
-        float distMin = processor.metadata_sofafile.minDistance;
-        float distMax = processor.metadata_sofafile.maxDistance;
+		float distMin = processor.metadata_sofafile.minDistance;
+		float distMax = processor.metadata_sofafile.maxDistance;
         
         //distance-simulation overrides measured distance data
         if(distanceSimActive){
@@ -404,7 +410,7 @@ void SofaPanAudioProcessorEditor::timerCallback() {
         String distanceRange_Note;
         String distanceMin = String(distMin);
         String distanceMax = String(distMax);
-        if(distMin != distMax){
+        if(fabsf(distMin - distMax) > 0.01){
             if(distanceSimActive)
                 distanceRange_Note = (distanceMin + "m to " + distanceMax + "m (sim)" );
             else
@@ -661,8 +667,8 @@ void SofaPanAudioProcessorEditor::mouseExit(const MouseEvent &e){
 
 void SofaPanAudioProcessorEditor::rearrange(){
     
-    buildVersionLabel.setBounds(getLocalBounds().getRight()-100, getLocalBounds().getBottom()-10, 100, 10);
-    buildDateAndTimeLabel.setBounds(buildVersionLabel.getBounds().translated(-100, 0));
+    buildVersionLabel.setBounds(getLocalBounds().getRight()-150, getLocalBounds().getBottom()-40, 150, 40);
+    buildDateAndTimeLabel.setBounds(buildVersionLabel.getBounds().translated(-150, 0));
     
     metadataView.setBounds(getLocalBounds().reduced(20));
 

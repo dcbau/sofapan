@@ -92,7 +92,7 @@ public:
         while(readIndex1 < 0)   readIndex1 += lengthInSamples;
         while(readIndex2 < 0)   readIndex2 += lengthInSamples;
         
-        return delayLine[readIndex1] * offset_frac + delayLine[readIndex2]* (1.0 - offset_frac);
+        return delayLine[readIndex1] * offset_frac + delayLine[readIndex2]* (1.0f - offset_frac);
     }
     
     
@@ -100,8 +100,8 @@ public:
      @return Output sample of delayline */
     float pullSample(float delayInMs)
     {
-        float offset = delayInMs * (float)sampleRate * 0.001;
-        offset_int = truncf(offset);
+        float offset = delayInMs * (float)sampleRate * 0.001f;
+        offset_int = (int)truncf(offset);
         offset_frac = offset - (float)offset_int;
         
         readIndex1 = writeIndex - offset_int;
@@ -109,7 +109,7 @@ public:
         while(readIndex1 < 0)   readIndex1 += lengthInSamples;
         while(readIndex2 < 0)   readIndex2 += lengthInSamples;
         
-        return delayLine[readIndex2] * offset_frac + delayLine[readIndex1]* (1.0 - offset_frac);
+        return delayLine[readIndex2] * offset_frac + delayLine[readIndex1]* (1.0f - offset_frac);
     }
     
     
@@ -117,11 +117,11 @@ public:
     void setDelayLength(float delayInMs)
     {
         if(delayInMs > maxLengthMs){
-            maxLengthMs = delayInMs + 10.0;
+            maxLengthMs = delayInMs + 10.0f;
             forceReallocationFlag = true;
             prepareToPlay(sampleRate);
         }
-        float offset = delayInMs * (float)sampleRate * 0.001;
+        float offset = delayInMs * (float)sampleRate * 0.001f;
         offset_int = truncf(offset);
         offset_frac = offset - (float)offset_int;
         
@@ -132,7 +132,7 @@ public:
     {
         if(sampleRate != _sampleRate || forceReallocationFlag){
             sampleRate = _sampleRate;
-            lengthInSamples = maxLengthMs * (float)sampleRate * 0.001;
+            lengthInSamples = maxLengthMs * (float)sampleRate * 0.001f;
             
             if(delayLine == NULL)
             {
@@ -151,10 +151,10 @@ public:
         }
         
         for(int i = 0; i < lengthInSamples; i++)
-            delayLine[i] = 0.0;
+            delayLine[i] = 0.0f;
         writeIndex = readIndex1 = readIndex2 = 0;
         offset_int = 0;
-        offset_frac = 0.0;
+        offset_frac = 0.0f;
         
     }
     

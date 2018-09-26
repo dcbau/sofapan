@@ -888,6 +888,8 @@ void SOFAData::createPassThrough_FIR(int _sampleRate){
     
     sofaMetadata.minElevation =0.0;
     sofaMetadata.maxElevation =0.0;
+	sofaMetadata.minDistance = 1.0;
+	sofaMetadata.maxDistance = 1.0;
     
     lengthOfHRIR = passThroughLength;
     lengthOfFFT = 2 * lengthOfHRIR;

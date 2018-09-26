@@ -13,7 +13,7 @@
 
 #include "fftw3.h"
 extern "C" {
-#include <netcdf.h>
+#include "netcdf.h"
 }
 #include "string.h"
 #include <stdlib.h>

@@ -129,13 +129,14 @@ private:
     void connectionLost() override{}
     void messageReceived (const MemoryBlock &message) override;
     
-    bool usingGlobalSofaFile = true;
+    bool usingGlobalSofaFile = false;
     
     int estimatedBlockSize;
 
     AudioSampleBuffer reflectionInBuffer, reflectionOutBuffer, reverbInBuffer, reverbOutBuffer;
 
     const float roomSize = 2 * ROOMRADIUS;
+
 };
 
 
