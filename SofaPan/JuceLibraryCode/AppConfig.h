@@ -29,6 +29,7 @@
    under the GPL v3 license.
 
    End User License Agreement: www.juce.com/juce-5-licence
+
   ==============================================================================
 */
 
@@ -41,7 +42,6 @@
 #ifndef JUCE_REPORT_APP_USAGE
  #define JUCE_REPORT_APP_USAGE 1
 #endif
-
 
 // END SECTION A
 
@@ -68,7 +68,7 @@
 // juce_audio_devices flags:
 
 #ifndef    JUCE_ASIO
- //#define JUCE_ASIO 1
+ //#define JUCE_ASIO 0
 #endif
 
 #ifndef    JUCE_WASAPI
@@ -167,7 +167,7 @@
 // juce_core flags:
 
 #ifndef    JUCE_FORCE_DEBUG
- //#define JUCE_FORCE_DEBUG 1
+ //#define JUCE_FORCE_DEBUG 0
 #endif
 
 #ifndef    JUCE_LOG_ASSERTIONS
@@ -228,7 +228,7 @@
 #endif
 
 #ifndef    JUCE_USE_XRENDER
- //#define JUCE_USE_XRENDER 1
+ //#define JUCE_USE_XRENDER 0
 #endif
 
 #ifndef    JUCE_USE_XCURSOR
@@ -276,7 +276,7 @@
  #define JucePlugin_Build_AAX              0
 #endif
 #ifndef  JucePlugin_Build_Standalone
- #define JucePlugin_Build_Standalone       1
+ #define JucePlugin_Build_Standalone       0
 #endif
 #ifndef  JucePlugin_Enable_IAA
  #define JucePlugin_Enable_IAA             0
@@ -332,8 +332,11 @@
 #ifndef  JucePlugin_VSTCategory
  #define JucePlugin_VSTCategory            kPlugCategEffect
 #endif
+#ifndef  JucePlugin_Vst3Category
+ #define JucePlugin_Vst3Category           "Fx|Spatial"
+#endif
 #ifndef  JucePlugin_AUMainType
- #define JucePlugin_AUMainType             kAudioUnitType_Effect
+ #define JucePlugin_AUMainType             'aufx'
 #endif
 #ifndef  JucePlugin_AUSubType
  #define JucePlugin_AUSubType              JucePlugin_PluginCode
@@ -351,7 +354,7 @@
  #define JucePlugin_CFBundleIdentifier     com.yourcompany.SofaPan
 #endif
 #ifndef  JucePlugin_RTASCategory
- #define JucePlugin_RTASCategory           ePlugInCategory_None
+ #define JucePlugin_RTASCategory           0
 #endif
 #ifndef  JucePlugin_RTASManufacturerCode
  #define JucePlugin_RTASManufacturerCode   JucePlugin_ManufacturerCode
@@ -375,7 +378,7 @@
  #define JucePlugin_AAXProductId           JucePlugin_PluginCode
 #endif
 #ifndef  JucePlugin_AAXCategory
- #define JucePlugin_AAXCategory            AAX_ePlugInCategory_Dynamics
+ #define JucePlugin_AAXCategory            2
 #endif
 #ifndef  JucePlugin_AAXDisableBypass
  #define JucePlugin_AAXDisableBypass       0
