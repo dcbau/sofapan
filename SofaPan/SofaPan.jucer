@@ -11,7 +11,7 @@
               pluginAAXCategory="2" jucerVersion="5.3.2" companyName="HSD"
               displaySplashScreen="0" reportAppUsage="0" splashScreenColour="Dark"
               buildStandalone="0" enableIAA="0" cppLanguageStandard="14" companyCopyright="HSD"
-              pluginFormats="buildAU,buildVST,buildVST3" pluginVST3Category="Fx,Spatial"
+              pluginFormats="buildVST,buildVST3,buildAU" pluginVST3Category="Fx,Spatial"
               pluginVSTCategory="kPlugCategEffect">
   <MAINGROUP id="XmHYCT" name="SofaPan">
     <GROUP id="{044A0D15-8678-AA45-7263-8E06162C7D6C}" name="Source">
@@ -127,7 +127,7 @@
       </MODULEPATHS>
     </XCODE_MAC>
     <VS2017 targetFolder="Builds/VisualStudio2017" vst3Folder="../Dependencies/vst3sdk"
-            externalLibraries="libfftwf-3.3.lib&#10;libcurl_imp.lib&#10;libhdf5.lib&#10;libhdf5_hl.lib&#10;netcdf.lib&#10;zlib.lib"
+            externalLibraries="libfftwf-3.3.lib&#10;libhdf5.lib&#10;libhdf5_hl.lib&#10;libnetcdf.a&#10;libzlib.lib"
             windowsTargetPlatformVersion="10.0.17134.0">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="0" name="Release" headerPath="../../../Dependencies/FFTW3/Win x64/include&#10;../../../Dependencies/netCDF4/win64/include"
@@ -135,8 +135,8 @@
                        winWarningLevel="4" generateManifest="1" winArchitecture="x64"
                        debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"
                        linkTimeOptimisation="1"/>
-        <CONFIGURATION isDebug="1" name="Debug" headerPath="../../../Dependencies/FFTW3/Win x64/include&#10;../../../Dependencies/netCDF4/win64/include"
-                       libraryPath="../../../Dependencies/FFTW3/Win x64/static_library&#10;../../../Dependencies/netCDF4/win64/lib"
+        <CONFIGURATION isDebug="1" name="Debug" headerPath="../../../Dependencies/FFTW3/Win x64/include&#10;../../../Dependencies/netCDF4/win64_static/include"
+                       libraryPath="../../../Dependencies/FFTW3/Win x64/static_library&#10;../../../Dependencies/netCDF4/win64_static/lib"
                        winWarningLevel="4" generateManifest="1" winArchitecture="x64"
                        debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"/>
       </CONFIGURATIONS>
