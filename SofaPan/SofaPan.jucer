@@ -122,38 +122,40 @@
         <MODULEPATH id="juce_audio_processors" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_audio_plugin_client" path="../Dependencies/JUCE/modules"/>
         <MODULEPATH id="juce_osc" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_utils" path="../../JUCE/modules"/>
-        <MODULEPATH id="juce_audio_formats" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_utils" path="../Dependencies/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../Dependencies/JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
     <VS2017 targetFolder="Builds/VisualStudio2017" vst3Folder="../Dependencies/vst3sdk"
-            externalLibraries="libfftwf-3.3.lib&#10;libhdf5.lib&#10;libhdf5_hl.lib&#10;libnetcdf.a&#10;libzlib.lib"
+            externalLibraries="netcdf.lib&#10;libhdf5.lib&#10;libhdf5_hl.lib&#10;zlib.lib&#10;libfftwf-3.3.lib"
             windowsTargetPlatformVersion="10.0.17134.0">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="0" name="Release" headerPath="../../../Dependencies/FFTW3/Win x64/include&#10;../../../Dependencies/netCDF4/win64/include"
                        libraryPath="../../../Dependencies/FFTW3/Win x64/static_library&#10;../../../Dependencies/netCDF4/win64/lib"
                        winWarningLevel="4" generateManifest="1" winArchitecture="x64"
-                       debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"
-                       linkTimeOptimisation="1"/>
-        <CONFIGURATION isDebug="1" name="Debug" headerPath="../../../Dependencies/FFTW3/Win x64/include&#10;../../../Dependencies/netCDF4/win64_static/include"
-                       libraryPath="../../../Dependencies/FFTW3/Win x64/static_library&#10;../../../Dependencies/netCDF4/win64_static/lib"
+                       debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="1"
+                       linkTimeOptimisation="0" vstBinaryLocation="../../../VST AU Builds/Win64/VST2"
+                       vst3BinaryLocation="../../../VST AU Builds/Win64/VST3"/>
+        <CONFIGURATION isDebug="1" name="Debug" headerPath="../../../Dependencies/FFTW3/Win x64/include&#10;../../../Dependencies/netCDF4/win64/include"
+                       libraryPath="../../../Dependencies/FFTW3/Win x64/static_library&#10;../../../Dependencies/netCDF4/win64/lib"
                        winWarningLevel="4" generateManifest="1" winArchitecture="x64"
-                       debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"/>
+                       debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"
+                       vstBinaryLocation="C:\Users\admin\Desktop\VSTDebug"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
-        <MODULEPATH id="juce_osc" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_gui_extra" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_gui_basics" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_graphics" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_events" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_data_structures" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_core" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_processors" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_plugin_client" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_devices" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_basics" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_utils" path="../../JUCE/modules"/>
-        <MODULEPATH id="juce_audio_formats" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_osc" path="..\..\..\..\..\..\David Bau SofaPan Debug\JUCE\modules"/>
+        <MODULEPATH id="juce_gui_extra" path="..\..\..\..\..\..\David Bau SofaPan Debug\JUCE\modules"/>
+        <MODULEPATH id="juce_gui_basics" path="..\..\..\..\..\..\David Bau SofaPan Debug\JUCE\modules"/>
+        <MODULEPATH id="juce_graphics" path="..\..\..\..\..\..\David Bau SofaPan Debug\JUCE\modules"/>
+        <MODULEPATH id="juce_events" path="..\..\..\..\..\..\David Bau SofaPan Debug\JUCE\modules"/>
+        <MODULEPATH id="juce_data_structures" path="..\..\..\..\..\..\David Bau SofaPan Debug\JUCE\modules"/>
+        <MODULEPATH id="juce_core" path="..\..\..\..\..\..\David Bau SofaPan Debug\JUCE\modules"/>
+        <MODULEPATH id="juce_audio_processors" path="..\..\..\..\..\..\David Bau SofaPan Debug\JUCE\modules"/>
+        <MODULEPATH id="juce_audio_plugin_client" path="..\..\..\..\..\..\David Bau SofaPan Debug\JUCE\modules"/>
+        <MODULEPATH id="juce_audio_devices" path="..\..\..\..\..\..\David Bau SofaPan Debug\JUCE\modules"/>
+        <MODULEPATH id="juce_audio_basics" path="..\..\..\..\..\..\David Bau SofaPan Debug\JUCE\modules"/>
+        <MODULEPATH id="juce_audio_utils" path="..\..\..\..\..\..\David Bau SofaPan Debug\JUCE\modules"/>
+        <MODULEPATH id="juce_audio_formats" path="..\..\..\..\..\..\David Bau SofaPan Debug\JUCE\modules"/>
       </MODULEPATHS>
     </VS2017>
   </EXPORTFORMATS>

@@ -1,0 +1,11 @@
+These are only 64bit Plugins. For 32bit Plugins, contact me or build them yourselves ;)
+
+1) Copy the VST3 and VST2 to the desired VST Folder, e.g.
+	- C:/Program Files/Common Files/VST3 (for VST3)
+	- C:/Program Files/Steinberg/VSTPlugins (for VST2)
+
+2a) Download the newest NetCDF PreBuilt Release and install it (www.unidata.ucar.edu/downloads/netcdf/index.jsp)
+	OR
+2b) Alternatively, copy the files hdf5.lib, hdf5_hl.lib, zlib.lib and netcdf.lib from Dependencies/netCDF/lib to your C:/Windows/System32. This should be sufficient. 
+
+3) Copy the Default HRTF 'mit_kemar_normal_pinna.sofa' from the SOFAFiles Folder to C:/Program Files/Steinberg/VSTPlugins/SOFAFiles

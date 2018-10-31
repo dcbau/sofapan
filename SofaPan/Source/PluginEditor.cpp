@@ -143,14 +143,14 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     headRadiusSlider.addListener(this);
     addAndMakeVisible(&headRadiusSlider);
     
-    
+    /*
     useGlobalSofaFileButton.setButtonText("Global SOFA File");
     useGlobalSofaFileButton.setComponentID("globalSofaButton");
     useGlobalSofaFileButton.setColour(ToggleButton::textColourId, Colours::white);
     useGlobalSofaFileButton.addListener(this);
     useGlobalSofaFileButton.addMouseListener(this, true);
     addAndMakeVisible(&useGlobalSofaFileButton);
-    
+    */
     addAndMakeVisible(&plotHRTFView);
     addAndMakeVisible(&plotHRIRView);
     addAndMakeVisible(&panner2D_top);
@@ -310,7 +310,7 @@ void SofaPanAudioProcessorEditor::timerCallback() {
     semiStaticReflectionsButton.setToggleState(!(bool)getParameterValue("mirrorSource"), NotificationType::dontSendNotification);
 #endif
     
-    useGlobalSofaFileButton.setToggleState(processor.getUsingGlobalSofaFile(), NotificationType::dontSendNotification);
+    //useGlobalSofaFileButton.setToggleState(processor.getUsingGlobalSofaFile(), NotificationType::dontSendNotification);
     
     bool distanceSimActive = (bool)getParameterValue("dist_sim");
     bool nearfieldSimActive = (bool)getParameterValue("nearfield_sim");
@@ -569,9 +569,10 @@ void SofaPanAudioProcessorEditor::buttonClicked(Button *button)
     if(button == &showSOFAMetadataButton)
         metadataView.setVisible(true);
     
+	/*
     if(button == &useGlobalSofaFileButton)
         processor.setUsingGlobalSofaFile(useGlobalSofaFileButton.getToggleState());
-    
+    */
     if(button == &useDistanceSimulationButton){
         setParameterValue("dist_sim", useDistanceSimulationButton.getToggleState());
         if(!useDistanceSimulationButton.getToggleState())
@@ -673,7 +674,7 @@ void SofaPanAudioProcessorEditor::rearrange(){
     metadataView.setBounds(getLocalBounds().reduced(20));
 
     loadSOFAButton.setBounds(10., 10., 130., 30.);
-    useGlobalSofaFileButton.setBounds(loadSOFAButton.getBounds().getRight() + 10, 10., 80, 30);
+    //useGlobalSofaFileButton.setBounds(loadSOFAButton.getBounds().getRight() + 10, 10., 80, 30);
     //bypassButton.setBounds(10., 50., 150., 30.);
 
     

@@ -25,8 +25,9 @@ SofaPanAudioProcessor::SofaPanAudioProcessor()
                        )
 #endif
 {
+	
+
     addParameter(params.azimuthParam = new AudioParameterFloat("azimuth", "Azimuth", 0.f, 1.f, 0.f));
-    addParameter(params.bypassParam = new AudioParameterFloat("bypass", "Bypass", 0.f, 1.f, 0.f));
     addParameter(params.elevationParam = new AudioParameterFloat("elevation", "Elevation", 0.f, 1.f, 0.5f));
     addParameter(params.distanceParam = new AudioParameterFloat("distance", "Distance", 0.f, 1.f, 0.5f));
     addParameter(params.distanceSimulationParam = new AudioParameterBool("dist_sim", "Distance Simulation", false));
@@ -45,19 +46,18 @@ SofaPanAudioProcessor::SofaPanAudioProcessor()
     
     updateSofaMetadataFlag = false;
 
-    updater = &SofaPathSharedUpdater::instance();
-    String connectionID = updater->createConnection();
-    connectToPipe(connectionID, 10);
+    //updater = &SofaPathSharedUpdater::instance();
+    //String connectionID = updater->createConnection();
+    //connectToPipe(connectionID, 10);
     estimatedBlockSize = 0;
 
 }
 
 SofaPanAudioProcessor::~SofaPanAudioProcessor()
 {
-    
-    //delete HRTFs;
-    //HRTFs = NULL;
-    updater->removeConnection(getPipe()->getName());
+    delete HRTFs;
+    HRTFs = NULL;
+    //updater->removeConnection(getPipe()->getName());
     
 }
 
@@ -117,16 +117,17 @@ void SofaPanAudioProcessor::changeProgramName (int index, const String& newName)
 //Gets called as an initialisation prior to all audio processing
 void SofaPanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    printf("\n prepare to play \n");
+
+    //printf("\n prepare to play \n");
     counter = 0;
     
     if(sampleRate != sampleRate_f){
         sampleRate_f = sampleRate;
-        if(usingGlobalSofaFile){
+        /*if(usingGlobalSofaFile){
             String currentGlobalSofaFile = updater->requestCurrentFilePath();
             if(currentGlobalSofaFile.length() > 1)
                 pathToSOFAFile = currentGlobalSofaFile;
-        }
+        }*/
         initData(pathToSOFAFile);
     }
     
@@ -147,12 +148,11 @@ void SofaPanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     semistaticRefl.prepareToPlay();
     mirrorRefl.prepareToPlay((int)sampleRate);
     
-    
 }
 
 void SofaPanAudioProcessor::initData(String sofaFile){
     
-    printf("\n initalise Data \n ");
+    //printf("\n initalise Data \n ");
     
     pathToSOFAFile = sofaFile;
     
@@ -173,14 +173,12 @@ void SofaPanAudioProcessor::initData(String sofaFile){
     
     //If an critical error occured during sofa loading, turn this plugin to a brick 
     if(!status) suspendProcessing(false);
-    
-    //printf("Processing Suspenden: %d", proce)
+
 }
 
 void SofaPanAudioProcessor::releaseResources()
 {
    
-    printf("Playback Stop");
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
 
@@ -212,13 +210,12 @@ bool SofaPanAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) 
 
 void SofaPanAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
-    
+	//fl->logMessage("processBlock\n");
     const int totalNumInputChannels  = getTotalNumInputChannels();
     const int totalNumOutputChannels = getTotalNumOutputChannels();
     
     const int numberOfSamples = buffer.getNumSamples();
     
-    if (params.bypassParam->get() == true) { return; }
     
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
@@ -340,7 +337,7 @@ void SofaPanAudioProcessor::setSOFAFilePath(String sofaString)
     pathToSOFAFile = sofaString;
     if(estimatedBlockSize != 0) //to avoid inits before prepareToPlay was called
         initData(pathToSOFAFile);
-    
+    /*
     if(usingGlobalSofaFile){
         MemoryBlock message;
         const char* messageText = pathToSOFAFile.toRawUTF8();
@@ -349,7 +346,7 @@ void SofaPanAudioProcessor::setSOFAFilePath(String sofaString)
         
         sendMessage(message);
     }
-    
+    */
     
 }
 
@@ -369,7 +366,6 @@ fftwf_complex* SofaPanAudioProcessor::getCurrentHRTF()
 
 float* SofaPanAudioProcessor::getCurrentHRIR()
 {
-
     if(HRTFs == NULL)
         return NULL;
     
@@ -404,7 +400,6 @@ ITDStruct SofaPanAudioProcessor::getCurrentITD()
 
 float* SofaPanAudioProcessor::getCurrentMagSpectrum()
 {
-    
     if(HRTFs == NULL)
         return NULL;
     
@@ -441,9 +436,10 @@ int SofaPanAudioProcessor::getSampleRate()
     return (int)sampleRate_f;
 }
 
-
+/*
 void SofaPanAudioProcessor::messageReceived (const MemoryBlock &message){
     
+	fl->logMessage("messageReceived\n");
     if(usingGlobalSofaFile){
         String newFilePath = message.toString();
         //printf("\n%s: Set New File Path: %s", getPipe()->getName().toRawUTF8(), newFilePath.toRawUTF8());
@@ -453,7 +449,10 @@ void SofaPanAudioProcessor::messageReceived (const MemoryBlock &message){
     
 }
 
+
 void SofaPanAudioProcessor::setUsingGlobalSofaFile(bool useGlobal){
+
+	fl->logMessage("setUsingGlobalSOFAFile\n");
     if(useGlobal){
         String path = updater->requestCurrentFilePath();
         if(path.length() > 1 && path!=pathToSOFAFile){
@@ -471,3 +470,4 @@ bool SofaPanAudioProcessor::getUsingGlobalSofaFile(){
     return usingGlobalSofaFile;
 }
 
+*/
