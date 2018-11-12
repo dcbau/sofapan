@@ -102,12 +102,12 @@
                keepCustomXcodeSchemes="1" useHeaderMap="1">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="SofaPan"
-                       headerPath="../../../Dependencies/FFTW3/Mac&#10;../../../Dependencies/netCDF4/mac/include/"
-                       libraryPath="../../../Dependencies/FFTW3/Mac&#10;../../../Dependencies/netCDF4/mac/lib/"
+                       headerPath="../../../Dependencies/FFTW3/Mac&#10;../../../Dependencies/netCDF4/mac_static/include/"
+                       libraryPath="../../../Dependencies/FFTW3/Mac&#10;../../../Dependencies/netCDF4/mac_static/lib/"
                        enablePluginBinaryCopyStep="1"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="SofaPan"
-                       headerPath="../../../Dependencies/FFTW3/Mac&#10;../../../Dependencies/netCDF4/mac/include/"
-                       libraryPath="../../../Dependencies/FFTW3/Mac&#10;../../../Dependencies/netCDF4/mac/lib/"
+                       headerPath="../../../Dependencies/FFTW3/Mac&#10;../../../Dependencies/netCDF4/mac_static/include/"
+                       libraryPath="../../../Dependencies/FFTW3/Mac&#10;../../../Dependencies/netCDF4/mac_static/lib/"
                        enablePluginBinaryCopyStep="1"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
@@ -143,19 +143,19 @@
                        vstBinaryLocation="C:\Users\admin\Desktop\VSTDebug"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
-        <MODULEPATH id="juce_osc" path="..\..\..\..\..\..\David Bau SofaPan Debug\JUCE\modules"/>
-        <MODULEPATH id="juce_gui_extra" path="..\..\..\..\..\..\David Bau SofaPan Debug\JUCE\modules"/>
-        <MODULEPATH id="juce_gui_basics" path="..\..\..\..\..\..\David Bau SofaPan Debug\JUCE\modules"/>
-        <MODULEPATH id="juce_graphics" path="..\..\..\..\..\..\David Bau SofaPan Debug\JUCE\modules"/>
-        <MODULEPATH id="juce_events" path="..\..\..\..\..\..\David Bau SofaPan Debug\JUCE\modules"/>
-        <MODULEPATH id="juce_data_structures" path="..\..\..\..\..\..\David Bau SofaPan Debug\JUCE\modules"/>
-        <MODULEPATH id="juce_core" path="..\..\..\..\..\..\David Bau SofaPan Debug\JUCE\modules"/>
-        <MODULEPATH id="juce_audio_processors" path="..\..\..\..\..\..\David Bau SofaPan Debug\JUCE\modules"/>
-        <MODULEPATH id="juce_audio_plugin_client" path="..\..\..\..\..\..\David Bau SofaPan Debug\JUCE\modules"/>
-        <MODULEPATH id="juce_audio_devices" path="..\..\..\..\..\..\David Bau SofaPan Debug\JUCE\modules"/>
-        <MODULEPATH id="juce_audio_basics" path="..\..\..\..\..\..\David Bau SofaPan Debug\JUCE\modules"/>
-        <MODULEPATH id="juce_audio_utils" path="..\..\..\..\..\..\David Bau SofaPan Debug\JUCE\modules"/>
-        <MODULEPATH id="juce_audio_formats" path="..\..\..\..\..\..\David Bau SofaPan Debug\JUCE\modules"/>
+        <MODULEPATH id="juce_osc" path="../Dependencies/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../Dependencies/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../Dependencies/JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="../Dependencies/JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../Dependencies/JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../Dependencies/JUCE/modules"/>
+        <MODULEPATH id="juce_core" path="../Dependencies/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../Dependencies/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_plugin_client" path="../Dependencies/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../Dependencies/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../Dependencies/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_utils" path="../Dependencies/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../Dependencies/JUCE/modules"/>
       </MODULEPATHS>
     </VS2017>
   </EXPORTFORMATS>
