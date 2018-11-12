@@ -1,0 +1,38 @@
+# NetCDF C Configuration Summary
+==============================
+
+# General
+-------
+NetCDF Version:		4.6.1
+Configured On:		Thu Sep 27 16:10:53 CEST 2018
+Host System:		x86_64-apple-darwin16.7.0
+Build Directory: 	/Users/David/Desktop/SofaPan_LIbrary_Dep_Dev/netcdf-4.6.1
+Install Prefix:         /Users/David/Desktop/SofaPan_LIbrary_Dep_Dev/netcdf_install_dir
+
+# Compiling Options
+-----------------
+C Compiler:		/usr/bin/gcc
+CFLAGS:			
+CPPFLAGS:		-I/Users/David/Desktop/SofaPan_LIbrary_Dep_Dev/hdf_install_dir/include
+LDFLAGS:		-L/Users/David/Desktop/SofaPan_LIbrary_Dep_Dev/hdf_install_dir/lib
+AM_CFLAGS:		
+AM_CPPFLAGS:		
+AM_LDFLAGS:		
+Shared Library:		no
+Static Library:		yes
+Extra libraries:	-lhdf5_hl -lhdf5 -lm -lz 
+
+# Features
+--------
+NetCDF-2 API:		yes
+HDF4 Support:		no
+NetCDF-4 API:		yes
+NC-4 Parallel Support:	no
+PNetCDF Support:	no
+DAP2 Support:		no
+DAP4 Support:		no
+Diskless Support:	yes
+MMap Support:		no
+JNA Support:		no
+CDF5 Support:		yes
+ERANGE fill Support:	no

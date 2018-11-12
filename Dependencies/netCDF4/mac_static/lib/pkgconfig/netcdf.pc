@@ -1,0 +1,13 @@
+prefix=/Users/David/Desktop/SofaPan_LIbrary_Dep_Dev/netcdf_install_dir
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+ccompiler=gcc
+
+Name: netcdf
+Description: NetCDF Client Library for C
+URL: http://www.unidata.ucar.edu/netcdf
+Version: 4.6.1
+Libs: -L${libdir} -L/Users/David/Desktop/SofaPan_LIbrary_Dep_Dev/hdf_install_dir/lib -lnetcdf -lhdf5_hl -lhdf5 -lm -lz 
+Cflags: -I${includedir}
+
