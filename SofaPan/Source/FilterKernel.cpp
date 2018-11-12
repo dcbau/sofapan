@@ -13,7 +13,6 @@
 FilterKernel::FilterKernel(){
     
     lastfftInputBuffer = NULL;
-    outBuffer = NULL;
     fftInputBuffer = weightingCurve = fftOutputBuffer_L = fftOutputBuffer_R = NULL;
     complexBuffer = src = NULL;
     forward = inverse_L = inverse_R = NULL;
@@ -41,7 +40,6 @@ int FilterKernel::init(int _firLength){
         
         //Allocate Memory
         lastfftInputBuffer = fftwf_alloc_real(firLength);
-        outBuffer = fftwf_alloc_real(fftLength);
         
         fftInputBuffer = fftwf_alloc_real(fftLength);
         complexBuffer = fftwf_alloc_complex(complexLength);
@@ -57,7 +55,6 @@ int FilterKernel::init(int _firLength){
         weightingCurve = (float*)malloc(firLength*sizeof(float));
         
         if(lastfftInputBuffer == NULL ||
-           outBuffer == NULL ||
            fftInputBuffer == NULL ||
            complexBuffer == NULL ||
            src == NULL ||
@@ -103,7 +100,6 @@ void FilterKernel::releaseResources(){
     if(lastfftInputBuffer!= NULL) fftwf_free(lastfftInputBuffer);
     if(fftInputBuffer!= NULL) fftwf_free(fftInputBuffer);
     if(complexBuffer!= NULL) fftwf_free(complexBuffer);
-    if(outBuffer != NULL) fftwf_free(outBuffer);
     if(src!= NULL) fftwf_free(src);
     if(fftOutputBuffer_L!= NULL) fftwf_free(fftOutputBuffer_L);
     if(fftOutputBuffer_R!= NULL) fftwf_free(fftOutputBuffer_R);
@@ -113,7 +109,6 @@ void FilterKernel::releaseResources(){
     if(weightingCurve!= NULL) free(weightingCurve);
     
     lastfftInputBuffer = NULL;
-    outBuffer = NULL;
     fftInputBuffer = weightingCurve = fftOutputBuffer_L = fftOutputBuffer_R = NULL;
     complexBuffer = src = NULL;
     forward = inverse_L = inverse_R = NULL;
@@ -126,8 +121,6 @@ void FilterKernel::prepareToPlay(fftwf_complex* initHRTF){
     
     for(int i = 0; i < firLength; i++){
         lastfftInputBuffer[i] = 0.0;
-        outBuffer[i] = 0.0;
-        outBuffer[i+firLength] = 0.0;
     }
     
     previousFilter_l = initHRTF;

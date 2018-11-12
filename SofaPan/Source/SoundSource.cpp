@@ -82,6 +82,7 @@ int SoundSource::initWithSofaData(SOFAData *sD, int _sampleRate, int _index){
     azimuthSmoothed.reset( ((float)sampleRate / (float)firLength) , 0.1);
     elevationSmoothed.reset( ((float)sampleRate / (float)firLength) , 0.1);
 
+	prepareToPlay();
     filter.prepareToPlay(sofaData->getHRTFforAngle(0.0, 0.0, 1.0, hrtf_type_pseudoMinPhase));
     
     return 0;

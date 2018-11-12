@@ -52,7 +52,6 @@ private:
     fftwf_complex* src;
     float* fftOutputBuffer_L;
     float* fftOutputBuffer_R;
-    float* outBuffer;
     
     fftwf_complex* previousFilter_l;
     fftwf_complex* previousFilter_r;

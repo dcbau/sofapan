@@ -74,7 +74,7 @@ private:
     TextButton mirrorSourceReflectionsButton;
     TextButton semiStaticReflectionsButton;
 #endif
-    ToggleButton useGlobalSofaFileButton;
+    //ToggleButton useGlobalSofaFileButton;
     ToggleButton useDistanceSimulationButton;
     ToggleButton useNearfieldSimulationButton;
     ToggleButton showTooltipsButton;

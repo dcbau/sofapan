@@ -1,0 +1,38 @@
+# NetCDF C Configuration Summary
+==============================
+
+# General
+-------
+NetCDF Version:		4.6.1
+Configured On:		Fri Sep 28 02:00:44 CEST 2018
+Host System:		x86_64-w64-mingw32
+Build Directory: 	/c/Users/David/Desktop/DepDev/netcdf-4.6.1/netcdf-4.6.1
+Install Prefix:         /c/Users/David/Desktop/DepDev/netcdf_install
+
+# Compiling Options
+-----------------
+C Compiler:		/usr/bin/gcc
+CFLAGS:			
+CPPFLAGS:		-I/mingw64/include
+LDFLAGS:		-L/mingw64/lib
+AM_CFLAGS:		
+AM_CPPFLAGS:		
+AM_LDFLAGS:		
+Shared Library:		no
+Static Library:		yes
+Extra libraries:	-lszip -lhdf5_hl -lhdf5 -lm -lz 
+
+# Features
+--------
+NetCDF-2 API:		yes
+HDF4 Support:		no
+NetCDF-4 API:		yes
+NC-4 Parallel Support:	no
+PNetCDF Support:	no
+DAP2 Support:		no
+DAP4 Support:		no
+Diskless Support:	yes
+MMap Support:		no
+JNA Support:		no
+CDF5 Support:		yes
+ERANGE fill Support:	no

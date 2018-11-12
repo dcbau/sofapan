@@ -18,7 +18,7 @@
 #include "Delayline.h"
 #include "ErrorHandling.h"
 #include "FilterKernel.h"
-#include "SOFAData.h"
+#include "SofaData.h"
 #include "ParameterStruct.h"
 #include "ITDToolkit.h"
 

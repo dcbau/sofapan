@@ -15,7 +15,7 @@
 
 #include "fftw3.h"
 #include "SOFAData.h"
-#include "SofaPathSharedUpdater.h"
+//#include "SofaPathSharedUpdater.h"
 #include "Reverberator.h"
 #include "SoundSource.h"
 #include "ParameterStruct.h"
@@ -44,7 +44,7 @@ extern "C" {
 //class FilterEngine;
 class EarlyReflection;
 
-class SofaPanAudioProcessor  : public AudioProcessor, public InterprocessConnection
+class SofaPanAudioProcessor  : public AudioProcessor//, public InterprocessConnection
 {
 public:
     //==============================================================================
@@ -99,9 +99,10 @@ public:
     int getLengthOfHRIR(){return (HRTFs == NULL ?  0 :  HRTFs->getLengthOfHRIR());}
     
     int getSampleRate();
-    void setUsingGlobalSofaFile(bool useGlobal);
-    bool getUsingGlobalSofaFile();
-    
+
+	//void setUsingGlobalSofaFile(bool useGlobal);
+	//bool getUsingGlobalSofaFile();
+	
 private:
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SofaPanAudioProcessor)
@@ -123,19 +124,21 @@ private:
 
     Reverberator reverb;
     
-    SofaPathSharedUpdater* updater;
+    //SofaPathSharedUpdater* updater;
     
-    void connectionMade() override{}
-    void connectionLost() override{}
-    void messageReceived (const MemoryBlock &message) override;
+    //void connectionMade() override{}
+    //void connectionLost() override{}
+    //void messageReceived (const MemoryBlock &message) override;
     
-    bool usingGlobalSofaFile = true;
+    //bool usingGlobalSofaFile = false;
     
     int estimatedBlockSize;
 
     AudioSampleBuffer reflectionInBuffer, reflectionOutBuffer, reverbInBuffer, reverbOutBuffer;
 
     const float roomSize = 2 * ROOMRADIUS;
+
+
 };
 
 
