@@ -310,7 +310,7 @@
 				LIBRARY_STYLE = Bundle;
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MACOSX_DEPLOYMENT_TARGET_ppc = 10.4;
-				OTHER_LDFLAGS = "-bundle -lSofaPan -lfftw3f -lnetcdf";
+				OTHER_LDFLAGS = "-bundle -lSofaPan -lfftw3f -lnetcdf -lhdf5 -lhdf5_hl -lz";
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.SofaPan;
 				SDKROOT_ppc = macosx10.5;
 				USE_HEADERMAP = YES;
@@ -351,7 +351,7 @@
 				LLVM_LTO = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MACOSX_DEPLOYMENT_TARGET_ppc = 10.4;
-				OTHER_LDFLAGS = "-bundle -lSofaPan -lfftw3f -lnetcdf";
+				OTHER_LDFLAGS = "-bundle -lSofaPan -lfftw3f -lnetcdf -lhdf5 -lhdf5_hl -lz";
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.SofaPan;
 				SDKROOT_ppc = macosx10.5;
 				USE_HEADERMAP = YES;
@@ -390,7 +390,7 @@
 				LIBRARY_STYLE = Bundle;
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MACOSX_DEPLOYMENT_TARGET_ppc = 10.4;
-				OTHER_LDFLAGS = "-bundle -lSofaPan -lfftw3f -lnetcdf";
+				OTHER_LDFLAGS = "-bundle -lSofaPan -lfftw3f -lnetcdf -lhdf5 -lhdf5_hl -lz";
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.SofaPan;
 				SDKROOT_ppc = macosx10.5;
 				USE_HEADERMAP = YES;
@@ -431,7 +431,7 @@
 				LLVM_LTO = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MACOSX_DEPLOYMENT_TARGET_ppc = 10.4;
-				OTHER_LDFLAGS = "-bundle -lSofaPan -lfftw3f -lnetcdf";
+				OTHER_LDFLAGS = "-bundle -lSofaPan -lfftw3f -lnetcdf -lhdf5 -lhdf5_hl -lz";
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.SofaPan;
 				SDKROOT_ppc = macosx10.5;
 				USE_HEADERMAP = YES;
@@ -470,7 +470,7 @@
 				LIBRARY_STYLE = Bundle;
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MACOSX_DEPLOYMENT_TARGET_ppc = 10.4;
-				OTHER_LDFLAGS = "-bundle -lSofaPan -lfftw3f -lnetcdf";
+				OTHER_LDFLAGS = "-bundle -lSofaPan -lfftw3f -lnetcdf -lhdf5 -lhdf5_hl -lz";
 				OTHER_REZFLAGS = "-d ppc_$ppc -d i386_$i386 -d ppc64_$ppc64 -d x86_64_$x86_64 -I /System/Library/Frameworks/CoreServices.framework/Frameworks/CarbonCore.framework/Versions/A/Headers -I \"$(DEVELOPER_DIR)/Extras/CoreAudio/AudioUnits/AUPublic/AUBase\"";
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.SofaPan;
 				SDKROOT_ppc = macosx10.5;
@@ -512,7 +512,7 @@
 				LLVM_LTO = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MACOSX_DEPLOYMENT_TARGET_ppc = 10.4;
-				OTHER_LDFLAGS = "-bundle -lSofaPan -lfftw3f -lnetcdf";
+				OTHER_LDFLAGS = "-bundle -lSofaPan -lfftw3f -lnetcdf -lhdf5 -lhdf5_hl -lz";
 				OTHER_REZFLAGS = "-d ppc_$ppc -d i386_$i386 -d ppc64_$ppc64 -d x86_64_$x86_64 -I /System/Library/Frameworks/CoreServices.framework/Frameworks/CarbonCore.framework/Versions/A/Headers -I \"$(DEVELOPER_DIR)/Extras/CoreAudio/AudioUnits/AUPublic/AUBase\"";
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.SofaPan;
 				SDKROOT_ppc = macosx10.5;
@@ -547,7 +547,7 @@
 				LIBRARY_SEARCH_PATHS = ("$(inherited)", "\"../../../Dependencies/FFTW3/Mac\"", "\"../../../Dependencies/netCDF4/mac_static/lib/\"");
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MACOSX_DEPLOYMENT_TARGET_ppc = 10.4;
-				OTHER_LDFLAGS = "-lfftw3f -lnetcdf";
+				OTHER_LDFLAGS = "-lfftw3f -lnetcdf -lhdf5 -lhdf5_hl -lz";
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.SofaPan;
 				SDKROOT_ppc = macosx10.5;
 				USE_HEADERMAP = YES; }; name = Debug; };
@@ -582,7 +582,7 @@
 				LLVM_LTO = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MACOSX_DEPLOYMENT_TARGET_ppc = 10.4;
-				OTHER_LDFLAGS = "-lfftw3f -lnetcdf";
+				OTHER_LDFLAGS = "-lfftw3f -lnetcdf -lhdf5 -lhdf5_hl -lz";
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.SofaPan;
 				SDKROOT_ppc = macosx10.5;
 				USE_HEADERMAP = YES; }; name = Release; };

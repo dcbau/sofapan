@@ -55,8 +55,10 @@ SofaPanAudioProcessor::SofaPanAudioProcessor()
 
 SofaPanAudioProcessor::~SofaPanAudioProcessor()
 {
+#ifdef _WIN64
     delete HRTFs;
     HRTFs = NULL;
+#endif
     //updater->removeConnection(getPipe()->getName());
     
 }

@@ -98,8 +98,8 @@
   </MAINGROUP>
   <EXPORTFORMATS>
     <XCODE_MAC targetFolder="Builds/MacOSX" vst3Folder="../Dependencies/vst3sdk"
-               externalLibraries="fftw3f&#10;netcdf" enableGNUExtensions="1"
-               keepCustomXcodeSchemes="1" useHeaderMap="1">
+               externalLibraries="fftw3f&#10;netcdf&#10;hdf5&#10;hdf5_hl&#10;z"
+               enableGNUExtensions="1" keepCustomXcodeSchemes="1" useHeaderMap="1">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="SofaPan"
                        headerPath="../../../Dependencies/FFTW3/Mac&#10;../../../Dependencies/netCDF4/mac_static/include/"
