@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AudioComponents</key>
+	<array>
+		<dict>
+			<key>description</key>
+			<string></string>
+			<key>factoryFunction</key>
+			<string>SofaPanAUFactory</string>
+			<key>manufacturer</key>
+			<string>HSDD</string>
+			<key>name</key>
+			<string>HSD: SofaPan</string>
+			<key>subtype</key>
+			<string>SoPn</string>
+			<key>type</key>
+			<string>aufx</string>
+			<key>version</key>
+			<integer>66048</integer>
+		</dict>
+	</array>
+	<key>BuildMachineOSBuild</key>
+	<string>16G1408</string>
+	<key>CFBundleDisplayName</key>
+	<string>SofaPan</string>
+	<key>CFBundleExecutable</key>
+	<string>SofaPan</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.yourcompany.SofaPan</string>
+	<key>CFBundleName</key>
+	<string>SofaPan</string>
+	<key>CFBundlePackageType</key>
+	<string>BNDL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.2</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleSupportedPlatforms</key>
+	<array>
+		<string>MacOSX</string>
+	</array>
+	<key>CFBundleVersion</key>
+	<string>1.2</string>
+	<key>DTCompiler</key>
+	<string>com.apple.compilers.llvm.clang.1_0</string>
+	<key>DTPlatformBuild</key>
+	<string>9A235</string>
+	<key>DTPlatformVersion</key>
+	<string>GM</string>
+	<key>DTSDKBuild</key>
+	<string>17A360</string>
+	<key>DTSDKName</key>
+	<string>macosx10.13</string>
+	<key>DTXcode</key>
+	<string>0900</string>
+	<key>DTXcodeBuild</key>
+	<string>9A235</string>
+	<key>NSHighResolutionCapable</key>
+	<true/>
+	<key>NSHumanReadableCopyright</key>
+	<string>HSD</string>
+</dict>
+</plist>

@@ -1,0 +1,8 @@
+Only 64bit precompiled Plugins. 32bit Plugins have to be compiled by yourself, if you really need some. 
+
+1) Copy the VST3, VST2 and AU to the desired VST Folder, e.g.
+	- /Library/Audio/Plug-Ins/VST
+	- /Library/Audio/Plug-Ins/VST3
+ 	- /Library/Audio/Plug-Ins/Components
+
+2) Copy the Default HRTF 'mit_kemar_normal_pinna.sofa' from the SOFAFiles Folder to /Library/Audio/Plug-Ins/VST/SOFAFiles/

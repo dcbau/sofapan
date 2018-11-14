@@ -1,4 +1,4 @@
-These are only 64bit Plugins. For 32bit Plugins, contact me or build them yourselves ;)
+Only 64bit precompiled Plugins. 32bit Plugins have to be compiled by yourself, if you really need some. 
 
 1) Copy the VST3 and VST2 to the desired VST Folder, e.g.
 	- C:/Program Files/Common Files/VST3 (for VST3)
