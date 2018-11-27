@@ -147,7 +147,9 @@ void SofaPanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
 
     reverb.prepareToPlay((int)sampleRate);
     directSource.prepareToPlay();
+#if ENBALE_SEMISTATICS
     semistaticRefl.prepareToPlay();
+#endif
     mirrorRefl.prepareToPlay((int)sampleRate);
     
 }
@@ -168,7 +170,9 @@ void SofaPanAudioProcessor::initData(String sofaFile){
     
     
     status = directSource.initWithSofaData(HRTFs, (int)sampleRate_f, 1);
+#if ENBALE_SEMISTATICS
     status += semistaticRefl.init(HRTFs, roomSize, (int)sampleRate_f);
+#endif
     status += mirrorRefl.initWithSofaData(HRTFs, roomSize, (int)sampleRate_f);
     
 
@@ -271,16 +275,17 @@ void SofaPanAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     
     if(params.distanceSimulationParam->get()){
 
-        if(ENABLE_SEMISTATICS){
-            if(params.mirrorSourceParam->get())
-                mirrorRefl.process(inBufferRefl, outBufferRefl_L, outBufferRefl_R, numberOfSamples, params);
-            else
-                semistaticRefl.process(inBufferRefl, outBufferRefl_L, outBufferRefl_R, numberOfSamples, params);
-
-        }else{
+#if ENABLE_SEMSTATICS
+        if(params.mirrorSourceParam->get())
             mirrorRefl.process(inBufferRefl, outBufferRefl_L, outBufferRefl_R, numberOfSamples, params);
-        }
-
+        else
+            semistaticRefl.process(inBufferRefl, outBufferRefl_L, outBufferRefl_R, numberOfSamples, params);
+#endif
+        
+#ifndef ENABLE_SEMISTATICS
+        mirrorRefl.process(inBufferRefl, outBufferRefl_L, outBufferRefl_R, numberOfSamples, params);
+        
+#endif
     
         reverb.processBlockMS(inBufferReverb, outBufferReverbL, outBufferReverbR, numberOfSamples, params);
 

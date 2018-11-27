@@ -39,7 +39,7 @@
 namespace ProjectInfo
 {
     const char* const  projectName    = "SofaPan";
-    const char* const  versionString  = "1.2";
-    const int          versionNumber  = 0x10200;
+    const char* const  versionString  = "1.3";
+    const int          versionNumber  = 0x10300;
 }
 #endif

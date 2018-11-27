@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "SofaData.h"
+#include "SOFAData.h"
 #include "EarlyReflection.h"
 
 class SemistaticReflections {

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="xKOOOW" name="SofaPan" projectType="audioplug" version="1.2"
+<JUCERPROJECT id="xKOOOW" name="SofaPan" projectType="audioplug" version="1.3"
               bundleIdentifier="com.yourcompany.SofaPan" includeBinaryInAppConfig="1"
               buildVST="1" buildVST3="1" buildAU="1" buildAUv3="0" buildRTAS="0"
               buildAAX="0" pluginName="SofaPan" pluginDesc="" pluginManufacturer="HSD"
@@ -11,7 +11,7 @@
               pluginAAXCategory="2" jucerVersion="5.3.2" companyName="HSD"
               displaySplashScreen="0" reportAppUsage="0" splashScreenColour="Dark"
               buildStandalone="1" enableIAA="0" cppLanguageStandard="14" companyCopyright="HSD"
-              pluginFormats="buildAU,buildStandalone,buildVST,buildVST3" pluginVST3Category="Fx,Spatial"
+              pluginFormats="buildVST,buildVST3,buildAU,buildStandalone" pluginVST3Category="Fx,Spatial"
               pluginVSTCategory="kPlugCategEffect">
   <MAINGROUP id="XmHYCT" name="SofaPan">
     <GROUP id="{044A0D15-8678-AA45-7263-8E06162C7D6C}" name="Source">
@@ -97,8 +97,7 @@
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX" vst3Folder="../Dependencies/vst3sdk"
-               externalLibraries="fftw3f&#10;netcdf&#10;hdf5&#10;hdf5_hl&#10;z"
+    <XCODE_MAC targetFolder="Builds/MacOSX" vst3Folder="../../vst3sdk" externalLibraries="fftw3f&#10;netcdf&#10;hdf5&#10;hdf5_hl&#10;z"
                enableGNUExtensions="1" keepCustomXcodeSchemes="1" useHeaderMap="1">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="SofaPan"
@@ -111,19 +110,19 @@
                        enablePluginBinaryCopyStep="1"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
-        <MODULEPATH id="juce_core" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_events" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_graphics" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_data_structures" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_gui_basics" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_gui_extra" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_basics" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_devices" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_processors" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_plugin_client" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_osc" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_utils" path="../Dependencies/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_formats" path="../Dependencies/JUCE/modules"/>
+        <MODULEPATH id="juce_core" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_plugin_client" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_osc" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_utils" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
     <VS2017 targetFolder="Builds/VisualStudio2017" vst3Folder="../Dependencies/vst3sdk"
@@ -160,19 +159,20 @@
     </VS2017>
   </EXPORTFORMATS>
   <MODULES>
-    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
-    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0"/>
-    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
-    <MODULE id="juce_audio_plugin_client" showAllCode="1" useLocalCopy="0"/>
-    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0"/>
-    <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
-    <MODULE id="juce_core" showAllCode="1" useLocalCopy="0"/>
-    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0"/>
-    <MODULE id="juce_events" showAllCode="1" useLocalCopy="0"/>
-    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0"/>
-    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0"/>
-    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0"/>
-    <MODULE id="juce_osc" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_plugin_client" showAllCode="1" useLocalCopy="0"
+            useGlobalPath="1"/>
+    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_osc" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
   </MODULES>
   <JUCEOPTIONS JUCE_QUICKTIME="disabled" JUCE_USE_FLAC="0" JUCE_USE_OGGVORBIS="0"
                JUCE_WASAPI="0" JUCE_WASAPI_EXCLUSIVE="0" JUCE_ALSA="0" JUCE_JACK="0"

@@ -19,10 +19,12 @@
 #include "Reverberator.h"
 #include "SoundSource.h"
 #include "ParameterStruct.h"
-#include "SemistaticReflections.h"
 #include "MirrorReflections.h"
 #include "BiquadCascade.h"
 
+#if ENABLE_SEMESTATICS
+    #include "SemistaticReflections.h"
+#endif
 
 //Interface für SOFA File:
 extern "C" {
@@ -118,7 +120,10 @@ private:
     SoundSource directSource;
     
     //std::vector<EarlyReflection*> earlyReflections;
+#if ENABLE_SEMESTATICS
     SemistaticReflections semistaticRefl;
+#endif
+    
     MirrorReflections mirrorRefl;
     
 
