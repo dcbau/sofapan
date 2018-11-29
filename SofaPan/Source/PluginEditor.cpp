@@ -65,7 +65,6 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     loadSOFAButton.setButtonText ("Load HRTF");
     loadSOFAButton.setComponentID("3");
     loadSOFAButton.addListener(this);
-    loadSOFAButton.setLookAndFeel(&juceDefaultLookAndFeel);
     loadSOFAButton.setColour (TextButton::buttonColourId, sofaPanLookAndFeel.mainCyan);
     loadSOFAButton.setColour (TextButton::textColourOffId, Colours::white);
     loadSOFAButton.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
@@ -82,7 +81,7 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
 
     mirrorSourceReflectionsButton.setButtonText("Mirror Source");
     mirrorSourceReflectionsButton.setComponentID("mirrorSourceButton");
-    mirrorSourceReflectionsButton.setLookAndFeel(&juceDefaultLookAndFeel);
+    
     mirrorSourceReflectionsButton.setClickingTogglesState(true);
     mirrorSourceReflectionsButton.setToggleState(true, juce::dontSendNotification);
     mirrorSourceReflectionsButton.setColour(ToggleButton::textColourId, Colours::white);
@@ -97,7 +96,6 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     
     semiStaticReflectionsButton.setButtonText("Semi Static");
     semiStaticReflectionsButton.setComponentID("semiStaticButton");
-    semiStaticReflectionsButton.setLookAndFeel(&juceDefaultLookAndFeel);
     semiStaticReflectionsButton.setClickingTogglesState(true);
     semiStaticReflectionsButton.setToggleState(false, juce::dontSendNotification);
     semiStaticReflectionsButton.setColour(ToggleButton::textColourId, Colours::white);
@@ -135,7 +133,6 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     
     
     headRadiusSlider.setSliderStyle(Slider::LinearHorizontal);
-    headRadiusSlider.setLookAndFeel(&juceDefaultLookAndFeel);
     headRadiusSlider.setRange(14.0, 20.0);
     headRadiusSlider.setTextValueSuffix(" cm");
     headRadiusSlider.setPopupDisplayEnabled(true, true, this);
@@ -177,7 +174,7 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     useLayoutSimplePanningButton.setColour (TextButton::textColourOffId, Colours::grey);
     useLayoutSimplePanningButton.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
     useLayoutSimplePanningButton.setToggleState(true, dontSendNotification);
-    useLayoutSimplePanningButton.setLookAndFeel(&juceDefaultLookAndFeel);
+
     useLayoutSimplePanningButton.addListener(this);
     addAndMakeVisible(&useLayoutSimplePanningButton);
     
@@ -189,13 +186,11 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     useLayoutRoomsimButton.setColour (TextButton::textColourOffId, Colours::grey);
     useLayoutRoomsimButton.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
     useLayoutRoomsimButton.setToggleState(false, dontSendNotification);
-    useLayoutRoomsimButton.setLookAndFeel(&juceDefaultLookAndFeel);
     useLayoutRoomsimButton.addListener(this);
     addAndMakeVisible(useLayoutRoomsimButton);
     
     showSOFAMetadataButton.setButtonText("Show More Information");
     showSOFAMetadataButton.addListener(this);
-    showSOFAMetadataButton.setLookAndFeel(&juceDefaultLookAndFeel);
     showSOFAMetadataButton.setColour (TextButton::buttonColourId, sofaPanLookAndFeel.mainCyan);
     showSOFAMetadataButton.setColour (TextButton::textColourOffId, Colours::white);
     showSOFAMetadataButton.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
@@ -204,7 +199,6 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     
 #if REVSLIDERACTIVE
     reverbSlider1.setSliderStyle(Slider::LinearHorizontal);
-    reverbSlider1.setLookAndFeel(&juceDefaultLookAndFeel);
     reverbSlider1.setRange(-48, -12);
     reverbSlider1.setTextValueSuffix(" dB");
     reverbSlider1.setPopupDisplayEnabled(true, true, this);
@@ -213,7 +207,6 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     addAndMakeVisible(&reverbSlider1);
     
     reverbSlider2.setSliderStyle(Slider::LinearHorizontal);
-    reverbSlider2.setLookAndFeel(&juceDefaultLookAndFeel);
     reverbSlider2.setRange(0.1, 2);
     reverbSlider2.setTextValueSuffix(" s");
     reverbSlider2.setPopupDisplayEnabled(true, true, this);
@@ -273,7 +266,10 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
 
 SofaPanAudioProcessorEditor::~SofaPanAudioProcessorEditor()
 {
-    
+    panner_az.setLookAndFeel(nullptr);
+    panner_el.setLookAndFeel(nullptr);
+    panner_dist.setLookAndFeel(nullptr);
+
 }
 
 

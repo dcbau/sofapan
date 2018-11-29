@@ -39,7 +39,6 @@ public:
         zoomXButton1.setColour (TextButton::textColourOffId, Colours::black);
         zoomXButton1.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
         zoomXButton1.setToggleState(true, dontSendNotification);
-        zoomXButton1.setLookAndFeel(&defaultLookAndFeel);
         zoomXButton1.addListener(this);
         addAndMakeVisible(zoomXButton1);
         
@@ -51,7 +50,6 @@ public:
         zoomXButton2.setColour (TextButton::textColourOffId, Colours::black);
         zoomXButton2.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
         zoomXButton2.setToggleState(false, dontSendNotification);
-        zoomXButton2.setLookAndFeel(&defaultLookAndFeel);
         zoomXButton2.addListener(this);
         addAndMakeVisible(zoomXButton2);
         
@@ -63,7 +61,6 @@ public:
         zoomXButton3.setColour (TextButton::textColourOffId, Colours::black);
         zoomXButton3.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
         zoomXButton3.setToggleState(false, dontSendNotification);
-        zoomXButton3.setLookAndFeel(&defaultLookAndFeel);
         zoomXButton3.addListener(this);
         addAndMakeVisible(zoomXButton3);
         
@@ -75,7 +72,6 @@ public:
         zoomYButton1.setColour (TextButton::textColourOffId, Colours::black);
         zoomYButton1.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
         zoomYButton1.setToggleState(true, dontSendNotification);
-        zoomYButton1.setLookAndFeel(&defaultLookAndFeel);
         zoomYButton1.addListener(this);
         addAndMakeVisible(zoomYButton1);
         
@@ -87,7 +83,6 @@ public:
         zoomYButton2.setColour (TextButton::textColourOffId, Colours::black);
         zoomYButton2.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
         zoomYButton2.setToggleState(false, dontSendNotification);
-        zoomYButton2.setLookAndFeel(&defaultLookAndFeel);
         zoomYButton2.addListener(this);
         addAndMakeVisible(zoomYButton2);
         
@@ -99,7 +94,6 @@ public:
         zoomYButton3.setColour (TextButton::textColourOffId, Colours::black);
         zoomYButton3.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
         zoomYButton3.setToggleState(false, dontSendNotification);
-        zoomYButton3.setLookAndFeel(&defaultLookAndFeel);
         zoomYButton3.addListener(this);
         addAndMakeVisible(zoomYButton3);
         
@@ -111,7 +105,6 @@ public:
         zoomYButton4.setColour (TextButton::textColourOffId, Colours::black);
         zoomYButton4.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
         zoomYButton4.setToggleState(false, dontSendNotification);
-        zoomYButton4.setLookAndFeel(&defaultLookAndFeel);
         zoomYButton4.addListener(this);
         addAndMakeVisible(zoomYButton4);
         
@@ -123,7 +116,6 @@ public:
         zoomYButton5.setColour (TextButton::textColourOffId, Colours::black);
         zoomYButton5.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
         zoomYButton5.setToggleState(false, dontSendNotification);
-        zoomYButton5.setLookAndFeel(&defaultLookAndFeel);
         zoomYButton5.addListener(this);
         addAndMakeVisible(zoomYButton5);
     

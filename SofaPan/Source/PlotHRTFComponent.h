@@ -38,7 +38,6 @@ public:
         phaseViewButton.setColour (TextButton::textColourOffId, Colours::black);
         phaseViewButton.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
         phaseViewButton.setToggleState(false, dontSendNotification);
-        phaseViewButton.setLookAndFeel(&juceDefaultLookAndFeel);
         phaseViewButton.addListener(this);
         addAndMakeVisible(phaseViewButton);
         
@@ -50,7 +49,6 @@ public:
         magViewButton.setColour (TextButton::textColourOffId, Colours::black);
         magViewButton.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
         magViewButton.setToggleState(true, dontSendNotification);
-        magViewButton.setLookAndFeel(&juceDefaultLookAndFeel);
         magViewButton.addListener(this);
         addAndMakeVisible(magViewButton);
         
@@ -60,7 +58,6 @@ public:
         unwrapPhaseButton.setColour (TextButton::buttonOnColourId, sofaPanLookAndFeel.mainCyan);
         unwrapPhaseButton.setColour (TextButton::textColourOffId, Colours::black);
         unwrapPhaseButton.setToggleState(false, dontSendNotification);
-        unwrapPhaseButton.setLookAndFeel(&juceDefaultLookAndFeel);
         unwrapPhaseButton.addListener(this);
         addAndMakeVisible(unwrapPhaseButton);
         unwrapPhaseButton.setVisible(false);
