@@ -1879,6 +1879,7 @@
     <ClInclude Include="..\..\Source\PlotHRTFComponent.h"/>
     <ClInclude Include="..\..\Source\SofaMetadataView.h"/>
     <ClInclude Include="..\..\Source\RoomPannerComponent.h"/>
+    <ClInclude Include="..\..\Source\GUI\azimuthStereoSliderLookAndFeel.h"/>
     <ClInclude Include="..\..\Source\GUI\azimuthSliderLookAndFeel.h"/>
     <ClInclude Include="..\..\Source\GUI\sofaPanLookAndFeel.h"/>
     <ClInclude Include="..\..\Source\GUI\elevationSliderLookAndFeel.h"/>

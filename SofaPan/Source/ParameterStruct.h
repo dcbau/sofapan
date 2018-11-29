@@ -25,6 +25,7 @@ typedef struct{
     AudioParameterFloat* individualHeadDiameter;
     AudioParameterFloat* reverbParam1;
     AudioParameterFloat* reverbParam2;
+    AudioParameterBool* stereoModeParam;
 }parameterStruct;
 
 

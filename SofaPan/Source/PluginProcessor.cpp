@@ -40,6 +40,8 @@ SofaPanAudioProcessor::SofaPanAudioProcessor()
         addParameter(params.testSwitchParam = new AudioParameterBool("test", "Test Switch", false));
     if(ENABLE_SEMISTATICS)
         addParameter(params.mirrorSourceParam = new AudioParameterBool("mirrorSource", "Mirror Source Model", false));
+    addParameter(params.stereoModeParam = new AudioParameterBool("stereoMode", "Stereo Mode Active", false));
+    
     HRTFs = new SOFAData();
 
     sampleRate_f = 0;

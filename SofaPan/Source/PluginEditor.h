@@ -21,6 +21,7 @@
 
 #include "GUI/sofaPanLookAndFeel.h"
 #include "GUI/azimuthSliderLookAndFeel.h"
+#include "GUI/azimuthStereoSliderLookAndFeel.h"
 #include "GUI/elevationSliderLookAndFeel.h"
 #include "GUI/LogoHexData.h"
 #include "GUI/HeadTopHexData.h"
@@ -34,7 +35,7 @@
 //==============================================================================
 /**
 */
-class SofaPanAudioProcessorEditor  : public AudioProcessorEditor, public Slider::Listener, public Button::Listener, private Timer, private OSCReceiver, private OSCReceiver::ListenerWithOSCAddress<OSCReceiver::MessageLoopCallback>
+class SofaPanAudioProcessorEditor  : public AudioProcessorEditor, public Slider::Listener, public Button::Listener, private Timer
 {
 public:
     SofaPanAudioProcessorEditor (SofaPanAudioProcessor&);
@@ -80,7 +81,7 @@ private:
     ToggleButton showTooltipsButton;
     TextButton useLayoutSimplePanningButton;
     TextButton useLayoutRoomsimButton;
-
+    TextButton useStereoModeButton;
     
     const String sofaMetadataID = String("Listener Short Name: \nEar Distance: \nMeasurements: \nSamples per IR: \nSOFA Convention: \nData Type: \nElevation: \nDistance:");
     
@@ -89,6 +90,7 @@ private:
     SofaPanLookAndFeel sofaPanLookAndFeel;
     ElevationSliderLookAndFeel elSliderLookAndFeel;
     AzimuthSliderLookAndFeel azSliderLookAndFeel;
+    AzimuthStereoSliderLookAndFeel azStereoSliderLookAndFeel;
     LookAndFeel_V4 juceDefaultLookAndFeel;
     
     AudioProcessorParameter* getParameter (const String& paramId);
@@ -127,10 +129,6 @@ private:
     bool roomsimLayout = 0;
     void rearrange();
     
-    
-    //OSC stuff
-    void oscMessageReceived(const OSCMessage& message) override;
-    OSCSender oscSender;
     
     Label buildDateAndTimeLabel;
     Label buildVersionLabel;

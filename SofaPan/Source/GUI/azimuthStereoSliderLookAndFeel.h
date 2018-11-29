@@ -8,18 +8,18 @@
   ==============================================================================
 */
 
-#ifndef AZIMUTHSLIDERLOOKANDFEEL_H_INCLUDED
-#define AZIMUTHSLIDERLOOKANDFEEL_H_INCLUDED
+#ifndef AZIMUTHSTEREOSLIDERLOOKANDFEEL_H_INCLUDED
+#define AZIMUTHSTEREOSLIDERLOOKANDFEEL_H_INCLUDED
 
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
 //==============================================================================
-class AzimuthSliderLookAndFeel : public LookAndFeel_V3
+class AzimuthStereoSliderLookAndFeel : public LookAndFeel_V3
 {
 public:
     //==============================================================================
-    AzimuthSliderLookAndFeel()
+    AzimuthStereoSliderLookAndFeel()
     {
         setColour (ResizableWindow::backgroundColourId, windowBackgroundColour);
         setColour (TextButton::buttonOnColourId, brightButtonColour);
@@ -89,11 +89,21 @@ public:
         g.setColour(sliderActivePart);
         g.fillRoundedRectangle(thumb.toFloat(), thumbThickness * 0.25);
 
-
-        //inverse rotation
-        rotate = AffineTransform::rotation(-angle, r.getCentreX(), r.getCentreY());
-        g.addTransform(rotate);
         
+        //shift 30° to the left and draw left stereo marker
+        rotate = AffineTransform::rotation(-(M_PI / 6.f), r.getCentreX(), r.getCentreY());
+        g.addTransform(rotate);
+        g.drawRoundedRectangle(thumb.toFloat(), thumbThickness * 0.25, 2.f);
+        
+        //shift 60° to the right and draw right stereo marker
+        rotate = AffineTransform::rotation((M_PI / 3.f), r.getCentreX(), r.getCentreY());
+        g.addTransform(rotate);
+        g.drawRoundedRectangle(thumb.toFloat(), thumbThickness * 0.25, 2.f);
+        
+        //inverse rotation to origin (angle + 30°)
+        rotate = AffineTransform::rotation(-angle - (M_PI / 6.f), r.getCentreX(), r.getCentreY());
+        g.addTransform(rotate);
+
         
         
     }
@@ -133,4 +143,4 @@ public:
 
 
 
-#endif  // AZIMUTHSLIDERLOOKANDFEEL_H_INCLUDED
+#endif  // AZIMUTHSTEREOSLIDERLOOKANDFEEL_H_INCLUDED

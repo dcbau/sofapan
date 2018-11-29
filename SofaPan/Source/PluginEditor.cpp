@@ -165,6 +165,15 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     showTooltipsButton.setButtonText("Show Mouseover Tooltips");
     addAndMakeVisible(&showTooltipsButton);
     
+    useStereoModeButton.setButtonText("Stereo");
+    useStereoModeButton.setClickingTogglesState(true);
+    useStereoModeButton.setColour (TextButton::buttonColourId, Colours::lightgrey);
+    useStereoModeButton.setColour (TextButton::buttonOnColourId, sofaPanLookAndFeel.mainCyan);
+    useStereoModeButton.setColour (TextButton::textColourOffId, Colours::grey);
+    //useStereoModeButton.setToggleState(false, dontSendNotification);
+    useStereoModeButton.setConnectedEdges (Button::ConnectedOnRight | Button::ConnectedOnLeft);
+    useStereoModeButton.addListener(this);
+    addAndMakeVisible(&useStereoModeButton);
     
     useLayoutSimplePanningButton.setButtonText("Simple Panning");
     useLayoutSimplePanningButton.setClickingTogglesState(true);
@@ -225,8 +234,8 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
 #endif
   
     addAndMakeVisible(&metadataView);
-    
     metadataView.setVisible(false);
+    
     
     counter = 0;
     startTimer(50);
@@ -241,12 +250,6 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     popUpInfo = new BubbleMessageComponent();
     popUpInfo->setAlwaysOnTop (true);
     popUpInfo->addToDesktop(0);
-    
-    if(!connect(9001))
-       std::cout << "ERROR CONNECT";
-    
-    addListener (this, "/sofapan/rotaryknob");
-    addListener (this, "/sofapan/connectHandshake");
  
     
     
@@ -310,9 +313,14 @@ void SofaPanAudioProcessorEditor::timerCallback() {
     
     bool distanceSimActive = (bool)getParameterValue("dist_sim");
     bool nearfieldSimActive = (bool)getParameterValue("nearfield_sim");
+    bool stereoModeActive = (bool)getParameterValue("stereoMode");
     useDistanceSimulationButton.setToggleState(distanceSimActive, NotificationType::dontSendNotification);
     useNearfieldSimulationButton.setToggleState(nearfieldSimActive, NotificationType::dontSendNotification);
-
+    useStereoModeButton.setToggleState(stereoModeActive, NotificationType::dontSendNotification);
+    if(stereoModeActive)
+        panner_az.setLookAndFeel(&azStereoSliderLookAndFeel);
+    if(!stereoModeActive)
+        panner_az.setLookAndFeel(&azSliderLookAndFeel);
     
     headRadiusSlider.setValue((float)getParameterValue("individualHeadDiameter") * 6.0 + 14.0);
     headRadiusSlider.setVisible(ITDadjustButton.getToggleState());
@@ -339,7 +347,6 @@ void SofaPanAudioProcessorEditor::timerCallback() {
     if(distanceValue != lastDistanceValue)
         panner_dist.setValue(distanceValue, NotificationType::dontSendNotification);
     
-
     
     
     // update hrtf/hrir plots
@@ -583,6 +590,10 @@ void SofaPanAudioProcessorEditor::buttonClicked(Button *button)
         processor.updateSofaMetadataFlag = true;
     }
     
+    if(button == &useStereoModeButton){
+        setParameterValue("stereoMode", useStereoModeButton.getToggleState());
+    }
+    
     if(button == &useLayoutRoomsimButton){
         roomsimLayout = 1;
         rearrange();
@@ -594,6 +605,8 @@ void SofaPanAudioProcessorEditor::buttonClicked(Button *button)
         panner_dist.setSliderStyle(Slider::LinearHorizontal);
         repaint();
         setParameterValue("dist_sim", true);
+        setParameterValue("stereoMode", false);
+        useStereoModeButton.setVisible(false);
 
     }
     if(button == & useLayoutSimplePanningButton){
@@ -607,6 +620,7 @@ void SofaPanAudioProcessorEditor::buttonClicked(Button *button)
         repaint();
         setParameterValue("dist_sim", false);
         setParameterValue("nearfield_sim", false);
+        useStereoModeButton.setVisible(true);
 
     }
     
@@ -700,7 +714,6 @@ void SofaPanAudioProcessorEditor::rearrange(){
 #endif
     Rectangle<int> ITDAdjustControlBox = Rectangle<int>(distanceSimControlBox.withY(distanceSimControlBox.getBottom() + 10));
     ITDadjustButton.setBounds(ITDAdjustControlBox.getX() + 10, ITDAdjustControlBox.getY() + 10, 130., 30.);
-    //ITDadjustButton.setBounds(ITDAdjustControlBox.removeFromTop(ITDAdjustControlBox.getHeight()/2).reduced(10));
     
     headRadiusSlider.setBounds(ITDAdjustControlBox.getX() + 20, ITDAdjustControlBox.getY() + 50, ITDAdjustControlBox.getWidth() - 30, 30);
     
@@ -737,7 +750,6 @@ void SofaPanAudioProcessorEditor::rearrange(){
         elevationLabel.setBounds(panner_el.getX(), panner_el.getY() - 20, panner_el.getWidth(), 20);
         distanceLabel.setBounds(panner_dist.getX(), panner_dist.getY() - 20, panner_dist.getWidth(), 20);
 
-        
     }else{
         
         panner_size = (boxWithSpacing.getWidth() - spacing * 2) / 2.5;
@@ -761,6 +773,9 @@ void SofaPanAudioProcessorEditor::rearrange(){
         
         plotHRIRView.setBounds(boxWithSpacing.removeFromLeft(plotWidth));
         plotHRTFView.setBounds(plotHRIRView.getBounds().translated(plotWidth + spacing, 0));
+        
+        int width=40;
+        useStereoModeButton.setBounds(panner_az.getX() - 5 + (panner_az.getWidth() - width) / 2, panner_az.getBottom() + 10, width, width/2);
         
         
     }
@@ -840,23 +855,4 @@ void SofaPanAudioProcessorEditor::rearrange(){
         g.drawText("Rear View", rearViewLabel, Justification::topLeft);
         
     }
-}
-
-void SofaPanAudioProcessorEditor::oscMessageReceived(const OSCMessage& message){
-    
-    
-//    if (message.size() == 1 && message[0].isFloat32())
-//        rotaryKnob.setValue (jlimit (0.0f, 10.0f, message[0].getFloat32()));
-//
-//
-    if(message.getAddressPattern().matches("/sofapan/connectHandshake") && message[0].isString()){
-        if(message[0].getString().contains("SYN")){
-            std::cout << "\n\nMessageReceived!" << message[0].getString().substring(4);
-
-            oscSender.connect(message[0].getString().substring(4), 9001);
-            oscSender.send("/sofapan/connectHandshake", String("ACK"));
-
-        }
-    }
-    
 }

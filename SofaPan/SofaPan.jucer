@@ -71,6 +71,8 @@
               file="Source/RoomPannerComponent.h"/>
       </GROUP>
       <GROUP id="{51723BDB-0C84-0182-8911-B10250B6842A}" name="GUI">
+        <FILE id="caixpW" name="azimuthStereoSliderLookAndFeel.h" compile="0"
+              resource="0" file="Source/GUI/azimuthStereoSliderLookAndFeel.h"/>
         <FILE id="MNc1hT" name="azimuthSliderLookAndFeel.h" compile="0" resource="0"
               file="Source/GUI/azimuthSliderLookAndFeel.h"/>
         <FILE id="j2n80Y" name="sofaPanLookAndFeel.h" compile="0" resource="0"

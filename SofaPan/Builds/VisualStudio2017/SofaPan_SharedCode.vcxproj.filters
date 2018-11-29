@@ -2319,6 +2319,9 @@
     <ClInclude Include="..\..\Source\RoomPannerComponent.h">
       <Filter>SofaPan\Source\Components</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source\GUI\azimuthStereoSliderLookAndFeel.h">
+      <Filter>SofaPan\Source\GUI</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\GUI\azimuthSliderLookAndFeel.h">
       <Filter>SofaPan\Source\GUI</Filter>
     </ClInclude>
