@@ -334,6 +334,9 @@ void SofaPanAudioProcessorEditor::timerCallback() {
 	reverbLabel2.setVisible(useDistanceSimulationButton.getToggleState());
 #endif
     
+    float distMin = processor.metadata_sofafile.minDistance;
+    float distMax = processor.metadata_sofafile.maxDistance;
+    
     // update panning sliders if needed
     float azimuthValue = getParameterValue("azimuth") * 360.;
     if(azimuthValue != lastAzimuthValue)
@@ -343,7 +346,7 @@ void SofaPanAudioProcessorEditor::timerCallback() {
     if(elevationValue != lastElevationValue)
         panner_el.setValue(elevationValue, NotificationType::dontSendNotification);
     
-    float distanceValue = (getParameterValue("distance"));
+    float distanceValue = getParameterValue("distance") * MAX_DISTANCE;
     if(distanceValue != lastDistanceValue)
         panner_dist.setValue(distanceValue, NotificationType::dontSendNotification);
     
@@ -401,8 +404,7 @@ void SofaPanAudioProcessorEditor::timerCallback() {
             panner_el.setEnabled(false);
             panner2D_rear.setHasElevation(false);
         }
-		float distMin = processor.metadata_sofafile.minDistance;
-		float distMax = processor.metadata_sofafile.maxDistance;
+		
         
         //distance-simulation overrides measured distance data
         if(distanceSimActive){
@@ -422,8 +424,9 @@ void SofaPanAudioProcessorEditor::timerCallback() {
             panner_dist.setRange(distMin, distMax);
         }else{
             distanceRange_Note = (distanceMin + "m ");
+            
+            panner_dist.setRange(distMin, distMax+0.001f);
             panner_dist.setValue(distMax);
-            panner_dist.setRange(distMin, distMax);
             panner_dist.setEnabled(false);
         }
     
@@ -453,17 +456,18 @@ void SofaPanAudioProcessorEditor::timerCallback() {
 void SofaPanAudioProcessorEditor::sliderValueChanged(Slider* slider)
 {
     if(slider == &panner_az){
-        float panNormValue = panner_az.getValue() / 360.0;
+        float panNormValue = (float)panner_az.getValue() / 360.f;
         setParameterValue("azimuth", panNormValue);
         repaint();
     }
     if(slider == &panner_el){
-        float elevationNormValue = (panner_el.getValue() / 180.0) + 0.5; //map -90/90 -> 0/1
+        float elevationNormValue = ((float)panner_el.getValue() / 180.f) + 0.5f; //map -90/90 -> 0/1
         setParameterValue("elevation", elevationNormValue);
         repaint();
     }
     if(slider == &panner_dist){
-        setParameterValue("distance", panner_dist.getValue());
+        float distanceNormValue = (float)panner_dist.getValue() / (float)MAX_DISTANCE;
+        setParameterValue("distance", distanceNormValue);
         repaint();
     }
     if(slider == &headRadiusSlider){

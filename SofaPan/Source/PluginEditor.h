@@ -35,6 +35,7 @@
 //==============================================================================
 /**
 */
+
 class SofaPanAudioProcessorEditor  : public AudioProcessorEditor, public Slider::Listener, public Button::Listener, private Timer
 {
 public:
@@ -132,6 +133,8 @@ private:
     
     Label buildDateAndTimeLabel;
     Label buildVersionLabel;
+    
+
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SofaPanAudioProcessorEditor)
 };

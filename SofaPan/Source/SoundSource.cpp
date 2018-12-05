@@ -61,8 +61,8 @@ int SoundSource::initWithSofaData(SOFAData *sD, int _sampleRate, int _index){
     previousITDAdjust = false;
     
     //Initialize with any hrtf, so no convolution is done with a empty memory
-    hrtf_l = sofaData->getHRTFforAngle(0.0, 0.0, 1.0, hrtf_type_pseudoMinPhase);
-    hrtf_r = sofaData->getHRTFforAngle(0.0, 0.0, 1.0, hrtf_type_pseudoMinPhase);
+    hrtf_l = sofaData->getHRTFforAngle(0.0, 0.0, 1.0, hrtf_type_minPhase);
+    hrtf_r = sofaData->getHRTFforAngle(0.0, 0.0, 1.0, hrtf_type_minPhase);
     
     //determine the interpolation ordner (minimum 2) acoording to the SOFA Data
     interpolationOrder = 2;
@@ -83,7 +83,7 @@ int SoundSource::initWithSofaData(SOFAData *sD, int _sampleRate, int _index){
     elevationSmoothed.reset( ((float)sampleRate / (float)firLength) , 0.1);
 
 	prepareToPlay();
-    filter.prepareToPlay(sofaData->getHRTFforAngle(0.0, 0.0, 1.0, hrtf_type_pseudoMinPhase));
+    //filter.prepareToPlay(sofaData->getHRTFforAngle(0.0, 0.0, 1.0, hrtf_type_pseudoMinPhase));
     
     return 0;
 }
@@ -106,7 +106,7 @@ void SoundSource::releaseResources(){
 //Gets called once prior to all audio processin
 void SoundSource::prepareToPlay(){
     
-    filter.prepareToPlay(sofaData->getHRTFforAngle(0.0, 0.0, 1.0, hrtf_type_pseudoMinPhase));
+    filter.prepareToPlay(sofaData->getHRTFforAngle(0.0, 0.0, 1.0, hrtf_type_minPhase));
     
     fifoIndex = 0;
     

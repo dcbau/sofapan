@@ -57,10 +57,10 @@ SofaPanAudioProcessor::SofaPanAudioProcessor()
 
 SofaPanAudioProcessor::~SofaPanAudioProcessor()
 {
-#ifdef _WIN64
+//#ifdef _WIN64
     delete HRTFs;
     HRTFs = NULL;
-#endif
+//#endif
     //updater->removeConnection(getPipe()->getName());
     
 }
@@ -122,6 +122,7 @@ void SofaPanAudioProcessor::changeProgramName (int index, const String& newName)
 void SofaPanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
 
+    estimatedBlockSize = samplesPerBlock;
     //printf("\n prepare to play \n");
     counter = 0;
     
@@ -149,6 +150,7 @@ void SofaPanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
 
     reverb.prepareToPlay((int)sampleRate);
     directSource.prepareToPlay();
+    //directSource_2.prepareToPlay();
 #if ENBALE_SEMISTATICS
     semistaticRefl.prepareToPlay();
 #endif
@@ -172,6 +174,7 @@ void SofaPanAudioProcessor::initData(String sofaFile){
     
     
     status = directSource.initWithSofaData(HRTFs, (int)sampleRate_f, 1);
+    //status += directSource_2.initWithSofaData(HRTFs, (int)sampleRate_f, 2);
 #if ENBALE_SEMISTATICS
     status += semistaticRefl.init(HRTFs, roomSize, (int)sampleRate_f);
 #endif
@@ -265,14 +268,27 @@ void SofaPanAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     soundSourceData data;
     data.azimuth = params.azimuthParam->get() * 360.0;
     data.elevation = (params.elevationParam->get()-0.5) * 180.0;
-    data.distance = params.distanceParam->get();
+    data.distance = params.distanceParam->get() * MAX_DISTANCE;
     data.ITDAdjust = params.ITDAdjustParam->get();
     data.nfSimulation = params.nearfieldSimulationParam->get();
     data.overwriteOutputBuffer = true;
     if(ENABLE_TESTBUTTON)
         data.test = params.testSwitchParam->get();
     data.customHeadRadius = params.individualHeadDiameter->get() / 200.0;
-    directSource.process(inBuffer, outBufferL, outBufferR, numberOfSamples, data);
+/*
+    if(params.stereoModeParam->get()){
+        data.azimuth -= 30.f;
+        if(data.azimuth < 0.f) data.azimuth += 360.f;
+        directSource.process(inBuffer, outBufferL, outBufferR, numberOfSamples, data);
+        data.azimuth += 60.f;
+        data.overwriteOutputBuffer = false;
+        if(data.azimuth > 360.f) data.azimuth -= 360.f;
+        directSource_2.process(inBuffer, outBufferL, outBufferR, numberOfSamples, data);
+        
+    }else*/
+    //{
+        directSource.process(inBuffer, outBufferL, outBufferR, numberOfSamples, data);
+    //}
 
     
     if(params.distanceSimulationParam->get()){
@@ -368,7 +384,7 @@ fftwf_complex* SofaPanAudioProcessor::getCurrentHRTF()
     float elevation = (params.elevationParam->get()-0.5) * 180.0;
     float distance = 1;
     if(!(bool)params.distanceSimulationParam->get())
-        distance = params.distanceParam->get();
+        distance = params.distanceParam->get() * MAX_DISTANCE;
     
     return HRTFs->getHRTFforAngle(elevation, azimuth, distance, hrir_type_original);
 }
@@ -383,7 +399,7 @@ float* SofaPanAudioProcessor::getCurrentHRIR()
     
     float distance = 1;
     if(!(bool)params.distanceSimulationParam->get())
-        distance = params.distanceParam->get();
+        distance = params.distanceParam->get() * MAX_DISTANCE;
     
     return HRTFs->getHRIRforAngle(elevation, azimuth, distance, hrir_type_original);
 }
@@ -402,7 +418,7 @@ ITDStruct SofaPanAudioProcessor::getCurrentITD()
     
     float distance = 1;
     if(!(bool)params.distanceSimulationParam->get())
-        distance = params.distanceParam->get();
+        distance = params.distanceParam->get() * MAX_DISTANCE;
     
     return HRTFs->getITDForAngle(elevation, azimuth, distance);
 }
@@ -417,7 +433,7 @@ float* SofaPanAudioProcessor::getCurrentMagSpectrum()
     
     float distance = 1;
     if(!(bool)params.distanceSimulationParam->get())
-        distance = params.distanceParam->get();
+        distance = params.distanceParam->get() * MAX_DISTANCE;
     
     return HRTFs->getInterpolatedMagSpectrumForAngle(elevation, azimuth, distance);
 }
@@ -433,7 +449,7 @@ float* SofaPanAudioProcessor::getCurrentPhaseSpectrum()
     
     float distance = 1;
     if(!(bool)params.distanceSimulationParam->get())
-        distance = params.distanceParam->get();
+        distance = params.distanceParam->get() * MAX_DISTANCE;
     
     return HRTFs->getPhaseSpectrumForAngle(elevation, azimuth, distance, hrtf_type_minPhase);
 }

@@ -41,6 +41,7 @@ extern "C" {
 
 #define ROOMRADIUS 5.0
 #define HEADHEIGHT 1.7
+#define MAX_DISTANCE 10.0
 
 
 //class FilterEngine;
@@ -116,8 +117,9 @@ private:
     
     float sampleRate_f;
     
-    ScopedPointer<SOFAData> HRTFs;
+    SOFAData* HRTFs;
     SoundSource directSource;
+    SoundSource directSource_2;
     
     //std::vector<EarlyReflection*> earlyReflections;
 #if ENABLE_SEMESTATICS
