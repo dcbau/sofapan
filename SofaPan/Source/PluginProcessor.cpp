@@ -137,20 +137,18 @@ void SofaPanAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     }
     
 
-    reflectionInBuffer = AudioSampleBuffer(1, estimatedBlockSize);
+    inputBufferLocalCopy = AudioSampleBuffer(2, estimatedBlockSize);
     reflectionOutBuffer = AudioSampleBuffer(2, estimatedBlockSize);
-    reverbInBuffer = AudioSampleBuffer(1, estimatedBlockSize);
-    reverbOutBuffer = AudioSampleBuffer(2, estimatedBlockSize);
+    reverbBuffer = AudioSampleBuffer(2, estimatedBlockSize);
     
-    reflectionInBuffer.clear();
+    inputBufferLocalCopy.clear();
     reflectionOutBuffer.clear();
 
-    reverbInBuffer.clear();
-    reverbOutBuffer.clear();
+    reverbBuffer.clear();
 
     reverb.prepareToPlay((int)sampleRate);
     directSource.prepareToPlay();
-    //directSource_2.prepareToPlay();
+    directSource_2.prepareToPlay();
 #if ENBALE_SEMISTATICS
     semistaticRefl.prepareToPlay();
 #endif
@@ -174,7 +172,7 @@ void SofaPanAudioProcessor::initData(String sofaFile){
     
     
     status = directSource.initWithSofaData(HRTFs, (int)sampleRate_f, 1);
-    //status += directSource_2.initWithSofaData(HRTFs, (int)sampleRate_f, 2);
+    status += directSource_2.initWithSofaData(HRTFs, (int)sampleRate_f, 2);
 #if ENBALE_SEMISTATICS
     status += semistaticRefl.init(HRTFs, roomSize, (int)sampleRate_f);
 #endif
@@ -240,30 +238,36 @@ void SofaPanAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     //This should actually never happen, BUT it is possible
     if(estimatedBlockSize != numberOfSamples){
         estimatedBlockSize = numberOfSamples;
-        reflectionInBuffer.setSize(reflectionInBuffer.getNumChannels(), estimatedBlockSize);
+        inputBufferLocalCopy.setSize(inputBufferLocalCopy.getNumChannels(), estimatedBlockSize);
         reflectionOutBuffer.setSize(reflectionOutBuffer.getNumChannels(), estimatedBlockSize);
-        reverbInBuffer.setSize(reverbInBuffer.getNumChannels(), estimatedBlockSize);
-        reverbOutBuffer.setSize(reverbOutBuffer.getNumChannels(), estimatedBlockSize);
-        reflectionInBuffer.clear();
+        reverbBuffer.setSize(reverbBuffer.getNumChannels(), estimatedBlockSize);
         reflectionOutBuffer.clear();
-        reverbInBuffer.clear();
-        reverbOutBuffer.clear();
     }
     
-    reflectionInBuffer.copyFrom(0, 0, buffer.getReadPointer(0), numberOfSamples);
-    reverbInBuffer.copyFrom(0, 0, buffer.getReadPointer(0), numberOfSamples);
 
+    
+    inputBufferLocalCopy.copyFrom(0, 0, buffer.getReadPointer(0), numberOfSamples);
+    inputBufferLocalCopy.copyFrom(1, 0, buffer.getReadPointer(totalNumInputChannels > 1 ? 1 : 0), numberOfSamples);
+    reverbBuffer.copyFrom(0, 0, buffer.getReadPointer(0), numberOfSamples);
+
+    //Make simple mono sum if no stereo processing is wished
+    if(!(bool)params.stereoModeParam->get()){
+        inputBufferLocalCopy.addFrom(0, 0, inputBufferLocalCopy, 1, 0, numberOfSamples);
+        inputBufferLocalCopy.applyGain(0, 0, numberOfSamples, 0.5);
+    }
+    
     const float* inBuffer = buffer.getReadPointer(0);
     float* outBufferL = buffer.getWritePointer (0);
     float* outBufferR = buffer.getWritePointer (1);
     
-    const float* inBufferRefl = reflectionInBuffer.getReadPointer(0);
+    const float* inBufLocalCopy_L = inputBufferLocalCopy.getReadPointer(0);
+    const float* inBufLocalCopy_R = inputBufferLocalCopy.getReadPointer(1);
     float* outBufferRefl_L = reflectionOutBuffer.getWritePointer(0);
     float* outBufferRefl_R= reflectionOutBuffer.getWritePointer(1);
 
-    const float* inBufferReverb = reverbInBuffer.getReadPointer(0);
-    float* outBufferReverbL = reverbOutBuffer.getWritePointer(0);
-    float* outBufferReverbR = reverbOutBuffer.getWritePointer(1);
+    const float* inBufferReverb = reverbBuffer.getReadPointer(0);
+    float* outBufferReverbL = reverbBuffer.getWritePointer(0);
+    float* outBufferReverbR = reverbBuffer.getWritePointer(1);
 
     soundSourceData data;
     data.azimuth = params.azimuthParam->get() * 360.0;
@@ -275,33 +279,39 @@ void SofaPanAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     if(ENABLE_TESTBUTTON)
         data.test = params.testSwitchParam->get();
     data.customHeadRadius = params.individualHeadDiameter->get() / 200.0;
-/*
+
     if(params.stereoModeParam->get()){
         data.azimuth -= 30.f;
         if(data.azimuth < 0.f) data.azimuth += 360.f;
-        directSource.process(inBuffer, outBufferL, outBufferR, numberOfSamples, data);
+        directSource.process(inBufLocalCopy_L, outBufferL, outBufferR, numberOfSamples, data);
         data.azimuth += 60.f;
         data.overwriteOutputBuffer = false;
         if(data.azimuth > 360.f) data.azimuth -= 360.f;
-        directSource_2.process(inBuffer, outBufferL, outBufferR, numberOfSamples, data);
+        directSource_2.process(inBufLocalCopy_R, outBufferL, outBufferR, numberOfSamples, data);
         
-    }else*/
-    //{
-        directSource.process(inBuffer, outBufferL, outBufferR, numberOfSamples, data);
-    //}
+    }else
+    {
+        directSource.process(inBufLocalCopy_L, outBufferL, outBufferR, numberOfSamples, data);
+    }
 
     
     if(params.distanceSimulationParam->get()){
 
+        //after stereo processing is done, it is time to definetely make a mono sum
+        if((bool)params.stereoModeParam->get()){
+            inputBufferLocalCopy.addFrom(0, 0, buffer, 1, 0, numberOfSamples);
+            inputBufferLocalCopy.applyGain(0, 0, numberOfSamples, 0.5);
+        }
+            
 #if ENABLE_SEMSTATICS
         if(params.mirrorSourceParam->get())
-            mirrorRefl.process(inBufferRefl, outBufferRefl_L, outBufferRefl_R, numberOfSamples, params);
+            mirrorRefl.process(inBufLocalCopy_L, outBufferRefl_L, outBufferRefl_R, numberOfSamples, params);
         else
-            semistaticRefl.process(inBufferRefl, outBufferRefl_L, outBufferRefl_R, numberOfSamples, params);
+            semistaticRefl.process(inBufLocalCopy_L, outBufferRefl_L, outBufferRefl_R, numberOfSamples, params);
 #endif
         
 #ifndef ENABLE_SEMISTATICS
-        mirrorRefl.process(inBufferRefl, outBufferRefl_L, outBufferRefl_R, numberOfSamples, params);
+        mirrorRefl.process(inBufLocalCopy_L, outBufferRefl_L, outBufferRefl_R, numberOfSamples, params);
         
 #endif
     
@@ -312,8 +322,8 @@ void SofaPanAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         
         //buffer.clear();
         
-        buffer.addFrom(0, 0, reverbOutBuffer, 0, 0, numberOfSamples);
-        buffer.addFrom(1, 0, reverbOutBuffer, 1, 0, numberOfSamples);
+        buffer.addFrom(0, 0, reverbBuffer, 0, 0, numberOfSamples);
+        buffer.addFrom(1, 0, reverbBuffer, 1, 0, numberOfSamples);
 
 
     }

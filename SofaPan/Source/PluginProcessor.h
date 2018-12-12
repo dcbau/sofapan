@@ -141,7 +141,7 @@ private:
     
     int estimatedBlockSize;
 
-    AudioSampleBuffer reflectionInBuffer, reflectionOutBuffer, reverbInBuffer, reverbOutBuffer;
+    AudioSampleBuffer inputBufferLocalCopy, reflectionOutBuffer, reverbBuffer;
 
     const float roomSize = 2 * ROOMRADIUS;
 

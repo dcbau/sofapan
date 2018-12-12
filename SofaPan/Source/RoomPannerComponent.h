@@ -274,7 +274,7 @@ public:
 
         setParameterValue("elevation", (spherical.elevation / 180.0) + 0.5);
         setParameterValue("azimuth", spherical.azimuth/360.0);
-        setParameterValue("distance", spherical.distance);
+        setParameterValue("distance", spherical.distance / MAX_DISTANCE);
         
         repaint();
         
