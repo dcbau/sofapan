@@ -67,6 +67,10 @@
 //==============================================================================
 // juce_audio_devices flags:
 
+#ifndef    JUCE_USE_WINRT_MIDI
+ #define   JUCE_USE_WINRT_MIDI 0
+#endif
+
 #ifndef    JUCE_ASIO
  //#define JUCE_ASIO 0
 #endif
@@ -103,10 +107,6 @@
  #define   JUCE_USE_ANDROID_OPENSLES 0
 #endif
 
-#ifndef    JUCE_USE_WINRT_MIDI
- #define   JUCE_USE_WINRT_MIDI 0
-#endif
-
 #ifndef    JUCE_DISABLE_AUDIO_MIXING_WITH_OTHER_APPS
  //#define JUCE_DISABLE_AUDIO_MIXING_WITH_OTHER_APPS 0
 #endif
@@ -136,6 +136,10 @@
 
 //==============================================================================
 // juce_audio_plugin_client flags:
+
+#ifndef    JUCE_VST3_CAN_REPLACE_VST2
+ //#define JUCE_VST3_CAN_REPLACE_VST2 1
+#endif
 
 #ifndef    JUCE_FORCE_USE_LEGACY_PARAM_IDS
  #define   JUCE_FORCE_USE_LEGACY_PARAM_IDS 0
@@ -210,12 +214,20 @@
  #define   JUCE_USE_CURL 0
 #endif
 
+#ifndef    JUCE_LOAD_CURL_SYMBOLS_LAZILY
+ //#define JUCE_LOAD_CURL_SYMBOLS_LAZILY 0
+#endif
+
 #ifndef    JUCE_CATCH_UNHANDLED_EXCEPTIONS
- //#define JUCE_CATCH_UNHANDLED_EXCEPTIONS 1
+ //#define JUCE_CATCH_UNHANDLED_EXCEPTIONS 0
 #endif
 
 #ifndef    JUCE_ALLOW_STATIC_NULL_VARIABLES
- //#define JUCE_ALLOW_STATIC_NULL_VARIABLES 1
+ //#define JUCE_ALLOW_STATIC_NULL_VARIABLES 0
+#endif
+
+#ifndef    JUCE_STRICT_REFCOUNTEDPOINTER
+ //#define JUCE_STRICT_REFCOUNTEDPOINTER 0
 #endif
 
 //==============================================================================
@@ -234,6 +246,10 @@
 
 #ifndef    JUCE_USE_DIRECTWRITE
  //#define JUCE_USE_DIRECTWRITE 1
+#endif
+
+#ifndef    JUCE_DISABLE_COREGRAPHICS_FONT_SMOOTHING
+ //#define JUCE_DISABLE_COREGRAPHICS_FONT_SMOOTHING 0
 #endif
 
 //==============================================================================
@@ -263,6 +279,10 @@
  //#define JUCE_USE_XCURSOR 1
 #endif
 
+#ifndef    JUCE_WIN_PER_MONITOR_DPI_AWARE
+ //#define JUCE_WIN_PER_MONITOR_DPI_AWARE 1
+#endif
+
 //==============================================================================
 // juce_gui_extra flags:
 
@@ -272,14 +292,6 @@
 
 #ifndef    JUCE_ENABLE_LIVE_CONSTANT_EDITOR
  #define   JUCE_ENABLE_LIVE_CONSTANT_EDITOR 0
-#endif
-//==============================================================================
-#ifndef    JUCE_STANDALONE_APPLICATION
- #if defined(JucePlugin_Name) && defined(JucePlugin_Build_Standalone)
-  #define  JUCE_STANDALONE_APPLICATION JucePlugin_Build_Standalone
- #else
-  #define  JUCE_STANDALONE_APPLICATION 0
- #endif
 #endif
 
 //==============================================================================
@@ -305,6 +317,9 @@
 #endif
 #ifndef  JucePlugin_Build_Standalone
  #define JucePlugin_Build_Standalone       1
+#endif
+#ifndef  JucePlugin_Build_Unity
+ #define JucePlugin_Build_Unity            0
 #endif
 #ifndef  JucePlugin_Enable_IAA
  #define JucePlugin_Enable_IAA             0
@@ -423,6 +438,12 @@
 #ifndef  JucePlugin_IAAName
  #define JucePlugin_IAAName                "HSD: SofaPan"
 #endif
+#ifndef  JucePlugin_VSTNumMidiInputs
+ #define JucePlugin_VSTNumMidiInputs       16
+#endif
+#ifndef  JucePlugin_VSTNumMidiOutputs
+ #define JucePlugin_VSTNumMidiOutputs      16
+#endif
 #ifndef  JucePlugin_MaxNumInputChannels
  #define JucePlugin_MaxNumInputChannels    2
 #endif
@@ -431,4 +452,13 @@
 #endif
 #ifndef  JucePlugin_PreferredChannelConfigurations
  #define JucePlugin_PreferredChannelConfigurations  {1,2}, {2,2}
+#endif
+
+//==============================================================================
+#ifndef    JUCE_STANDALONE_APPLICATION
+ #if defined(JucePlugin_Name) && defined(JucePlugin_Build_Standalone)
+  #define  JUCE_STANDALONE_APPLICATION JucePlugin_Build_Standalone
+ #else
+  #define  JUCE_STANDALONE_APPLICATION 0
+ #endif
 #endif
