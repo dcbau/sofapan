@@ -519,26 +519,23 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
     //Step 2: Get GLOBAL attributes
     int numberOfAttributes;
     nc_inq(ncid, NULL, NULL, &numberOfAttributes, NULL);
-    
-	char** name_of_att =  new char*[numberOfAttributes];
-    for (int i = 0; i <= numberOfAttributes; ++i) {
-        name_of_att[i] = new char[NC_MAX_NAME+1];
-    }
-    char** attributes = new char*[numberOfAttributes];
-    
+
     sofaMetadata.globalAttributeNames.resize(0);
     sofaMetadata.globalAttributeValues.resize(0);
     
     for(int i = 0; i < numberOfAttributes; i++){
-        nc_inq_attname(ncid, NC_GLOBAL, i, name_of_att[i]);
+        //get attribute name
+        char* att_name = new char[NC_MAX_NAME+1];
+        nc_inq_attname(ncid, NC_GLOBAL, i, att_name);
         
+        //get attribute length
         size_t attlength;
-        nc_inq_attlen(ncid, NC_GLOBAL, name_of_att[i], &attlength);
+        nc_inq_attlen(ncid, NC_GLOBAL, att_name, &attlength);
         
+        //get attribute value
         char* att = new char[attlength + 1];
-        nc_get_att(ncid, NC_GLOBAL, name_of_att[i], att);
+        nc_get_att(ncid, NC_GLOBAL, att_name, att);
         att[attlength] = '\0';
-        attributes[i] = att;
 
         //Check for ö (especially for the FH Köln Dataset ;) )
         for(int k = 0; k < attlength; k++){
@@ -546,11 +543,13 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
                 att[k] = 'o';
         }
         
-        
-        sofaMetadata.globalAttributeNames.add(String(CharPointer_UTF8 (name_of_att[i])));
-        sofaMetadata.globalAttributeValues.add(String(CharPointer_UTF8 (attributes[i])));
+        std::string attributeName(att_name);
+        std::string attribute(att);
+        sofaMetadata.globalAttributeNames.add(String(attributeName));
+        sofaMetadata.globalAttributeValues.add(String(attribute));
 
     }
+    
     
     sofaMetadata.listenerShortName = getSOFAGlobalAttribute("ListenerShortName", ncid);
 
