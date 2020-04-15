@@ -71,7 +71,7 @@ int SoundSource::initWithSofaData(SOFAData *sD, int _sampleRate, int _index){
     if(sofaData->getMetadata().hasElevation)
         interpolationOrder++;
     
-    //printf("\n\n Interpolation Order: %d \n\n", interpolationOrder);
+    printf("\n\n Interpolation Order: %d \n\n", interpolationOrder);
     
     distanceDelaySmoother.reset((double)sampleRate, 0.5);
     distanceGainSmoother.reset((double)sampleRate, 0.5);
@@ -176,6 +176,9 @@ void SoundSource::process(const float* inBuffer, float* outBuffer_L, float* outB
             float ITD = 0.0;
             if(data.ITDAdjust){
                 ITD = ITDToolkit::woodworthSphericalITD(data.customHeadRadius, data.azimuth, data.elevation);
+            }else
+            {
+                //just leave itd zero, since the orginal HRTFs are used
             }
 
             //delay left or right channel, depending on wether the ITD is positive or negative
@@ -211,15 +214,16 @@ void SoundSource::processFarfield(soundSourceData data){
        || previousDistance != data.distance)
     {
         
-        if(data.ITDAdjust)
+        if(data.ITDAdjust || data.interpolation)
         {
             //interpolation
-            sofaData->getHRTFsForInterpolation(hrtfsForInterpolation_Mag, hrtfsForInterpolation_Phase, interpolationDistances, data.elevation, data.azimuth, data.distance, interpolationOrder);
+            sofaData->getHRTFsForInterpolation(hrtfsForInterpolation_Mag, hrtfsForInterpolation_Phase, interpolationDistances, data.elevation, data.azimuth, data.distance, interpolationOrder, data.ITDAdjust);
             interpolation(L);
             hrtf_l = interpolatedHRTF;
         }else
         {
             hrtf_l = sofaData->getHRTFforAngle(data.elevation, data.azimuth, data.distance, hrtf_type_original);
+            
         }
         
         hrtf_r = hrtf_l;
@@ -262,13 +266,13 @@ void SoundSource::processNearfield(soundSourceData data){
        || previousDistance != data.distance)
     {
 
-        if(data.ITDAdjust){
+        if(data.ITDAdjust || data.interpolation){
             //interpolation
-            sofaData->getHRTFsForInterpolation(hrtfsForInterpolation_Mag, hrtfsForInterpolation_Phase, interpolationDistances, data.elevation, azimuth_l, distance, interpolationOrder);
+            sofaData->getHRTFsForInterpolation(hrtfsForInterpolation_Mag, hrtfsForInterpolation_Phase, interpolationDistances, data.elevation, azimuth_l, distance, interpolationOrder, data.ITDAdjust);
             interpolation(L);
             hrtf_l = interpolatedHRTF;
             
-            sofaData->getHRTFsForInterpolation(hrtfsForInterpolation_Mag, hrtfsForInterpolation_Phase, interpolationDistances, data.elevation, azimuth_r, distance, interpolationOrder);
+            sofaData->getHRTFsForInterpolation(hrtfsForInterpolation_Mag, hrtfsForInterpolation_Phase, interpolationDistances, data.elevation, azimuth_r, distance, interpolationOrder, data.ITDAdjust);
             interpolation(R);
             hrtf_r = interpolatedHRTF_R;
         }else{
@@ -302,7 +306,10 @@ void SoundSource::processNearfield(soundSourceData data){
 
 void SoundSource::interpolation(int leftOrRight){
 
-    float mag, phase;
+    /* IMPORTANT: leftOrRight does not specify the left/right part of an HRTF, but the different HRTFs used for left and right ear respectiveley when simulating the acoustic parallax effect in nearfield */
+    
+    std::vector<float> mag(2 * complexLength, 0.f);
+    std::vector<float> phase(2 * complexLength, 0.f);
 
 	float *w = new float[interpolationOrder];
     
@@ -312,32 +319,40 @@ void SoundSource::interpolation(int leftOrRight){
         w[k] = interpolationDistances[k] <0.00001 ? 100000 : 1 / interpolationDistances[k];
         weightSum += w[k];
     }
+    
+    //printf("\nw1: %.3f || w2: %.3f", w[0], w[1]);
+
 
     for(int k = 0; k < interpolationOrder; k++)
         w[k] /= weightSum;
     
+    //printf("\nw1: %.3f || w2: %.3f", w[0], w[1]);
+
     
     for(int i = 0; i < complexLength * 2; i++)
     {
-        mag = 0;
-        phase = 0;
         
         for(int k = 0; k < interpolationOrder; k++)
         {
-            mag += hrtfsForInterpolation_Mag[k][i] * w[k];
-            phase += hrtfsForInterpolation_Phase[k][i] * w[k];
+            mag[i] += hrtfsForInterpolation_Mag[k][i] * w[k];
+            phase[i] += hrtfsForInterpolation_Phase[k][i] * w[k];
         }
-        
-        
+    }
+    
+    phase = PhaseWrapping::wrap(phase);
+    
+    
+    for(int i = 0; i < complexLength * 2; i++)
+    {
         if(leftOrRight == L)
         {
-            interpolatedHRTF[i][0] = mag * cosf(phase);
-            interpolatedHRTF[i][1] = mag * sinf(phase);
+            interpolatedHRTF[i][0] = mag[i] * cosf(phase[i]);
+            interpolatedHRTF[i][1] = mag[i] * sinf(phase[i]);
         }
         if(leftOrRight == R)
         {
-            interpolatedHRTF_R[i][0] = mag * cosf(phase);
-            interpolatedHRTF_R[i][1] = mag * sinf(phase);
+            interpolatedHRTF_R[i][0] = mag[i] * cosf(phase[i]);
+            interpolatedHRTF_R[i][1] = mag[i] * sinf(phase[i]);
         }
     }
     

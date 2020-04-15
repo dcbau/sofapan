@@ -459,6 +459,13 @@
 			path = "../../JuceLibraryCode/include_juce_audio_processors.mm";
 			sourceTree = "SOURCE_ROOT";
 		};
+		657DF48EB64E7F6C42D56B59 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = PhaseWrapping.h;
+			path = ../../Source/PhaseWrapping.h;
+			sourceTree = "SOURCE_ROOT";
+		};
 		697E17EF106E4AC83556FD24 = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.objcpp;
@@ -564,13 +571,6 @@
 			path = ../../Source/CombFilter.h;
 			sourceTree = "SOURCE_ROOT";
 		};
-		9C12B422815ADD17BA5FE95C = {
-			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.cpp.cpp;
-			name = SoundSource.cpp;
-			path = ../../Source/SoundSource.cpp;
-			sourceTree = "SOURCE_ROOT";
-		};
 		9F8616D2AF57B0BC43B8DBB5 = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
@@ -620,11 +620,11 @@
 			path = ../../Source/GUI/SpeakerHexData.h;
 			sourceTree = "SOURCE_ROOT";
 		};
-		C2C4258C2F8AE82320560CFC = {
+		C375750D47757828AFA3B520 = {
 			isa = PBXFileReference;
-			lastKnownFileType = file;
-			name = "juce_core";
-			path = "../../../Dependencies/JUCE/modules/juce_core";
+			lastKnownFileType = sourcecode.cpp.objcpp;
+			name = "include_juce_events.mm";
+			path = "../../JuceLibraryCode/include_juce_events.mm";
 			sourceTree = "SOURCE_ROOT";
 		};
 		C69507736337FE79D01204E2 = {
@@ -669,6 +669,13 @@
 			path = libSofaPan.a;
 			sourceTree = "BUILT_PRODUCTS_DIR";
 		};
+		9C12B422815ADD17BA5FE95C = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = SoundSource.cpp;
+			path = ../../Source/SoundSource.cpp;
+			sourceTree = "SOURCE_ROOT";
+		};
 		A2AD0FC66081972EE09CB2F8 = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
@@ -697,11 +704,11 @@
 			path = ../../Source/GUI/sofaPanLookAndFeel.h;
 			sourceTree = "SOURCE_ROOT";
 		};
-		C375750D47757828AFA3B520 = {
+		C2C4258C2F8AE82320560CFC = {
 			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.cpp.objcpp;
-			name = "include_juce_events.mm";
-			path = "../../JuceLibraryCode/include_juce_events.mm";
+			lastKnownFileType = file;
+			name = "juce_core";
+			path = "../../../Dependencies/JUCE/modules/juce_core";
 			sourceTree = "SOURCE_ROOT";
 		};
 		C80EB37D2671988632377D78 = {
@@ -903,6 +910,7 @@
 		EDEBF1FEB6EB30B8FF0FF81E = {
 			isa = PBXGroup;
 			children = (
+				657DF48EB64E7F6C42D56B59,
 				D1114C1BE8F225AEB86C608D,
 				425E10AC93E54C7AC114C406,
 				1B6AC4F59A7CB13B7F066CDA,

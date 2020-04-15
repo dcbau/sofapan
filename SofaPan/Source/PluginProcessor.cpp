@@ -41,7 +41,8 @@ SofaPanAudioProcessor::SofaPanAudioProcessor()
     if(ENABLE_SEMISTATICS)
         addParameter(params.mirrorSourceParam = new AudioParameterBool("mirrorSource", "Mirror Source Model", false));
     addParameter(params.stereoModeParam = new AudioParameterBool("stereoMode", "Stereo Mode Active", false));
-    
+    addParameter(params.interpolationParam = new AudioParameterBool("interpolation", "Interpolation Active", false));
+
     HRTFs = new SOFAData();
 
     sampleRate_f = 0;
@@ -274,6 +275,7 @@ void SofaPanAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     data.elevation = (params.elevationParam->get()-0.5) * 180.0;
     data.distance = params.distanceParam->get() * MAX_DISTANCE;
     data.ITDAdjust = params.ITDAdjustParam->get();
+    data.interpolation = params.interpolationParam->get();
     data.nfSimulation = params.nearfieldSimulationParam->get();
     data.overwriteOutputBuffer = true;
     if(ENABLE_TESTBUTTON)
@@ -448,7 +450,7 @@ float* SofaPanAudioProcessor::getCurrentMagSpectrum()
     return HRTFs->getInterpolatedMagSpectrumForAngle(elevation, azimuth, distance);
 }
 
-float* SofaPanAudioProcessor::getCurrentPhaseSpectrum()
+float* SofaPanAudioProcessor::getCurrentPhaseSpectrum(bool unwrapped)
 {
     
     if(HRTFs == NULL)
@@ -460,8 +462,12 @@ float* SofaPanAudioProcessor::getCurrentPhaseSpectrum()
     float distance = 1;
     if(!(bool)params.distanceSimulationParam->get())
         distance = params.distanceParam->get() * MAX_DISTANCE;
-    
-    return HRTFs->getPhaseSpectrumForAngle(elevation, azimuth, distance, hrtf_type_minPhase);
+    if(params.ITDAdjustParam->get())
+        return HRTFs->getPhaseSpectrumForAngle(elevation, azimuth, distance, hrtf_type_minPhase);
+    else
+        return HRTFs->getPhaseSpectrumForAngle(elevation, azimuth, distance,
+                                               unwrapped ? hrtf_type_original_unwrapped : hrtf_type_original);
+
 }
 
 

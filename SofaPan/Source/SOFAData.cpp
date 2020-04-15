@@ -100,11 +100,11 @@ int SOFAData::initSofaData(const char* filePath, int sampleRate)
         
         //Create and Copy original HRIR for the pseudo minimum phase HRIRs
         for(int j = 0; j < lengthOfHRIR*2; j++)
-            loadedHRIRs[i]->getHRIRPseudoMinPhase()[j] = loadedHRIRs[i]->getHRIR()[j];
+            loadedHRIRs[i]->getHRIRZeroITD()[j] = loadedHRIRs[i]->getHRIR()[j];
         
         //Detect Onset Threshold and make Pseudo Minimum Phase HRIRs
-        loadedHRIRs[i]->ITD.onsetL_samples = mpg.makePseudoMinPhaseFilter(loadedHRIRs[i]->getHRIRPseudoMinPhase()               , lengthOfHRIR, 0.5);
-        loadedHRIRs[i]->ITD.onsetR_samples = mpg.makePseudoMinPhaseFilter(loadedHRIRs[i]->getHRIRPseudoMinPhase() + lengthOfHRIR, lengthOfHRIR, 0.5);
+        loadedHRIRs[i]->ITD.onsetL_samples = mpg.makePseudoMinPhaseFilter(loadedHRIRs[i]->getHRIRZeroITD()               , lengthOfHRIR, 0.5);
+        loadedHRIRs[i]->ITD.onsetR_samples = mpg.makePseudoMinPhaseFilter(loadedHRIRs[i]->getHRIRZeroITD() + lengthOfHRIR, lengthOfHRIR, 0.5);
         
         //Save ITD in ms
         //Negative Values represent a position to the left of the head (delay left is smaller), positive values for right of the head
@@ -167,6 +167,8 @@ int SOFAData::initSofaData(const char* filePath, int sampleRate)
             loadedHRIRs[i]->getMagSpectrum()[k] = (sqrtf(fftOutputBuffer[k][0] * fftOutputBuffer[k][0] + fftOutputBuffer[k][1] * fftOutputBuffer[k][1]));
             loadedHRIRs[i]->getPhaseSpectrum()[k] = atan2f(fftOutputBuffer[k][1], fftOutputBuffer[k][0]);// / M_PI;
         }
+        PhaseWrapping::unwrap(loadedHRIRs[i]->getPhaseSpectrum(), loadedHRIRs[i]->getPhaseSpectrumUnwrapped(), lengthOfHRTF, false);
+        
         
         // RIGHT
         
@@ -189,6 +191,7 @@ int SOFAData::initSofaData(const char* filePath, int sampleRate)
             loadedHRIRs[i]->getMagSpectrum()[k + lengthOfHRTF] = (sqrtf(fftOutputBuffer[k][0] * fftOutputBuffer[k][0] + fftOutputBuffer[k][1] * fftOutputBuffer[k][1]));
             loadedHRIRs[i]->getPhaseSpectrum()[k + lengthOfHRTF] = atan2f(fftOutputBuffer[k][1], fftOutputBuffer[k][0]);// / M_PI;
         }
+        PhaseWrapping::unwrap(loadedHRIRs[i]->getPhaseSpectrum()+lengthOfHRTF, loadedHRIRs[i]->getPhaseSpectrumUnwrapped()+lengthOfHRTF, lengthOfHRTF, false);
         
         
         
@@ -202,7 +205,7 @@ int SOFAData::initSofaData(const char* filePath, int sampleRate)
         
         //Write IR into inputBuffer and do zeropadding
         for(int k = 0; k < lengthOfHRIR; k++){
-            fftInputBuffer[k] = loadedHRIRs[i]->getHRIRPseudoMinPhase()[k];
+            fftInputBuffer[k] = loadedHRIRs[i]->getHRIRZeroITD()[k];
             fftInputBuffer[k+lengthOfHRIR] = 0.0;
         }
         //Do FFT HRIR->HRTF
@@ -218,7 +221,7 @@ int SOFAData::initSofaData(const char* filePath, int sampleRate)
         
         //Write IR into inputBuffer and do zeropadding
         for(int k = 0; k < lengthOfHRIR; k++){
-            fftInputBuffer[k] = loadedHRIRs[i]->getHRIRPseudoMinPhase()[k + lengthOfHRIR];
+            fftInputBuffer[k] = loadedHRIRs[i]->getHRIRZeroITD()[k + lengthOfHRIR];
             fftInputBuffer[k+lengthOfHRIR] = 0.0;
         }
         
@@ -304,6 +307,7 @@ void SOFAData::searchClosestHRTFs(int* results, float* distances, int desiredClo
         results[i] = 0;
     
     //transform spherical coordinates to cartesian coordinates
+    radius = loadedHRIRs[0]->Distance;
     float x = radius * cosf(elevation * d2r) * cosf(azimuth * d2r);
     float y = radius * cosf(elevation * d2r) * sinf(azimuth * d2r);
     float z = radius * sinf(elevation * d2r);
@@ -316,6 +320,7 @@ void SOFAData::searchClosestHRTFs(int* results, float* distances, int desiredClo
     // Walk through every measurement and compare its position coordinates with the coordinates we are looking for
     for(int i = 0; i < sofaMetadata.numMeasurements; i++)
     {
+        
         
         float dx = x - loadedHRIRs[i]->x;
         float dy = y - loadedHRIRs[i]->y;
@@ -340,6 +345,11 @@ void SOFAData::searchClosestHRTFs(int* results, float* distances, int desiredClo
                 
                 break;
             }
+        }
+        
+        printf("\n");
+        for(int i = 0; i < desiredClosestPoints; i++){
+            printf("[%d] HRTF: %.1f|%.1f  D: %.3f", i, loadedHRIRs[results[i]]->Azimuth, loadedHRIRs[results[i]]->Elevation, distances[i]);
         }
         
     }
@@ -381,16 +391,22 @@ int SOFAData::searchHRTF(float elevation, float azimuth, float radius){
 
 
 
-void SOFAData::getHRTFsForInterpolation(float** resultsMag, float** resultsPhase, float* distances, float elevation, float azimuth, float radius, int numDesiredHRTFs){
+void SOFAData::getHRTFsForInterpolation(float** resultsMag, float** resultsPhase, float* distances, float elevation, float azimuth, float radius, int numDesiredHRTFs, bool minPhase){
     
     int *id = new int[numDesiredHRTFs];
     radius = 1.0;
     searchClosestHRTFs(id, distances, numDesiredHRTFs, elevation, azimuth, radius);
     
-    
-    for(int i = 0; i < numDesiredHRTFs; i++){
-        resultsMag[i] = loadedHRIRs[id[i]]->getMagSpectrum();
-        resultsPhase[i] = loadedHRIRs[id[i]]->getPhaseSpectrumMinPhase();
+    if(minPhase){
+        for(int i = 0; i < numDesiredHRTFs; i++){
+            resultsMag[i] = loadedHRIRs[id[i]]->getMagSpectrum();
+            resultsPhase[i] = loadedHRIRs[id[i]]->getPhaseSpectrumMinPhase();
+        }
+    }else{
+        for(int i = 0; i < numDesiredHRTFs; i++){
+            resultsMag[i] = loadedHRIRs[id[i]]->getMagSpectrum();
+            resultsPhase[i] = loadedHRIRs[id[i]]->getPhaseSpectrumUnwrapped();
+        }
     }
 
 }
@@ -403,7 +419,7 @@ fftwf_complex* SOFAData::getHRTFforAngle(float elevation, float azimuth, float r
     switch(version){
         case hrtf_type_original:
             return loadedHRIRs[id]->getHRTF();
-        case hrtf_type_pseudoMinPhase:
+        case hrtf_type_zero_itd:
             return loadedHRIRs[id]->getHRTFPseudoMinPhase();
         case hrtf_type_minPhase:
             return loadedHRIRs[id]->getHRTFMinPhase();
@@ -420,8 +436,8 @@ float* SOFAData::getHRIRforAngle(float elevation, float azimuth, float radius, i
     switch(version){
         case hrtf_type_original:
             return loadedHRIRs[id]->getHRIR();
-        case hrtf_type_pseudoMinPhase:
-            return loadedHRIRs[id]->getHRIRPseudoMinPhase();
+        case hrtf_type_zero_itd:
+            return loadedHRIRs[id]->getHRIRZeroITD();
         case hrtf_type_minPhase:
             return loadedHRIRs[id]->getHRIRMinPhase();
         default:
@@ -484,6 +500,8 @@ float* SOFAData::getPhaseSpectrumForAngle(float elevation, float azimuth, float 
     switch (version) {
         case hrtf_type_original:
             return loadedHRIRs[id]->getPhaseSpectrum();
+        case hrtf_type_original_unwrapped:
+            return loadedHRIRs[id]->getPhaseSpectrumUnwrapped();
         case hrtf_type_minPhase:
             return loadedHRIRs[id]->getPhaseSpectrumMinPhase();
         default:

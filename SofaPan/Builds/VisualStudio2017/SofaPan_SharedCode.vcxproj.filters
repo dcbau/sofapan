@@ -2409,6 +2409,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\PhaseWrapping.h">
+      <Filter>SofaPan\Source\Helpers</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\CircularAngleSmoother.h">
       <Filter>SofaPan\Source\Helpers</Filter>
     </ClInclude>

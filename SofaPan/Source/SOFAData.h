@@ -22,6 +22,7 @@ extern "C" {
 #include "ErrorHandling.h"
 #include "ITDToolkit.h"
 #include "MinPhaseGenerator.h"
+#include "PhaseWrapping.h"
 
 #define ERR_MEM_ALLOC   1
 #define ERR_READFILE    2
@@ -36,13 +37,14 @@ extern "C" {
 
 enum {
     hrtf_type_original = 0,
-    hrtf_type_pseudoMinPhase,
+    hrtf_type_zero_itd,
     hrtf_type_minPhase,
+    hrtf_type_original_unwrapped
 };
 
 enum {
     hrir_type_original = 0,
-    hrir_type_pseudoMinPhase,
+    hrir_type_zero_itd,
     hrir_type_minPhase,
 };
 
@@ -91,32 +93,34 @@ typedef struct{
 class Single_HRIR_Measurement {
 public:
     Single_HRIR_Measurement(int lengthHRIR, int lengthHRTF){
-        HRIR = fftwf_alloc_real(lengthHRIR * 2);
-        HRIRPseudoMinPhase = fftwf_alloc_real(lengthHRIR * 2);
-        HRIRMinPhase = fftwf_alloc_real(lengthHRIR * 2);
+        m_HRIR = fftwf_alloc_real(lengthHRIR * 2);
+        m_HRIRZeroITD = fftwf_alloc_real(lengthHRIR * 2);
+        m_HRIRMinPhase = fftwf_alloc_real(lengthHRIR * 2);
 
-        HRTF = fftwf_alloc_complex(lengthHRTF * 2);
-        HRTFPseudoMinPhase = fftwf_alloc_complex(lengthHRTF * 2);
-        HRTFMinPhase = fftwf_alloc_complex(lengthHRTF * 2);
+        m_HRTF = fftwf_alloc_complex(lengthHRTF * 2);
+        m_HRTFPseudoMinPhase = fftwf_alloc_complex(lengthHRTF * 2);
+        m_HRTFMinPhase = fftwf_alloc_complex(lengthHRTF * 2);
 
-        magSpectrum = (float*)malloc(lengthHRTF * 2 * sizeof(float));
-        phaseSpectrum = (float*)malloc(lengthHRTF * 2 * sizeof(float));
-        phaseSpectrumMinPhase = (float*)malloc(lengthHRTF * 2 * sizeof(float));
+        m_magSpectrum = (float*)malloc(lengthHRTF * 2 * sizeof(float));
+        m_phaseSpectrum = (float*)malloc(lengthHRTF * 2 * sizeof(float));
+        m_phaseSpectrumUnwrapped = (float*)malloc(lengthHRTF * 2 * sizeof(float));
+        m_phaseSpectrumMinPhase = (float*)malloc(lengthHRTF * 2 * sizeof(float));
 
         
     }
     ~Single_HRIR_Measurement(){
-        fftwf_free(HRIR); //not allocated when freed
-        fftwf_free(HRIRPseudoMinPhase); //not allocated when freed
-        fftwf_free(HRIRMinPhase); //not allocated when freed
+        fftwf_free(m_HRIR); //not allocated when freed
+        fftwf_free(m_HRIRZeroITD); //not allocated when freed
+        fftwf_free(m_HRIRMinPhase); //not allocated when freed
 
-        fftwf_free(HRTF);
-        fftwf_free(HRTFPseudoMinPhase);
-        fftwf_free(HRTFMinPhase);
+        fftwf_free(m_HRTF);
+        fftwf_free(m_HRTFPseudoMinPhase);
+        fftwf_free(m_HRTFMinPhase);
 
-        free(magSpectrum);
-        free(phaseSpectrum);
-        free(phaseSpectrumMinPhase);
+        free(m_magSpectrum);
+        free(m_phaseSpectrum);
+        free(m_phaseSpectrumUnwrapped);
+        free(m_phaseSpectrumMinPhase);
 
         
     }
@@ -129,17 +133,18 @@ public:
         y = distance * cosf(Elevation * d2r) * sinf(Azimuth * d2r);
         z = distance * sinf(Elevation * d2r);
     }
-    float *getHRIR(){return  HRIR;}
-    float *getHRIRPseudoMinPhase(){return  HRIRPseudoMinPhase;}
-    float *getHRIRMinPhase(){return  HRIRMinPhase;}
+    float *getHRIR(){return  m_HRIR;}
+    float *getHRIRZeroITD(){return  m_HRIRZeroITD;}
+    float *getHRIRMinPhase(){return  m_HRIRMinPhase;}
 
-    fftwf_complex* getHRTF(){return HRTF;}
-    fftwf_complex* getHRTFPseudoMinPhase(){return HRTFPseudoMinPhase;}
-    fftwf_complex* getHRTFMinPhase(){return HRTFMinPhase;}
+    fftwf_complex* getHRTF(){return m_HRTF;}
+    fftwf_complex* getHRTFPseudoMinPhase(){return m_HRTFPseudoMinPhase;}
+    fftwf_complex* getHRTFMinPhase(){return m_HRTFMinPhase;}
 
-    float *getMagSpectrum(){return magSpectrum;}
-    float *getPhaseSpectrum(){return phaseSpectrum;}
-    float *getPhaseSpectrumMinPhase(){return phaseSpectrumMinPhase;}
+    float *getMagSpectrum(){return m_magSpectrum;}
+    float *getPhaseSpectrum(){return m_phaseSpectrum;}
+    float *getPhaseSpectrumUnwrapped(){return m_phaseSpectrumUnwrapped;}
+    float *getPhaseSpectrumMinPhase(){return m_phaseSpectrumMinPhase;}
 
     
     float Elevation;
@@ -153,15 +158,16 @@ public:
 
     
 protected:
-    float* HRIR;
-    float* HRIRPseudoMinPhase;
-    float* HRIRMinPhase;
-    fftwf_complex* HRTF;
-    fftwf_complex* HRTFPseudoMinPhase;
-    fftwf_complex* HRTFMinPhase;
-    float* magSpectrum; //used for plotting
-    float* phaseSpectrum; //used for plotting
-    float* phaseSpectrumMinPhase;
+    float* m_HRIR;
+    float* m_HRIRZeroITD;
+    float* m_HRIRMinPhase;
+    fftwf_complex* m_HRTF;
+    fftwf_complex* m_HRTFPseudoMinPhase;
+    fftwf_complex* m_HRTFMinPhase;
+    float* m_magSpectrum; //used for plotting
+    float* m_phaseSpectrum; //used for plotting
+    float* m_phaseSpectrumUnwrapped;
+    float* m_phaseSpectrumMinPhase;
     
     
 };
@@ -199,7 +205,7 @@ public:
 
     ITDStruct getITDForAngle(float elevation, float azimuth, float radius);
     
-    void getHRTFsForInterpolation(float** resultsMag, float** resultsPhase, float* distances, float elevation, float azimuth, float radius, int numDesiredHRTFs);
+    void getHRTFsForInterpolation(float** resultsMag, float** resultsPhase, float* distances, float elevation, float azimuth, float radius, int numDesiredHRTFs, bool minPhase);
 
 
     float* getInterpolatedMagSpectrumForAngle(float elevation, float azimuth, float radius);

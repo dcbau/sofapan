@@ -42,7 +42,7 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     panner_el.setSliderStyle(Slider::Rotary);
     panner_el.setComponentID("2");
     panner_el.setLookAndFeel(&elSliderLookAndFeel);
-    panner_el.setRange(-90.0, 90.0, 1.0);
+    panner_el.setRange(-90.0, 90.0, 0.1);
     panner_el.setTextValueSuffix(" deg");
     panner_el.setPopupDisplayEnabled(false, false, this);
     panner_el.setTextBoxStyle(Slider::TextBoxBelow, false, 70, 15);
@@ -130,6 +130,11 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     ITDadjustButton.setColour(ToggleButton::textColourId, Colours::white);
     ITDadjustButton.addListener(this);
     addAndMakeVisible(&ITDadjustButton);
+    
+    interpolationButton.setButtonText("Interpolation");
+    interpolationButton.setColour(ToggleButton::textColourId, Colours::white);
+    interpolationButton.addListener(this);
+    addAndMakeVisible(&interpolationButton);
     
     
     headRadiusSlider.setSliderStyle(Slider::LinearHorizontal);
@@ -300,6 +305,7 @@ void SofaPanAudioProcessorEditor::resized()
 void SofaPanAudioProcessorEditor::timerCallback() {
 
     ITDadjustButton.setToggleState((bool)getParameterValue("ITDadjust"), NotificationType::dontSendNotification);
+    interpolationButton.setToggleState((bool)getParameterValue("interpolation"), NotificationType::dontSendNotification);
 #if ENABLE_TESTBUTTON
     testSwitchButton.setToggleState((bool)getParameterValue("test"), NotificationType::dontSendNotification);
 #endif
@@ -362,7 +368,7 @@ void SofaPanAudioProcessorEditor::timerCallback() {
             int complexLength = firLength + 1;
             int sampleRate = processor.getSampleRate();
             plotHRIRView.drawHRIR(processor.getCurrentHRIR(), firLength, sampleRate, processor.getCurrentITD());
-            plotHRTFView.drawHRTF(processor.getCurrentMagSpectrum(), processor.getCurrentPhaseSpectrum(), complexLength, sampleRate);
+            plotHRTFView.drawHRTF(processor.getCurrentMagSpectrum(), processor.getCurrentPhaseSpectrum(false), processor.getCurrentPhaseSpectrum(true), complexLength, sampleRate);
         }
         panner2D_top.setDistanceAndAngle(distanceValue, azimuthValue, elevationValue);
         panner2D_rear.setDistanceAndAngle(distanceValue, azimuthValue, elevationValue);
@@ -462,7 +468,7 @@ void SofaPanAudioProcessorEditor::sliderValueChanged(Slider* slider)
     }
     if(slider == &panner_el){
         float elevationNormValue = ((float)panner_el.getValue() / 180.f) + 0.5f; //map -90/90 -> 0/1
-        setParameterValue("elevation", elevationNormValue);
+        setParameterValue("elevation", floorf(elevationNormValue*10)/10);
         repaint();
     }
     if(slider == &panner_dist){
@@ -561,6 +567,9 @@ void SofaPanAudioProcessorEditor::buttonClicked(Button *button)
     
     if (button == &ITDadjustButton)
         setParameterValue("ITDadjust", ITDadjustButton.getToggleState());
+    
+    if (button == &interpolationButton)
+    setParameterValue("interpolation", interpolationButton.getToggleState());
     
 #if ENABLE_TESTBUTTON
     if (button == &testSwitchButton)
@@ -716,10 +725,12 @@ void SofaPanAudioProcessorEditor::rearrange(){
 #endif
     
 #endif
-    Rectangle<int> ITDAdjustControlBox = Rectangle<int>(distanceSimControlBox.withY(distanceSimControlBox.getBottom() + 10));
-    ITDadjustButton.setBounds(ITDAdjustControlBox.getX() + 10, ITDAdjustControlBox.getY() + 10, 130., 30.);
+    Rectangle<int> renderTweaksControlBox = Rectangle<int>(distanceSimControlBox.withY(distanceSimControlBox.getBottom() + 10));
+    renderTweaksControlBox.setBottom(renderTweaksControlBox.getBottom()+20);
+    interpolationButton.setBounds(renderTweaksControlBox.getX() + 10, renderTweaksControlBox.getY() + 10, 130., 30.);
+    ITDadjustButton.setBounds(renderTweaksControlBox.getX() + 10, interpolationButton.getBottom(), 130., 30.);
     
-    headRadiusSlider.setBounds(ITDAdjustControlBox.getX() + 20, ITDAdjustControlBox.getY() + 50, ITDAdjustControlBox.getWidth() - 30, 30);
+    headRadiusSlider.setBounds(renderTweaksControlBox.getX() + 20, ITDadjustButton.getBottom() + 5, renderTweaksControlBox.getWidth() - 30, 30);
     
 #if ENABLE_TESTBUTTON
     testSwitchButton.setBounds(10., ITDAdjustControlBox.getBottom() + 10, 100., 30.);
@@ -806,10 +817,10 @@ void SofaPanAudioProcessorEditor::rearrange(){
     
     g.setColour(Colour(0xFF2A2A2A));
     g.fillRect(distanceSimControlBox);
-    g.fillRect(ITDAdjustControlBox);
+    g.fillRect(renderTweaksControlBox);
     g.setColour(Colours::grey);
     g.drawRect(distanceSimControlBox);
-    g.drawRect(ITDAdjustControlBox);
+    g.drawRect(renderTweaksControlBox);
 
     
     g.setColour(Colours::white);

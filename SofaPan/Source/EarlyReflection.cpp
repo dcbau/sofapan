@@ -66,7 +66,7 @@ int EarlyReflection::initWithSofaData(SOFAData *sD, int _sampleRate, float angle
         hrtf[i][0] = _hrtf[i][0];
         hrtf[i][1] = _hrtf[i][1];
     }
-    _hrtf = sD->getHRTFforAngle(elevation, azimuth, 1.0, hrtf_type_pseudoMinPhase);
+    _hrtf = sD->getHRTFforAngle(elevation, azimuth, 1.0, hrtf_type_zero_itd);
     for(int i = 0; i < 2 * complexLength; i++){
         hrtf_minPhase[i][0] = _hrtf[i][0];
         hrtf_minPhase[i][1] = _hrtf[i][1];

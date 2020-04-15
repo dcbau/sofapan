@@ -37,7 +37,7 @@ public:
         if(ITD > MAX_ITD) ITD = MAX_ITD;
         if(ITD < -MAX_ITD) ITD = -MAX_ITD;
 
-        printf("\nZ: %.3f ITD: %f", omegaLateral, ITD);
+        //printf("\nZ: %.3f ITD: %f", omegaLateral, ITD);
 
         return ITD;
     }

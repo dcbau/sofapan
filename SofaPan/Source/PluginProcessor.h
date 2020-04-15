@@ -36,7 +36,7 @@ extern "C" {
 #elif _WIN32
 #define SOFA_DEFAULT_PATH "C:\\Program Files (x86)\\Steinberg\\VstPlugins\\SOFAFiles\\mit_kemar_normal_pinna.sofa"
 #elif __APPLE__
-#define SOFA_DEFAULT_PATH "/Library/Audio/Plug-Ins/SOFAFiles/mit_kemar_normal_pinna.sofa"
+#define SOFA_DEFAULT_PATH "/Users/davidbau/Documents/MATLAB/noEl_8Az.sofa"
 #endif
 
 #define ROOMRADIUS 5.0
@@ -97,7 +97,7 @@ public:
     float* getCurrentHRIR();
     ITDStruct getCurrentITD();
     float* getCurrentMagSpectrum();
-    float* getCurrentPhaseSpectrum();
+    float* getCurrentPhaseSpectrum(bool unwrapped);
 
     int getLengthOfHRIR(){return (HRTFs == NULL ?  0 :  HRTFs->getLengthOfHRIR());}
     

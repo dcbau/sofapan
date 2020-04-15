@@ -137,15 +137,15 @@ public:
         g.setColour(Colour(0xff00aaaa));
         g.strokePath(spectrogram_r.createPathWithRoundedCorners(2.0), PathStrokeType(1.5));
 
-        if(togglePhaseView){
+        if(togglePhaseView && !toggleUnwrapPhase){
             g.setFont(10.f);
             g.setColour(Colours::black);
             String text1 = String("-180deg");
             String text2 = String("+180deg");
-            if(toggleUnwrapPhase){
-                int circles = maxUnwrappedPhase / 360;
-                text2 = String(String(circles) +" * 360 deg");
-            }
+//            if(toggleUnwrapPhase){
+//                int circles = maxUnwrappedPhase / 360;
+//                text2 = String(String(circles) +" * 360 deg");
+//            }
             g.drawText(text1, plotBox.getX() + 5, plotBox.getY() + 8, 70, 10, juce::Justification::left, true);
             g.drawText(text2, plotBox.getX() + 5, plotBox.getBottom()-10, 70, 10, juce::Justification::left, true);
         }
@@ -200,7 +200,7 @@ public:
     }
     
     /** Size is the length of one TF. The complex vector hrtf should contain the left AND the right TF, making the vector of length size*2 */
-    void drawHRTF(float* magnitude, float* phase, int size, int _sampleRate){
+    void drawHRTF(float* magnitude, float* phase, float* phaseUnwrapped, int size, int _sampleRate){
         
         mag_l.resize(size);
         mag_r.resize(size);
@@ -216,12 +216,17 @@ public:
         for(int i = 0; i< size; i++){
             mag_l[i] = magnitude[i];
             mag_r[i] = magnitude[i + size];
-            phase_l[i] = phase[i] / M_PI;
-            phase_r[i] = phase[i + size] / M_PI;
+            if(toggleUnwrapPhase){
+                phase_l[i] = phaseUnwrapped[i] / M_PI;
+                phase_r[i] = phaseUnwrapped[i + size] / M_PI;
+            }else{
+                phase_l[i] = phase[i] / M_PI;
+                phase_r[i] = phase[i + size] / M_PI;
+            }
          }
         
-        if(toggleUnwrapPhase)
-            unwrapPhase();
+//        if(toggleUnwrapPhase)
+//            unwrapPhase();
 
 
         /* Tryout für Wandabsorptions TF */
@@ -273,8 +278,8 @@ public:
         
         if(button == &unwrapPhaseButton) {
             toggleUnwrapPhase = unwrapPhaseButton.getToggleState();
-            if(toggleUnwrapPhase)
-                unwrapPhase();
+            //if(toggleUnwrapPhase)
+               // unwrapPhase();
             
         }
 

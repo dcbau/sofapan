@@ -31,6 +31,7 @@ typedef struct{
     float elevation;
     float distance;
     bool ITDAdjust;
+    bool interpolation;
     bool nfSimulation;
     bool overwriteOutputBuffer;
     float customHeadRadius;

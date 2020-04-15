@@ -1957,6 +1957,7 @@
     <ClCompile Include="..\..\JuceLibraryCode\include_juce_osc.cpp"/>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\PhaseWrapping.h"/>
     <ClInclude Include="..\..\Source\CircularAngleSmoother.h"/>
     <ClInclude Include="..\..\Source\MinPhaseGenerator.h"/>
     <ClInclude Include="..\..\Source\UpdateRateLimiter.h"/>

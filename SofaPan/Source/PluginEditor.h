@@ -71,6 +71,7 @@ private:
     TextButton showSOFAMetadataButton;
     //ToggleButton testSwitchButton;
     ToggleButton ITDadjustButton;
+    ToggleButton interpolationButton;
     Slider headRadiusSlider;
 #if ENABLE_SEMISTATICS
     TextButton mirrorSourceReflectionsButton;

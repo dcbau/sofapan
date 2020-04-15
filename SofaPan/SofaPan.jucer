@@ -16,6 +16,7 @@
   <MAINGROUP id="XmHYCT" name="SofaPan">
     <GROUP id="{044A0D15-8678-AA45-7263-8E06162C7D6C}" name="Source">
       <GROUP id="{53BA6B57-099D-F89C-B2DC-3419F4A5307E}" name="Helpers">
+        <FILE id="Yx2G88" name="PhaseWrapping.h" compile="0" resource="0" file="Source/PhaseWrapping.h"/>
         <FILE id="yLzbca" name="CircularAngleSmoother.h" compile="0" resource="0"
               file="Source/CircularAngleSmoother.h"/>
         <FILE id="ymQmUn" name="MinPhaseGenerator.h" compile="0" resource="0"

@@ -26,6 +26,7 @@ typedef struct{
     AudioParameterFloat* reverbParam1;
     AudioParameterFloat* reverbParam2;
     AudioParameterBool* stereoModeParam;
+    AudioParameterBool* interpolationParam;
 }parameterStruct;
 
 
