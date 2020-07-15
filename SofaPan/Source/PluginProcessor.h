@@ -36,7 +36,7 @@ extern "C" {
 #elif _WIN32
 #define SOFA_DEFAULT_PATH "C:\\Program Files (x86)\\Steinberg\\VstPlugins\\SOFAFiles\\mit_kemar_normal_pinna.sofa"
 #elif __APPLE__
-#define SOFA_DEFAULT_PATH "/Users/davidbau/Documents/MATLAB/noEl_8Az.sofa"
+#define SOFA_DEFAULT_PATH "/Users/davidbau/Documents/MATLAB/Simple\ Grids/noEl_8Az.sofa"
 #endif
 
 #define ROOMRADIUS 5.0

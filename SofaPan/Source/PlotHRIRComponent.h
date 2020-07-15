@@ -263,13 +263,9 @@ public:
         sampleRate = _sampleRate;
         IR_Left.clear();
         IR_Right.clear();
-        IR_Left.resize(size, 0);
-        IR_Right.resize(size, 0);
+        IR_Left.resize(size, 0.0);
+        IR_Right.resize(size, 0.0);
 
-        for(int i = 0; i< size; i++){
-            IR_Left[i] = 0.0;
-            IR_Right[i] = 0.0;
-        }
 
         for(int i = 0; i< size; i++){
             IR_Left[i] = _HRIR[i];

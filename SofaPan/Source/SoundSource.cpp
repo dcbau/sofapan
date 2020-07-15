@@ -71,7 +71,7 @@ int SoundSource::initWithSofaData(SOFAData *sD, int _sampleRate, int _index){
     if(sofaData->getMetadata().hasElevation)
         interpolationOrder++;
     
-    printf("\n\n Interpolation Order: %d \n\n", interpolationOrder);
+    //printf("\n\n Interpolation Order: %d \n\n", interpolationOrder);
     
     distanceDelaySmoother.reset((double)sampleRate, 0.5);
     distanceGainSmoother.reset((double)sampleRate, 0.5);
@@ -187,7 +187,7 @@ void SoundSource::process(const float* inBuffer, float* outBuffer_L, float* outB
             else
                 delayR_ms = fabsf(ITD);
             
-            //to avoid retriggers caused by small calculation errors
+            //to avoid retriggers caused by small numerical errors
             if(fabsf(ITDDelaySmootherL.getTargetValue() - delayL_ms) > 0.00001)
                 ITDDelaySmootherL.setValue(delayL_ms);
             if(fabsf(ITDDelaySmootherR.getTargetValue() - delayR_ms) > 0.00001)
@@ -306,32 +306,30 @@ void SoundSource::processNearfield(soundSourceData data){
 
 void SoundSource::interpolation(int leftOrRight){
 
-    /* IMPORTANT: leftOrRight does not specify the left/right part of an HRTF, but the different HRTFs used for left and right ear respectiveley when simulating the acoustic parallax effect in nearfield */
+    /* NOTE: leftOrRight does not specify the left/right part of an HRTF, but the different HRTFs used for left and right ear respectiveley when simulating the acoustic parallax effect in nearfield */
     
-    std::vector<float> mag(2 * complexLength, 0.f);
-    std::vector<float> phase(2 * complexLength, 0.f);
+    std::vector<float> mag(2 * complexLength, 0.0);
+    std::vector<float> phase(2 * complexLength, 0.0);
 
-	float *w = new float[interpolationOrder];
+	//float *w = new float[interpolationOrder];
+    std::vector<float> w(interpolationOrder, 0.f);
     
     float weightSum = 0.0;
     for(int k = 0; k < interpolationOrder; k++)
     {
-        w[k] = interpolationDistances[k] <0.00001 ? 100000 : 1 / interpolationDistances[k];
+        w[k] = interpolationDistances[k] < 0.00001 ? 100000 : 1 / interpolationDistances[k];
         weightSum += w[k];
     }
     
-    //printf("\nw1: %.3f || w2: %.3f", w[0], w[1]);
-
 
     for(int k = 0; k < interpolationOrder; k++)
         w[k] /= weightSum;
     
-    //printf("\nw1: %.3f || w2: %.3f", w[0], w[1]);
 
     
     for(int i = 0; i < complexLength * 2; i++)
     {
-        
+        //interpolate magnitude and phase seperately
         for(int k = 0; k < interpolationOrder; k++)
         {
             mag[i] += hrtfsForInterpolation_Mag[k][i] * w[k];

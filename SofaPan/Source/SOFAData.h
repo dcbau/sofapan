@@ -207,9 +207,9 @@ public:
     
     void getHRTFsForInterpolation(float** resultsMag, float** resultsPhase, float* distances, float elevation, float azimuth, float radius, int numDesiredHRTFs, bool minPhase);
 
-
-    float* getInterpolatedMagSpectrumForAngle(float elevation, float azimuth, float radius);
-    float* getPhaseSpectrumForAngle(float elevation, float azimuth, float radius, int version);
+    
+    float* getMagnitudeForDisplay(float elevation, float azimuth, float radius, bool interpolate, bool minPhase);
+    float* getPhaseForDisplay(float elevation, float azimuth, float radius, int version);
 
     
     sofaMetadataStruct getMetadata();

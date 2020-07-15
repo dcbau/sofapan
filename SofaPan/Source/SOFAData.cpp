@@ -236,9 +236,6 @@ int SOFAData::initSofaData(const char* filePath, int sampleRate)
         
         
         
-        
-        
-        
         // 3 Minimum Phase Version
         
         // LEFT
@@ -347,11 +344,11 @@ void SOFAData::searchClosestHRTFs(int* results, float* distances, int desiredClo
             }
         }
         
-        printf("\n");
-        for(int i = 0; i < desiredClosestPoints; i++){
-            printf("[%d]: %.1f|%.1f  D: %.3f \n", i, loadedHRIRs[results[i]]->Azimuth, loadedHRIRs[results[i]]->Elevation, distances[i]);
-        
-        }
+//        printf("\n");
+//        for(int i = 0; i < desiredClosestPoints; i++){
+//            printf("[%d]: %.1f|%.1f  D: %.3f \n", i, loadedHRIRs[results[i]]->Azimuth, loadedHRIRs[results[i]]->Elevation, distances[i]);
+//
+//        }
         
         
     }
@@ -396,6 +393,7 @@ int SOFAData::searchHRTF(float elevation, float azimuth, float radius){
 void SOFAData::getHRTFsForInterpolation(float** resultsMag, float** resultsPhase, float* distances, float elevation, float azimuth, float radius, int numDesiredHRTFs, bool minPhase){
     
     int *id = new int[numDesiredHRTFs];
+    
     radius = 1.0;
     searchClosestHRTFs(id, distances, numDesiredHRTFs, elevation, azimuth, radius);
     
@@ -410,6 +408,8 @@ void SOFAData::getHRTFsForInterpolation(float** resultsMag, float** resultsPhase
             resultsPhase[i] = loadedHRIRs[id[i]]->getPhaseSpectrumUnwrapped();
         }
     }
+    
+    delete [] id;
 
 }
 
@@ -455,9 +455,9 @@ ITDStruct SOFAData::getITDForAngle(float elevation, float azimuth, float radius)
 
 
 // This function is not used by the interpolation for the renderer, but for displaying it in the PlotHRTFComponent Class
-float* SOFAData::getInterpolatedMagSpectrumForAngle(float elevation, float azimuth, float radius){
+float* SOFAData::getMagnitudeForDisplay(float elevation, float azimuth, float radius, bool interpolate, bool minPhase){
     
-    
+    // update check
     if(elevation == last_elevation && azimuth == last_azimuth && radius == last_radius)
         return interpolatedReturnMagSpectrum;
     
@@ -465,37 +465,95 @@ float* SOFAData::getInterpolatedMagSpectrumForAngle(float elevation, float azimu
     last_azimuth = azimuth;
     last_elevation = elevation;
     
-    int id[3];
-    float d[3];
-    searchClosestHRTFs(id, d, 3, elevation, azimuth, radius);
     
-    float* hrtf1 = loadedHRIRs[id[0]]->getMagSpectrum();
-    float* hrtf2 = loadedHRIRs[id[1]]->getMagSpectrum();
-    float* hrtf3 = loadedHRIRs[id[2]]->getMagSpectrum();
+    if (interpolate == false)
+    {
+        int id[1];
+        float d[1];
+        searchClosestHRTFs(id, d, 1, elevation, azimuth, radius);
+        
+        float* mag = loadedHRIRs[*id]->getMagSpectrum();
+        for(int i = 0; i < lengthOfHRTF * 2; i++)
+        {
+            interpolatedReturnMagSpectrum[i] = mag[i];
+        }
+        
+        
+        return interpolatedReturnMagSpectrum;
 
-    float w1, w2, w3;
+    }
     
-    //if one distance is zero, no interpolation is done at all
-    if(d[0] == 0 ||d[1] == 0 ||d[2] == 0 ){
-        w1 = d[0] == 0 ? 1 : 0;
-        w2 = d[1] == 0 ? 1 : 0;
-        w3 = d[2] == 0 ? 1 : 0;
+    // determinde intpolation order
+    int interpolationOrder = 2;
+    if(sofaMetadata.hasMultipleDistances)
+        interpolationOrder++;
+    if(sofaMetadata.hasElevation)
+        interpolationOrder++;
+    
+    // pre-allocate variables
+    int* id = new int[interpolationOrder];
+    float* d = new float[interpolationOrder];
+    searchClosestHRTFs(id, d, interpolationOrder, elevation, azimuth, radius);
+    
+    float* hrtfsForInterpolation_Mag[4];
+    float* hrtfsForInterpolation_Phase[4];
+    
+    if(minPhase){
+        for(int i = 0; i < interpolationOrder; i++){
+            hrtfsForInterpolation_Mag[i] = loadedHRIRs[id[i]]->getMagSpectrum();
+            hrtfsForInterpolation_Phase[i] = loadedHRIRs[id[i]]->getPhaseSpectrumMinPhase();
+        }
     }else{
-        w1 = 1.0 / d[0];
-        w2 = 1.0 / d[1];
-        w3 = 1.0 / d[2];
+        for(int i = 0; i < interpolationOrder; i++){
+            hrtfsForInterpolation_Mag[i] = loadedHRIRs[id[i]]->getMagSpectrum();
+            hrtfsForInterpolation_Phase[i] = loadedHRIRs[id[i]]->getPhaseSpectrumUnwrapped();
+        }
     }
     
-    for(int i = 0; i < lengthOfHRTF * 2; i++){
-        interpolatedReturnMagSpectrum[i] = (hrtf1[i] * w1 + hrtf2[i] * w2 + hrtf3[i] * w3) / (w1 + w2 + w3);
-        //interpolatedReturnMagSpectrum[i + lengthOfHRTF] = loadedHRIRs[id1]->getMagSpectrum()[i];
+    std::vector<float> mag(2 * lengthOfHRTF, 0.0);
+    std::vector<float> phase(2 * lengthOfHRTF, 0.0);
+
+    std::vector<float> w(interpolationOrder, 0.f);
+    
+    float weightSum = 0.0;
+    for(int k = 0; k < interpolationOrder; k++)
+    {
+        w[k] = d[k] < 0.00001 ? 100000 : 1 / d[k];
+        weightSum += w[k];
     }
+    
+    for(int k = 0; k < interpolationOrder; k++)
+        w[k] /= weightSum;
+    
+
+    
+    for(int i = 0; i < lengthOfHRTF * 2; i++)
+    {
+        interpolatedReturnMagSpectrum[i] = 0.f;
+        //interpolate magnitude and phase seperately
+        for(int k = 0; k < interpolationOrder; k++)
+        {
+            interpolatedReturnMagSpectrum[i] += hrtfsForInterpolation_Mag[k][i] * w[k];
+            phase[i] += hrtfsForInterpolation_Phase[k][i] * w[k];
+        }
+    }
+    
+    phase = PhaseWrapping::wrap(phase);
+    
+    
+    
+    
+    delete [] id;
+    delete [] d;
+    
+    
     
     return interpolatedReturnMagSpectrum;
 
 }
 
-float* SOFAData::getPhaseSpectrumForAngle(float elevation, float azimuth, float radius, int version){
+
+float* SOFAData::getPhaseForDisplay(float elevation, float azimuth, float radius, int version){
     
     
     int id = searchHRTF(elevation, azimuth, radius);

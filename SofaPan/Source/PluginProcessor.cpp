@@ -435,6 +435,7 @@ ITDStruct SofaPanAudioProcessor::getCurrentITD()
     return HRTFs->getITDForAngle(elevation, azimuth, distance);
 }
 
+//
 float* SofaPanAudioProcessor::getCurrentMagSpectrum()
 {
     if(HRTFs == NULL)
@@ -447,7 +448,7 @@ float* SofaPanAudioProcessor::getCurrentMagSpectrum()
     if(!(bool)params.distanceSimulationParam->get())
         distance = params.distanceParam->get() * MAX_DISTANCE;
     
-    return HRTFs->getInterpolatedMagSpectrumForAngle(elevation, azimuth, distance);
+    return HRTFs->getMagnitudeForDisplay(elevation, azimuth, distance, params.interpolationParam->get(), params.ITDAdjustParam->get());
 }
 
 float* SofaPanAudioProcessor::getCurrentPhaseSpectrum(bool unwrapped)
@@ -463,9 +464,9 @@ float* SofaPanAudioProcessor::getCurrentPhaseSpectrum(bool unwrapped)
     if(!(bool)params.distanceSimulationParam->get())
         distance = params.distanceParam->get() * MAX_DISTANCE;
     if(params.ITDAdjustParam->get())
-        return HRTFs->getPhaseSpectrumForAngle(elevation, azimuth, distance, hrtf_type_minPhase);
+        return HRTFs->getPhaseForDisplay(elevation, azimuth, distance, hrtf_type_minPhase);
     else
-        return HRTFs->getPhaseSpectrumForAngle(elevation, azimuth, distance,
+        return HRTFs->getPhaseForDisplay(elevation, azimuth, distance,
                                                unwrapped ? hrtf_type_original_unwrapped : hrtf_type_original);
 
 }
