@@ -61,6 +61,8 @@ private:
     Slider panner_az;
     Slider panner_el;
     Slider panner_dist;
+    Label azDisplay;
+    Label elDisplay;
 #if REVSLIDERACTIVE
     Slider reverbSlider1;
     Slider reverbSlider2;

@@ -185,7 +185,9 @@ public:
             y = - (normY * 2.0 - 1.0) * ROOMRADIUS;
         }
         spherical.azimuth = atan2f(y , x) *  180.0/ M_PI - 90.0;
-        spherical.azimuth = spherical.azimuth > 0.0 ? 360.0 - spherical.azimuth : -spherical.azimuth;
+        //spherical.azimuth = spherical.azimuth > 0.0 ? 360.0 - spherical.azimuth : -spherical.azimuth;
+        spherical.azimuth = spherical.azimuth > 0.0 ?  spherical.azimuth : 360 + spherical.azimuth;
+
         spherical.elevation = atan2f(z, sqrtf(x*x + y*y))* 180.0/ M_PI;
 
         spherical.distance = sqrtf(y * y  + x * x + z * z);
@@ -221,8 +223,8 @@ public:
             }
         }
         z = distance * sinf(spherical.elevation * M_PI / 180.);
-        x = sinf(spherical.azimuth * M_PI / 180.0) * cosf(spherical.elevation * M_PI / 180.0) * distance;
-        y = cosf(spherical.azimuth * M_PI / 180.0) * cosf(spherical.elevation * M_PI / 180.0) * distance;
+        x = sinf((360.f-spherical.azimuth) * M_PI / 180.0) * cosf(spherical.elevation * M_PI / 180.0) * distance;
+        y = cosf((360.f-spherical.azimuth) * M_PI / 180.0) * cosf(spherical.elevation * M_PI / 180.0) * distance;
         
         if(isRearView){
             Rectangle<float> bounds = getLocalBounds().toFloat();

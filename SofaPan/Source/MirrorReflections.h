@@ -186,6 +186,7 @@ private:
         
         float az_rad = atan2f(imageSourcePos.y , imageSourcePos.x); // arctan(y/x) = {-pi ... pi}
         if(az_rad < 0.0) az_rad = 2*M_PI + az_rad; // -> 0 ... 2pi
+        az_rad = 2 * M_PI - az_rad; // counter clockwise azimuth
         
         float el_rad = asinf(imageSourcePos.z / lengthOfImageSourceVector); //arcsin(z / r) = {pi/2 ... -pi/2}
         

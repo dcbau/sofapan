@@ -31,7 +31,7 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     panner_az.setRange(0.0, 359.0, 0.1);
     panner_az.setTextValueSuffix(" deg");
     panner_az.setPopupDisplayEnabled(false, false, this);
-    panner_az.setTextBoxStyle(Slider::TextBoxBelow, false, 70, 15);
+    panner_az.setTextBoxStyle(Slider::NoTextBox, false, 70, 15);
     panner_az.setColour(Slider::textBoxBackgroundColourId, Colours::white);
     panner_az.setRotaryParameters(0, M_PI*2.0, false);
     panner_az.setDoubleClickReturnValue(true, 0.0);
@@ -45,12 +45,15 @@ SofaPanAudioProcessorEditor::SofaPanAudioProcessorEditor (SofaPanAudioProcessor&
     panner_el.setRange(-90.0, 90.0, 0.1);
     panner_el.setTextValueSuffix(" deg");
     panner_el.setPopupDisplayEnabled(false, false, this);
-    panner_el.setTextBoxStyle(Slider::TextBoxBelow, false, 70, 15);
+    panner_el.setTextBoxStyle(Slider::NoTextBox, false, 70, 15);
     panner_el.setColour(Slider::textBoxBackgroundColourId, Colours::white);
     panner_el.setRotaryParameters(M_PI, M_PI*2, true);
     panner_el.setDoubleClickReturnValue(true, 0.0);
     panner_el.addListener(this);
     addAndMakeVisible(&panner_el);
+    
+    addAndMakeVisible(&azDisplay);
+    addAndMakeVisible(&elDisplay);
     
     panner_dist.setSliderStyle(roomsimLayout ? Slider::LinearHorizontal : Slider::LinearVertical);
     panner_dist.setLookAndFeel(&sofaPanLookAndFeel);
@@ -346,7 +349,7 @@ void SofaPanAudioProcessorEditor::timerCallback() {
     // update panning sliders if needed
     float azimuthValue = getParameterValue("azimuth") * 360.;
     if(azimuthValue != lastAzimuthValue)
-        panner_az.setValue(azimuthValue, NotificationType::dontSendNotification);
+        panner_az.setValue(360 - azimuthValue, NotificationType::dontSendNotification);
     
     float elevationValue = (getParameterValue("elevation")-0.5) * 180.;
     if(elevationValue != lastElevationValue)
@@ -355,6 +358,12 @@ void SofaPanAudioProcessorEditor::timerCallback() {
     float distanceValue = getParameterValue("distance") * MAX_DISTANCE;
     if(distanceValue != lastDistanceValue)
         panner_dist.setValue(distanceValue, NotificationType::dontSendNotification);
+    
+    String azText = String(azimuthValue);
+    azDisplay.setText(String("Az: " + azText), NotificationType::dontSendNotification);
+    String elText = String(elevationValue);
+    elDisplay.setText(String("El: " + elText), NotificationType::dontSendNotification);
+
     
     
     
@@ -462,7 +471,7 @@ void SofaPanAudioProcessorEditor::timerCallback() {
 void SofaPanAudioProcessorEditor::sliderValueChanged(Slider* slider)
 {
     if(slider == &panner_az){
-        float panNormValue = (float)panner_az.getValue() / 360.f;
+        float panNormValue = 1 - (float)panner_az.getValue() / 360.f;
         setParameterValue("azimuth", panNormValue);
         repaint();
     }
@@ -620,6 +629,8 @@ void SofaPanAudioProcessorEditor::buttonClicked(Button *button)
         setParameterValue("dist_sim", true);
         setParameterValue("stereoMode", false);
         useStereoModeButton.setVisible(false);
+        elDisplay.setVisible(false);
+        azDisplay.setVisible(false);
 
     }
     if(button == & useLayoutSimplePanningButton){
@@ -634,6 +645,8 @@ void SofaPanAudioProcessorEditor::buttonClicked(Button *button)
         setParameterValue("dist_sim", false);
         setParameterValue("nearfield_sim", false);
         useStereoModeButton.setVisible(true);
+        elDisplay.setVisible(true);
+        azDisplay.setVisible(true);
 
     }
     
@@ -764,7 +777,9 @@ void SofaPanAudioProcessorEditor::rearrange(){
         azimuthLabel.setBounds(panner_az.getX(), panner_az.getY() - 20, panner_az.getWidth(), 20);
         elevationLabel.setBounds(panner_el.getX(), panner_el.getY() - 20, panner_el.getWidth(), 20);
         distanceLabel.setBounds(panner_dist.getX(), panner_dist.getY() - 20, panner_dist.getWidth(), 20);
-
+        
+        
+        
     }else{
         
         panner_size = (boxWithSpacing.getWidth() - spacing * 2) / 2.5;
@@ -779,6 +794,16 @@ void SofaPanAudioProcessorEditor::rearrange(){
         panner_az.setBounds(boxForSliders.removeFromLeft(panner_size));
         panner_el.setBounds(panner_az.getBounds().translated(panner_size + spacing, 0));
         panner_dist.setBounds(panner_el.getBounds().translated(panner_size + spacing, 0).withWidth(panner_size/2));
+        
+        azDisplay.setBounds(panner_az.getRight() - 40,
+                            panner_az.getBottom() + 10,
+                            70,
+                            30);
+
+        elDisplay.setBounds(panner_el.getX() + 40,
+                            panner_el.getBottom() + 10,
+                            70,
+                            30);
         
         int plotWidth = (boxWithSpacing.getWidth() - spacing) / 2;
         boxWithSpacing.removeFromTop(spacing);
@@ -832,10 +857,10 @@ void SofaPanAudioProcessorEditor::rearrange(){
         rect.setSize(newWidth, newWidth);
         //const int pngPixelAdjust = 0;//2;
         g.drawImage(headTopImage,
-                    rect.getCentreX()-rect.getWidth()/4 + 10 ,
-                    rect.getCentreY()-rect.getHeight()/4 + 10,// - pngPixelAdjust,
-                    rect.getWidth()/2 - 20,
-                    rect.getWidth()/2 - 20,
+                    rect.getCentreX()-rect.getWidth()/4  +17,
+                    rect.getCentreY()-rect.getHeight()/4 +17,// - pngPixelAdjust,
+                    rect.getWidth()/2 -20,
+                    rect.getWidth()/2 -20,
                     0, 0, 200, 200);
         
         // elevation slider
@@ -843,8 +868,8 @@ void SofaPanAudioProcessorEditor::rearrange(){
         newWidth = rect.getWidth() - panner_el.getTextBoxHeight();
         rect.setSize(newWidth, newWidth);
         g.drawImage(headSideImage,
-                    rect.getCentreX()-rect.getWidth()/4 + 10,
-                    rect.getCentreY()-rect.getHeight()/4 + 10,
+                    rect.getCentreX()-rect.getWidth()/4 + 17,
+                    rect.getCentreY()-rect.getHeight()/4 + 17,
                     rect.getWidth()/2 - 20,
                     rect.getWidth()/2 - 20,
                     0, 0, 200, 200);

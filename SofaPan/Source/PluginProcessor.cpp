@@ -283,12 +283,12 @@ void SofaPanAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     data.customHeadRadius = params.individualHeadDiameter->get() / 200.0;
 
     if(params.stereoModeParam->get()){
-        data.azimuth -= 30.f;
-        if(data.azimuth < 0.f) data.azimuth += 360.f;
-        directSource.process(inBufLocalCopy_L, outBufferL, outBufferR, numberOfSamples, data);
-        data.azimuth += 60.f;
-        data.overwriteOutputBuffer = false;
+        data.azimuth += 30.f;
         if(data.azimuth > 360.f) data.azimuth -= 360.f;
+        directSource.process(inBufLocalCopy_L, outBufferL, outBufferR, numberOfSamples, data);
+        data.azimuth -= 60.f;
+        data.overwriteOutputBuffer = false;
+        if(data.azimuth < 0.f) data.azimuth += 360.f;
         directSource_2.process(inBufLocalCopy_R, outBufferL, outBufferR, numberOfSamples, data);
         
     }else

@@ -349,8 +349,10 @@ void SOFAData::searchClosestHRTFs(int* results, float* distances, int desiredClo
         
         printf("\n");
         for(int i = 0; i < desiredClosestPoints; i++){
-            printf("[%d] HRTF: %.1f|%.1f  D: %.3f", i, loadedHRIRs[results[i]]->Azimuth, loadedHRIRs[results[i]]->Elevation, distances[i]);
+            printf("[%d]: %.1f|%.1f  D: %.3f \n", i, loadedHRIRs[results[i]]->Azimuth, loadedHRIRs[results[i]]->Elevation, distances[i]);
+        
         }
+        
         
     }
     
@@ -631,8 +633,9 @@ int SOFAData::loadSofaFile(const char* filePath, int hostSampleRate){
     sofaMetadata.numReceivers = dimR_len;
     
     // Übergangslösung: Es werden dateien mit mehereren Receiverkanälen akzepiert, aber statisch die ersten beiden kanäle verwendet
-    int receiver_for_R = 0;
-    int receiver_for_L = 1;
+    int receiver_for_L = 0;
+    int receiver_for_R = 1;
+
     
     
     //Step 4:
